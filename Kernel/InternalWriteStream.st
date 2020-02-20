@@ -18,12 +18,19 @@ InternalWriteStream class >> with: aCollection [
 
 { #category : #services }
 InternalWriteStream >> _nextNativePut: anObject [
-	| object |	object := anObject isSmallInteger		ifTrue: [anObject _asNative]		ifFalse: [anObject].	contents _objectAtOffset: position put: object.	position := position + WordSize
+	| object |
+	object := anObject isSmallInteger
+		ifTrue: [anObject _asNative]
+		ifFalse: [anObject].
+	contents _objectAtOffset: position put: object.
+	position := position + WordSize
 ]
 
 { #category : #writing }
 InternalWriteStream >> alignTo: boundary [
-	| null |	null := self collectorOfSize: boundary - (position \\ boundary).	self nextPutAll: null
+	| null |
+	null := self collectorOfSize: boundary - (position \\ boundary).
+	self nextPutAll: null
 ]
 
 { #category : #testing }
@@ -33,7 +40,9 @@ InternalWriteStream >> atEnd [
 
 { #category : #configuration }
 InternalWriteStream >> beUnicode [
-	self isUnicode ifTrue: [^self].	contents := contents asWideString.	eol := eol asWideString
+	self isUnicode ifTrue: [^self].
+	contents := contents asWideString.
+	eol := eol asWideString
 ]
 
 { #category : #accessing }
@@ -53,7 +62,11 @@ InternalWriteStream >> collectorClass [
 
 { #category : #private }
 InternalWriteStream >> collectorOfSize: anInteger [
-	| collector |	collector := contents class new: anInteger.	collector size < anInteger		ifTrue: [collector addAll: (Array new: anInteger - collector size)].	^collector
+	| collector |
+	collector := contents class new: anInteger.
+	collector size < anInteger
+		ifTrue: [collector addAll: (Array new: anInteger - collector size)].
+	^collector
 ]
 
 { #category : #accessing }
@@ -63,7 +76,8 @@ InternalWriteStream >> contents [
 
 { #category : #private }
 InternalWriteStream >> eol [
-	eol notNil ifTrue: [^eol].	^super eol
+	eol notNil ifTrue: [^eol].
+	^super eol
 ]
 
 { #category : #accessing }
@@ -73,12 +87,20 @@ InternalWriteStream >> eol: aString [
 
 { #category : #private }
 InternalWriteStream >> grow [
-	| min max |	min := contents size max: 20.	max := min min: 1000000.	self grow: max
+	| min max |
+	min := contents size max: 20.
+	max := min min: 1000000.
+	self grow: max
 ]
 
 { #category : #private }
 InternalWriteStream >> grow: extra [
-	| collection |	extra <= 0 ifTrue: [^self].	collection := self collectorOfSize: contents size + extra.	collection replaceFrom: 1 to: contents size with: contents.	contents := collection.	limit := contents size
+	| collection |
+	extra <= 0 ifTrue: [^self].
+	collection := self collectorOfSize: contents size + extra.
+	collection replaceFrom: 1 to: contents size with: contents.
+	contents := collection.
+	limit := contents size
 ]
 
 { #category : #private }
@@ -88,7 +110,8 @@ InternalWriteStream >> growAtLeast: extra [
 
 { #category : #initialization }
 InternalWriteStream >> initialize [
-	super initialize.	self useCr
+	super initialize.
+	self useCr
 ]
 
 { #category : #testing }
@@ -113,7 +136,9 @@ InternalWriteStream >> lineDelimiter [
 
 { #category : #accessing }
 InternalWriteStream >> lineDelimiter: aCharacter [
-	eol := (aCharacter isCharacter and: [aCharacter isCr])		ifTrue: [aCharacter , aCharacter class lf]		ifFalse: [aCharacter asString]
+	eol := (aCharacter isCharacter and: [aCharacter isCr])
+		ifTrue: [aCharacter , aCharacter class lf]
+		ifFalse: [aCharacter asString]
 ]
 
 { #category : #accessing }
@@ -123,32 +148,68 @@ InternalWriteStream >> lineDelimiters: aString [
 
 { #category : #marshalling }
 InternalWriteStream >> nextBytePut: byte [
-	| b |	b := byte < 0 ifTrue: [byte bitAnd: 16rFF] ifFalse: [byte].	position = limit ifTrue: [self grow].	position := position + 1.	size < position ifTrue: [size := position].	^contents byteAt: position put: b
+	| b |
+	b := byte < 0 ifTrue: [byte bitAnd: 16rFF] ifFalse: [byte].
+	position = limit ifTrue: [self grow].
+	position := position + 1.
+	size < position ifTrue: [size := position].
+	^contents byteAt: position put: b
 ]
 
 { #category : #writing }
 InternalWriteStream >> nextPut: token [
-	| index |	index := position + 1.	index > limit ifTrue: [self grow].	position := index.	size < position ifTrue: [size := position].	^contents at: index put: token
+	| index |
+	index := position + 1.
+	index > limit ifTrue: [self grow].
+	position := index.
+	size < position ifTrue: [size := position].
+	^contents at: index put: token
 ]
 
 { #category : #writing }
 InternalWriteStream >> nextPutAll: aCollection [
-	| n stop extra |	n := aCollection size.	n = 0 ifTrue: [^aCollection].	extra := n - (limit - position).	extra > 0 ifTrue: [self growAtLeast: extra].	stop := position + n.	(contents class == String and: [aCollection isUnicodeString])		ifTrue: [			self beUnicode.			contents				replaceBytesFrom: position * 2 + 1				to: stop * 2				with: aCollection				startingAt: 1]		ifFalse: [contents			replaceFrom: position + 1			to: stop			with: aCollection			startingAt: 1].	position := stop.	size < position ifTrue: [size := position].	^aCollection
+	| n stop extra |
+	n := aCollection size.
+	n = 0 ifTrue: [^aCollection].
+	extra := n - (limit - position).
+	extra > 0 ifTrue: [self growAtLeast: extra].
+	stop := position + n.
+	(contents class == String and: [aCollection isUnicodeString])
+		ifTrue: [
+			self beUnicode.
+			contents
+				replaceBytesFrom: position * 2 + 1
+				to: stop * 2
+				with: aCollection
+				startingAt: 1]
+		ifFalse: [contents
+			replaceFrom: position + 1
+			to: stop
+			with: aCollection
+			startingAt: 1].
+	position := stop.
+	size < position ifTrue: [size := position].
+	^aCollection
 ]
 
 { #category : #writing }
 InternalWriteStream >> nextPutChar: aCharacter [
-	(self isUnicode not andNot: [aCharacter isAnsi]) ifTrue: [self beUnicode].	^self nextPut: aCharacter
+	(self isUnicode not andNot: [aCharacter isAnsi]) ifTrue: [self beUnicode].
+	^self nextPut: aCharacter
 ]
 
 { #category : #writing }
 InternalWriteStream >> nextPutString: aString [
-	self isUnicode ifTrue: [^self nextPutAll: aString asWideString].	aString isWideString ifTrue: [self beUnicode].	^self nextPutAll: aString
+	self isUnicode ifTrue: [^self nextPutAll: aString asWideString].
+	aString isWideString ifTrue: [self beUnicode].
+	^self nextPutAll: aString
 ]
 
 { #category : #private }
 InternalWriteStream >> on: aCollection [
-	contents := aCollection.	position := size := 0.	limit := contents size
+	contents := aCollection.
+	position := size := 0.
+	limit := contents size
 ]
 
 { #category : #accessing }
@@ -158,7 +219,9 @@ InternalWriteStream >> peek [
 
 { #category : #accessing }
 InternalWriteStream >> peek: anInteger [
-	| end |	end := position + anInteger min: limit.	^contents copyFrom: position + 1 to: end
+	| end |
+	end := position + anInteger min: limit.
+	^contents copyFrom: position + 1 to: end
 ]
 
 { #category : #accessing }
@@ -168,27 +231,55 @@ InternalWriteStream >> position [
 
 { #category : #positioning }
 InternalWriteStream >> position: anInteger [
-	(0 <= anInteger and: [anInteger <= limit])		ifFalse: [^self			error: 'position ' , anInteger asString , ' is out of bounds'].	position := anInteger
+	(0 <= anInteger and: [anInteger <= limit])
+		ifFalse: [^self
+			error: 'position ' , anInteger asString , ' is out of bounds'].
+	position := anInteger
 ]
 
 { #category : #services }
 InternalWriteStream >> putBytesFrom: aByteArray from: start to: stop [
-	| length end s e w |	aByteArray isNil ifTrue: [^nil].	length := stop - start + 1.	contents isUnicodeString		ifTrue: [			w := contents characterSize.			end := length // w + position.			s := position * w + 1.			e := position * w + length]		ifFalse: [			end := position + length.			s := position + 1.			e := end].	limit < end ifTrue: [self grow: end - limit].	contents replaceBytesFrom: s to: e with: aByteArray startingAt: start.	position := end.	size < position ifTrue: [size := position]
+	| length end s e w |
+	aByteArray isNil ifTrue: [^nil].
+	length := stop - start + 1.
+	contents isUnicodeString
+		ifTrue: [
+			w := contents characterSize.
+			end := length // w + position.
+			s := position * w + 1.
+			e := position * w + length]
+		ifFalse: [
+			end := position + length.
+			s := position + 1.
+			e := end].
+	limit < end ifTrue: [self grow: end - limit].
+	contents replaceBytesFrom: s to: e with: aByteArray startingAt: start.
+	position := end.
+	size < position ifTrue: [size := position]
 ]
 
 { #category : #services }
 InternalWriteStream >> readStream [
-	| reader |	reader := InternalReadStream on: contents.	reader		lineDelimiter: eol;		readLimit: (limit min: size).	^reader
+	| reader |
+	reader := InternalReadStream on: contents.
+	reader
+		lineDelimiter: eol;
+		readLimit: (limit min: size).
+	^reader
 ]
 
 { #category : #private }
 InternalWriteStream >> reserve: amount [
-	| extra |	amount <= limit ifTrue: [^self].	extra := contents size - limit.	self grow: extra
+	| extra |
+	amount <= limit ifTrue: [^self].
+	extra := contents size - limit.
+	self grow: extra
 ]
 
 { #category : #positioning }
 InternalWriteStream >> reset [
-	super reset.	size := 0
+	super reset.
+	size := 0
 ]
 
 { #category : #positioning }
@@ -208,7 +299,10 @@ InternalWriteStream >> sizeToEnd [
 
 { #category : #positioning }
 InternalWriteStream >> skip: anInteger [
-	| end |	end := position + anInteger.	limit < end ifTrue: [self grow: end - limit].	position := position + anInteger max: 0
+	| end |
+	end := position + anInteger.
+	limit < end ifTrue: [self grow: end - limit].
+	position := position + anInteger max: 0
 ]
 
 { #category : #accessing }
@@ -233,7 +327,8 @@ InternalWriteStream >> useCrLf [
 
 { #category : #private }
 InternalWriteStream >> with: aCollection [
-	self on: aCollection.	size := position := limit
+	self on: aCollection.
+	size := position := limit
 ]
 
 { #category : #accessing }

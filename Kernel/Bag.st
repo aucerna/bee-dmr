@@ -14,27 +14,38 @@ Bag class >> new: anInteger [
 
 { #category : #'instance creation' }
 Bag class >> withAll: aCollection [
-	| bag |	bag := self new: aCollection size.	bag addAll: aCollection.	^bag
+	| bag |
+	bag := self new: aCollection size.
+	bag addAll: aCollection.
+	^bag
 ]
 
 { #category : #comparing }
 Bag >> = aBag [
-	(aBag isKindOf: Bag) ifFalse: [^false].	self size = aBag size ifFalse: [^false].	contents associationsDo: [:assoc | | count |		count := aBag occurrencesOf: assoc key.		assoc value = count ifFalse: [^false]].	^true
+	(aBag isKindOf: Bag) ifFalse: [^false].
+	self size = aBag size ifFalse: [^false].
+	contents associationsDo: [:assoc | | count |
+		count := aBag occurrencesOf: assoc key.
+		assoc value = count ifFalse: [^false]].
+	^true
 ]
 
 { #category : #adding }
 Bag >> add: anObject [
-	contents at: anObject sum: 1.	^anObject
+	contents at: anObject sum: 1.
+	^anObject
 ]
 
 { #category : #adding }
 Bag >> add: anObject withOccurrences: anInteger [
-	contents at: anObject sum: anInteger.	^anObject
+	contents at: anObject sum: anInteger.
+	^anObject
 ]
 
 { #category : #accessing }
 Bag >> anyone [
-	contents keysDo: [:k | ^k].	^nil
+	contents keysDo: [:k | ^k].
+	^nil
 ]
 
 { #category : #converting }
@@ -74,7 +85,8 @@ Bag >> defaultPolicy [
 
 { #category : #enumerating }
 Bag >> do: aBlock [
-	contents		keysAndValuesDo: [:key :value | value timesRepeat: [aBlock value: key]]
+	contents
+		keysAndValuesDo: [:key :value | value timesRepeat: [aBlock value: key]]
 ]
 
 { #category : #enumerating }
@@ -99,7 +111,8 @@ Bag >> includes: anObject [
 
 { #category : #initialization }
 Bag >> initialize [
-	super initialize.	contents := self contentsClass new
+	super initialize.
+	contents := self contentsClass new
 ]
 
 { #category : #initialization }
@@ -124,12 +137,18 @@ Bag >> occurrencesOf: anObject [
 
 { #category : #copying }
 Bag >> postCopy [
-	super postCopy.	contents := contents copy
+	super postCopy.
+	contents := contents copy
 ]
 
 { #category : #removing }
 Bag >> remove: anObject ifAbsent: aBlock [
-	| count |	count := contents at: anObject sum: -1.	count > 0 ifTrue: [^anObject].	contents removeKey: anObject.	count = -1 ifTrue: [^aBlock value].	^anObject
+	| count |
+	count := contents at: anObject sum: -1.
+	count > 0 ifTrue: [^anObject].
+	contents removeKey: anObject.
+	count = -1 ifTrue: [^aBlock value].
+	^anObject
 ]
 
 { #category : #removing }
@@ -139,12 +158,19 @@ Bag >> removeAll [
 
 { #category : #accessing }
 Bag >> size [
-	| tally |	tally := 0.	contents do: [:count | tally := tally + count].	^tally
+	| tally |
+	tally := 0.
+	contents do: [:count | tally := tally + count].
+	^tally
 ]
 
 { #category : #private }
 Bag >> sortedCounts [
-	| counts |	counts := Array		streamContents: [:strm | contents			keysAndValuesDo: [:k :v | strm nextPut: v -> k]].	^counts sortBy: [:x :y | x key >= y key]
+	| counts |
+	counts := Array
+		streamContents: [:strm | contents
+			keysAndValuesDo: [:k :v | strm nextPut: v -> k]].
+	^counts sortBy: [:x :y | x key >= y key]
 ]
 
 { #category : #accessing }

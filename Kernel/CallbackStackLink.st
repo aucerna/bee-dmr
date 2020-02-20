@@ -26,7 +26,8 @@ CallbackStackLink >> base: anInteger [
 
 { #category : #initialization }
 CallbackStackLink >> forgetStackPointers [
-	base := nil.	top := nil
+	base := nil.
+	top := nil
 ]
 
 { #category : #testing }
@@ -46,7 +47,13 @@ CallbackStackLink >> next: aCallbackStackLink [
 
 { #category : #initialization }
 CallbackStackLink >> recordStackPointers [
-	| frame dropped |	frame := StackFrameCursor top.	dropped := 4.	dropped timesRepeat: [frame moveNext].	base := frame current.	top := frame previous + 8 _asPointer		- 8 _asPointer "is going to push 2 arguments for ffiCall:withArguments"
+	| frame dropped |
+	frame := StackFrameCursor top.
+	dropped := 4.
+	dropped timesRepeat: [frame moveNext].
+	base := frame current.
+	top := frame previous + 8 _asPointer
+		- 8 _asPointer "is going to push 2 arguments for ffiCall:withArguments"
 ]
 
 { #category : #accessing }

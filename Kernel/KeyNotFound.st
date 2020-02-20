@@ -14,7 +14,9 @@ KeyNotFound class >> signalFor: anObject [
 
 { #category : #accessing }
 KeyNotFound >> defaultDescription [
-	| string |	string := [object printString] on: Error do: [:ex | ex description].	^'Key ' , string , ' is missing'
+	| string |
+	string := [object printString] on: Error do: [:ex | ex description].
+	^'Key ' , string , ' is missing'
 ]
 
 { #category : #accessing }

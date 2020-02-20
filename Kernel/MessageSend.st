@@ -14,7 +14,8 @@ MessageSend class >> receiver: anObject selector: aSymbol arguments: anArray [
 
 { #category : #comparing }
 MessageSend >> = aMessage [
-	super = aMessage ifFalse: [^false].	^self receiver == aMessage receiver
+	super = aMessage ifFalse: [^false].
+	^self receiver == aMessage receiver
 ]
 
 { #category : #evaluating }
@@ -29,12 +30,16 @@ MessageSend >> evaluateFor: anObject [
 
 { #category : #evaluating }
 MessageSend >> evaluateWith: argObject [
-	^selector arity = 1		ifTrue: [receiver perform: selector with: argObject]		ifFalse: [super evaluateWith: argObject]
+	^selector arity = 1
+		ifTrue: [receiver perform: selector with: argObject]
+		ifFalse: [super evaluateWith: argObject]
 ]
 
 { #category : #evaluating }
 MessageSend >> evaluateWithArguments: anArray [
-	| args |	args := self buildArguments: anArray.	^receiver perform: selector withArguments: args
+	| args |
+	args := self buildArguments: anArray.
+	^receiver perform: selector withArguments: args
 ]
 
 { #category : #comparing }
@@ -54,7 +59,13 @@ MessageSend >> perform [
 
 { #category : #printing }
 MessageSend >> printOn: aStream [
-	aStream		nextPutAll: self class name;		nextPut: $(;		nextPutAll: receiver class printString;		nextPutAll: '>>';		nextPutAll: selector printString;		nextPut: $)
+	aStream
+		nextPutAll: self class name;
+		nextPut: $(;
+		nextPutAll: receiver class printString;
+		nextPutAll: '>>';
+		nextPutAll: selector printString;
+		nextPut: $)
 ]
 
 { #category : #accessing }
@@ -69,7 +80,9 @@ MessageSend >> receiver: anObject [
 
 { #category : #accessing }
 MessageSend >> receiver: anObject selector: aSymbol arguments: anArray [
-	receiver := anObject.	selector := aSymbol.	arguments := anArray
+	receiver := anObject.
+	selector := aSymbol.
+	arguments := anArray
 ]
 
 { #category : #evaluating }
@@ -79,6 +92,9 @@ MessageSend >> value [
 
 { #category : #evaluating }
 MessageSend >> value: value1 value: value2 [
-	arguments		at: 1 put: value1;		at: 2 put: value2.	^self perform
+	arguments
+		at: 1 put: value1;
+		at: 2 put: value2.
+	^self perform
 ]
 

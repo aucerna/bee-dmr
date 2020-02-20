@@ -27,7 +27,9 @@ InternalReadStream >> atEnd [
 
 { #category : #configuration }
 InternalReadStream >> beUnicode [
-	self isUnicode ifTrue: [^self].	contents := contents asWideString.	eol := eol asWideString
+	self isUnicode ifTrue: [^self].
+	contents := contents asWideString.
+	eol := eol asWideString
 ]
 
 { #category : #accessing }
@@ -47,7 +49,11 @@ InternalReadStream >> collectorClass [
 
 { #category : #private }
 InternalReadStream >> collectorOfSize: anInteger [
-	| collector |	collector := contents class new: anInteger.	collector size < anInteger		ifTrue: [collector addAll: (Array new: anInteger - collector size)].	^collector
+	| collector |
+	collector := contents class new: anInteger.
+	collector size < anInteger
+		ifTrue: [collector addAll: (Array new: anInteger - collector size)].
+	^collector
 ]
 
 { #category : #accessing }
@@ -67,7 +73,9 @@ InternalReadStream >> eol: aString [
 
 { #category : #initialization }
 InternalReadStream >> initialize [
-	super initialize.	eol := ''
+	super initialize.
+	eol := '
+'
 ]
 
 { #category : #testing }
@@ -92,7 +100,9 @@ InternalReadStream >> lineDelimiter [
 
 { #category : #accessing }
 InternalReadStream >> lineDelimiter: aCharacter [
-	eol := (aCharacter isCharacter and: [aCharacter isCr])		ifTrue: [aCharacter , aCharacter class lf]		ifFalse: [aCharacter asString]
+	eol := (aCharacter isCharacter and: [aCharacter isCr])
+		ifTrue: [aCharacter , aCharacter class lf]
+		ifFalse: [aCharacter asString]
 ]
 
 { #category : #accessing }
@@ -102,42 +112,79 @@ InternalReadStream >> lineDelimiters: aString [
 
 { #category : #reading }
 InternalReadStream >> next [
-	limit notNil ifTrue: [		position < limit ifFalse: [self readingError].		position := position + 1.		^contents at: position].	position := position + 1.	^contents at: position ifAbsent: [		position := position - 1.		self readingError]
+	limit notNil ifTrue: [
+		position < limit ifFalse: [self readingError].
+		position := position + 1.
+		^contents at: position].
+	position := position + 1.
+	^contents at: position ifAbsent: [
+		position := position - 1.
+		self readingError]
 ]
 
 { #category : #reading }
 InternalReadStream >> next: n [
-	| end result |	end := position + n.	^end > limit		ifTrue: [			position := limit.			self readingError]		ifFalse: [			result := contents copyFrom: position + 1 to: end.			position := end.			result]
+	| end result |
+	end := position + n.
+	^end > limit
+		ifTrue: [
+			position := limit.
+			self readingError]
+		ifFalse: [
+			result := contents copyFrom: position + 1 to: end.
+			position := end.
+			result]
 ]
 
 { #category : #reading }
 InternalReadStream >> nextByte [
-	self atEnd ifTrue: [self readingError].	position := position + 1.	^contents byteAt: position
+	self atEnd ifTrue: [self readingError].
+	position := position + 1.
+	^contents byteAt: position
 ]
 
 { #category : #reading }
 InternalReadStream >> nextLine [
-	| delimiter line |	delimiter := eol first.	line := self upTo: delimiter.	delimiter = Cr ifTrue: [self peekFor: Lf].	^line
+	| delimiter line |
+	delimiter := eol first.
+	line := self upTo: delimiter.
+	delimiter = Cr ifTrue: [self peekFor: Lf].
+	^line
 ]
 
 { #category : #reading }
 InternalReadStream >> nextOrNil [
-	^self atEnd ifFalse: [		position := position + 1.		contents at: position]
+	^self atEnd ifFalse: [
+		position := position + 1.
+		contents at: position]
 ]
 
 { #category : #marshalling }
 InternalReadStream >> nextULong [
-	(self isBinary or: [contents class == String]) ifTrue: [		position := position + 4.		position > limit ifTrue: [			position := limit.			self readingError].		^contents uLongAtOffset: position - 4].	^super nextULong
+	(self isBinary or: [contents class == String]) ifTrue: [
+		position := position + 4.
+		position > limit ifTrue: [
+			position := limit.
+			self readingError].
+		^contents uLongAtOffset: position - 4].
+	^super nextULong
 ]
 
 { #category : #private }
 InternalReadStream >> on: aCollection [
-	contents := aCollection.	position := 0.	limit := contents size.	aCollection isString ifTrue: [self updateEol]
+	contents := aCollection.
+	position := 0.
+	limit := contents size.
+	aCollection isString ifTrue: [self updateEol]
 ]
 
 { #category : #private }
 InternalReadStream >> on: aCollection from: anInteger to: anotherInteger [
-	| n |	contents := aCollection.	n := contents size.	limit := anotherInteger min: n.	position := anInteger <= 1 ifTrue: [0] ifFalse: [anInteger - 1]
+	| n |
+	contents := aCollection.
+	n := contents size.
+	limit := anotherInteger min: n.
+	position := anInteger <= 1 ifTrue: [0] ifFalse: [anInteger - 1]
 ]
 
 { #category : #peeking }
@@ -162,7 +209,16 @@ InternalReadStream >> position: anInteger [
 
 { #category : #services }
 InternalReadStream >> readInto: aByteArray from: start to: stop [
-	| end |	end := position + stop - start + 1.	end > limit ifTrue: [^self readingError].	aByteArray		replaceBytesFrom: start		to: stop		with: contents		startingAt: position + 1.	position := end.	^aByteArray
+	| end |
+	end := position + stop - start + 1.
+	end > limit ifTrue: [^self readingError].
+	aByteArray
+		replaceBytesFrom: start
+		to: stop
+		with: contents
+		startingAt: position + 1.
+	position := end.
+	^aByteArray
 ]
 
 { #category : #accessing }
@@ -172,7 +228,8 @@ InternalReadStream >> readLimit: anInteger [
 
 { #category : #positioning }
 InternalReadStream >> setToEnd [
-	limit := contents size.	position := self size
+	limit := contents size.
+	position := self size
 ]
 
 { #category : #accessing }
@@ -182,7 +239,13 @@ InternalReadStream >> size [
 
 { #category : #positioning }
 InternalReadStream >> skipTo: token [
-	| index |	index := contents		indexOf: token		startingAt: position + 1		ifAbsent: [^super skipTo: token].	self skip: index - position.	^true
+	| index |
+	index := contents
+		indexOf: token
+		startingAt: position + 1
+		ifAbsent: [^super skipTo: token].
+	self skip: index - position.
+	^true
 ]
 
 { #category : #private }
@@ -192,21 +255,50 @@ InternalReadStream >> updateEol [
 
 { #category : #reading }
 InternalReadStream >> upTo: token [
-	| pos found offset |	pos := position.	found := self skipTo: token.	offset := found ifTrue: [1] ifFalse: [0].	^contents copyFrom: pos + 1 to: position - offset
+	| pos found offset |
+	pos := position.
+	found := self skipTo: token.
+	offset := found ifTrue: [1] ifFalse: [0].
+	^contents copyFrom: pos + 1 to: position - offset
 ]
 
 { #category : #parsing }
 InternalReadStream >> upToAll: aCollection [
-	"	(InternalReadStream on: 'Smalltalk') upToAll: 'al'	"	aCollection size > 1		ifTrue: [^self upToAll: aCollection td1: aCollection td1].	aCollection size = 0 ifTrue: [^self upToEnd].	^self upTo: aCollection first
+	"
+	(InternalReadStream on: 'Smalltalk') upToAll: 'al'
+	"
+	aCollection size > 1
+		ifTrue: [^self upToAll: aCollection td1: aCollection td1].
+	aCollection size = 0 ifTrue: [^self upToEnd].
+	^self upTo: aCollection first
 ]
 
 { #category : #parsing }
 InternalReadStream >> upToAll: aCollection td1: td1 [
-	"	'hola' readStream upToAll: 'ol' td1: 'ol' td1	"	| index string |	index := contents		indexOfSubcollection: aCollection		from: position + 1		to: limit		td1: td1.	index = 0 ifTrue: [^self upToEnd].	string := self next: index - position - 1.	self skip: aCollection size.	^string
+	"
+	'hola' readStream upToAll: 'ol' td1: 'ol' td1
+	"
+	| index string |
+	index := contents
+		indexOfSubcollection: aCollection
+		from: position + 1
+		to: limit
+		td1: td1.
+	index = 0 ifTrue: [^self upToEnd].
+	string := self next: index - position - 1.
+	self skip: aCollection size.
+	^string
 ]
 
 { #category : #reading }
 InternalReadStream >> upToSeparator [
-	| writer ch |	writer := InternalWriteStream on: self newCollector.	[		self atEnd or: [			ch := self next.			ch isBlank]]		whileFalse: [writer nextPut: ch].	^writer contents
+	| writer ch |
+	writer := InternalWriteStream on: self newCollector.
+	[
+		self atEnd or: [
+			ch := self next.
+			ch isBlank]]
+		whileFalse: [writer nextPut: ch].
+	^writer contents
 ]
 

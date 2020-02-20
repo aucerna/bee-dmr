@@ -6,7 +6,8 @@ Class {
 
 { #category : #comparing }
 OrderedDictionary >> = aCollection [
-	super = aCollection ifFalse: [^false].	^self keys = aCollection keys
+	super = aCollection ifFalse: [^false].
+	^self keys = aCollection keys
 ]
 
 { #category : #'adding / removing' }
@@ -16,7 +17,17 @@ OrderedDictionary >> add: anAssociation at: anInteger [
 
 { #category : #accessing }
 OrderedDictionary >> at: key index: anInteger put: anObject [
-	| assoc |	assoc := self associationClass key: key value: anObject.	assoc := table atKey: key put: assoc.	assoc == nil		ifTrue: [			self incrementTally.			table moveLastTo: anInteger]		ifFalse: [			assoc value: anObject.			table move: assoc to: anInteger].	^anObject
+	| assoc |
+	assoc := self associationClass key: key value: anObject.
+	assoc := table atKey: key put: assoc.
+	assoc == nil
+		ifTrue: [
+			self incrementTally.
+			table moveLastTo: anInteger]
+		ifFalse: [
+			assoc value: anObject.
+			table move: assoc to: anInteger].
+	^anObject
 ]
 
 { #category : #accessing }
@@ -31,7 +42,8 @@ OrderedDictionary >> compress [
 
 { #category : #enumerating }
 OrderedDictionary >> do: aBlock [
-	(tally > 10 and: [1.5 * tally < table totalSize]) ifTrue: [self compress].	super do: [:assoc | aBlock evaluateWith: assoc]
+	(tally > 10 and: [1.5 * tally < table totalSize]) ifTrue: [self compress].
+	super do: [:assoc | aBlock evaluateWith: assoc]
 ]
 
 { #category : #accessing }
@@ -66,7 +78,9 @@ OrderedDictionary >> last [
 
 { #category : #removing }
 OrderedDictionary >> remove: anObject ifAbsent: aBlock [
-	table removeObject: anObject ifAbsent: aBlock.	tally := tally - 1.	^anObject
+	table removeObject: anObject ifAbsent: aBlock.
+	tally := tally - 1.
+	^anObject
 ]
 
 { #category : #enumerating }
@@ -76,11 +90,18 @@ OrderedDictionary >> reverseDo: aBlock [
 
 { #category : #accessing }
 OrderedDictionary >> values [
-	| values |	values := Array new: tally.	self withIndexDo: [:each :i | values at: i put: each].	^values
+	| values |
+	values := Array new: tally.
+	self withIndexDo: [:each :i | values at: i put: each].
+	^values
 ]
 
 { #category : #enumerating }
 OrderedDictionary >> withIndexDo: aBlock [
-	| i |	i := 1.	self do: [:each | 		aBlock value: each value: i.		i := i + 1]
+	| i |
+	i := 1.
+	self do: [:each | 
+		aBlock value: each value: i.
+		i := i + 1]
 ]
 

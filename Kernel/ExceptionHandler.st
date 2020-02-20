@@ -23,27 +23,50 @@ ExceptionHandler class >> shouldBeHidden: aSymbol [
 
 { #category : #handling }
 ExceptionHandler >> evaluateFor: anException [
-	^handlerBlock argumentCount = 0		ifTrue: [handlerBlock value]		ifFalse: [handlerBlock value: anException]
+	^handlerBlock argumentCount = 0
+		ifTrue: [handlerBlock value]
+		ifFalse: [handlerBlock value: anException]
 ]
 
 { #category : #activation }
 ExceptionHandler >> evaluateProtectedBlock [
-	return := [:result | ^result].	^protectedBlock value
+	return := [:result | ^result].
+	^protectedBlock value
 ]
 
 { #category : #handling }
 ExceptionHandler >> findHandlerFor: anException [
-	| handler |	handler := self.	[handler notNil] whileTrue: [		(handler handles: anException) ifTrue: [^handler].		handler := handler nextHandler].	^nil
+	| handler |
+	handler := self.
+	[handler notNil] whileTrue: [
+		(handler handles: anException) ifTrue: [^handler].
+		handler := handler nextHandler].
+	^nil
 ]
 
 { #category : #handling }
 ExceptionHandler >> handle: anException [
-	| result |	ActiveProcess		useExceptionHandler: previous		while: [result := self evaluateFor: anException].	anException reset.	self return: result
+	| result |
+	ActiveProcess
+		useExceptionHandler: previous
+		while: [result := self evaluateFor: anException].
+	anException reset.
+	self return: result
 ]
 
 { #category : #activation }
 ExceptionHandler >> handle: exceptionClass with: hBlock during: pBlock [
-	| result |	filter := exceptionClass.	handlerBlock := hBlock.	protectedBlock := pBlock.	previous := ActiveProcess exceptionHandler.	ActiveProcess		useExceptionHandler: self		while: [[			result := self evaluateProtectedBlock.			self shouldRetry: result] whileTrue].	^result
+	| result |
+	filter := exceptionClass.
+	handlerBlock := hBlock.
+	protectedBlock := pBlock.
+	previous := ActiveProcess exceptionHandler.
+	ActiveProcess
+		useExceptionHandler: self
+		while: [[
+			result := self evaluateProtectedBlock.
+			self shouldRetry: result] whileTrue].
+	^result
 ]
 
 { #category : #testing }
@@ -73,7 +96,8 @@ ExceptionHandler >> retryToken [
 
 { #category : #handling }
 ExceptionHandler >> retryUsing: aBlock [
-	protectedBlock := aBlock.	self retry
+	protectedBlock := aBlock.
+	self retry
 ]
 
 { #category : #handling }

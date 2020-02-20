@@ -9,7 +9,11 @@ Class {
 
 { #category : #accessing }
 Metaclass >> beSubclassOf: aClass [
-	| md |	format := aClass format.	superclass := aClass.	md := MethodDictionary new: 2.	instanceBehavior := Behavior with: md withAll: aClass instanceBehavior
+	| md |
+	format := aClass format.
+	superclass := aClass.
+	md := MethodDictionary new: 2.
+	instanceBehavior := Behavior with: md withAll: aClass instanceBehavior
 	instanceBehavior classBinding: self.
 ]
 
@@ -70,12 +74,18 @@ Metaclass >> subclasses [
 
 { #category : #accessing }
 Metaclass >> subclasses: aCollection [
-	"	do nothing	"	
+	"
+	do nothing
+	"
+	
 ]
 
 { #category : #accessing }
 Metaclass >> subclassesDo: aBlock [
-	class isNil ifTrue: [^self].	class subclasses		select: [:cls | cls notNil]		thenDo: [:cls | aBlock value: cls class]
+	class isNil ifTrue: [^self].
+	class subclasses
+		select: [:cls | cls notNil]
+		thenDo: [:cls | aBlock value: cls class]
 ]
 
 { #category : #accessing }

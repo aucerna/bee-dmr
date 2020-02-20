@@ -41,7 +41,8 @@ Ephemeron >> hash [
 
 { #category : #initialization }
 Ephemeron >> initialize [
-	super initialize.	self activate
+	super initialize.
+	self activate
 ]
 
 { #category : #accessing }
@@ -56,12 +57,16 @@ Ephemeron >> key: anObject [
 
 { #category : #accessing }
 Ephemeron >> key: anObject value: aDictionary [
-	key := anObject.	value := aDictionary
+	key := anObject.
+	value := aDictionary
 ]
 
 { #category : #printing }
 Ephemeron >> printOn: aStream [
-	aStream		print: key;		nextPutAll: ' → ';		print: value
+	aStream
+		print: key;
+		nextPutAll: ' → ';
+		print: value
 ]
 
 { #category : #accessing }

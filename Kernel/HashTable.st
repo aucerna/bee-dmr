@@ -14,8 +14,12 @@ Class {
 
 { #category : #initialization }
 HashTable class >> initialize [
-	"	HashTable initialize.
-	"	super initialize.	NilToken := Object new.	self initializeSizes
+	"
+	HashTable initialize.
+	"
+	super initialize.
+	NilToken := Object new.
+	self initializeSizes
 ]
 
 { #category : #inquiries }
@@ -94,27 +98,38 @@ HashTable >> associationClass [
 
 { #category : #private }
 HashTable >> at: index put: anObject [
-	| element |	element := anObject ifNil: [NilToken].	^self basicAt: index put: element
+	| element |
+	element := anObject ifNil: [NilToken].
+	^self basicAt: index put: element
 ]
 
 { #category : #private }
 HashTable >> atKey: key hash: hash put: element [
-	| index |	index := self indexOfKey: key hash: hash.	^self at: index key: key put: element
+	| index |
+	index := self indexOfKey: key hash: hash.
+	^self at: index key: key put: element
 ]
 
 { #category : #accessing }
 HashTable >> atKey: key put: element [
-	| hash |	hash := self hashFor: key.	^self atKey: key hash: hash put: element
+	| hash |
+	hash := self hashFor: key.
+	^self atKey: key hash: hash put: element
 ]
 
 { #category : #accessing }
 HashTable >> atKey: key sum: magnitude [
-	| hash |	hash := self hashFor: key.	^self atKey: key hash: hash sum: magnitude
+	| hash |
+	hash := self hashFor: key.
+	^self atKey: key hash: hash sum: magnitude
 ]
 
 { #category : #private }
 HashTable >> beWeak [
-	| empty |	empty := self emptySlot.	self withIndexDo: [:v :i | v isNil ifTrue: [self basicAt: i put: empty]].	super beWeak
+	| empty |
+	empty := self emptySlot.
+	self withIndexDo: [:v :i | v isNil ifTrue: [self basicAt: i put: empty]].
+	super beWeak
 ]
 
 { #category : #private }
@@ -134,7 +149,13 @@ HashTable >> clearSlot: anInteger with: emptySlot [
 
 { #category : #private }
 HashTable >> clearSlots: indexes ifAbsent: absentBlock [
-	| empty |	empty := self emptySlot.	indexes do: [:i | | v |		v := self at: i.		(v == nil or: [v == empty])			ifTrue: [absentBlock value]			ifFalse: [self clearSlot: i with: empty]]
+	| empty |
+	empty := self emptySlot.
+	indexes do: [:i | | v |
+		v := self at: i.
+		(v == nil or: [v == empty])
+			ifTrue: [absentBlock value]
+			ifFalse: [self clearSlot: i with: empty]]
 ]
 
 { #category : #enumerating }
@@ -149,12 +170,22 @@ HashTable >> emptySlot [
 
 { #category : #private }
 HashTable >> equates: anObject1 with: anObject2 [
-	^policy notNil		ifTrue: [policy equates: anObject1 with: anObject2]		ifFalse: [anObject1 = anObject2]
+	^policy notNil
+		ifTrue: [policy equates: anObject1 with: anObject2]
+		ifFalse: [anObject1 = anObject2]
 ]
 
 { #category : #accessing }
 HashTable >> findFirst: aBlock startingAt: index [
-	| n i first slots |	n := self size.	first := i := index.	slots := self slotsPerElement.	[aBlock evaluateWith: (self at: i)] whileFalse: [		i := i + slots.		i > n ifTrue: [i := 1].		i = first ifTrue: [self error: 'element not found']].	^i
+	| n i first slots |
+	n := self size.
+	first := i := index.
+	slots := self slotsPerElement.
+	[aBlock evaluateWith: (self at: i)] whileFalse: [
+		i := i + slots.
+		i > n ifTrue: [i := 1].
+		i = first ifTrue: [self error: 'element not found']].
+	^i
 ]
 
 { #category : #private }
@@ -164,7 +195,9 @@ HashTable >> hashFor: anObject [
 
 { #category : #private }
 HashTable >> indexOf: key [
-	| hash |	hash := self hashFor: key.	^self indexOfHash: hash
+	| hash |
+	hash := self hashFor: key.
+	^self indexOfHash: hash
 ]
 
 { #category : #private }
@@ -174,12 +207,22 @@ HashTable >> indexOfHash: integer [
 
 { #category : #private }
 HashTable >> indexOfKey: key [
-	| hash |	hash := self hashFor: key.	^self indexOfKey: key hash: hash
+	| hash |
+	hash := self hashFor: key.
+	^self indexOfKey: key hash: hash
 ]
 
 { #category : #private }
 HashTable >> indexOfKey: key hash: hash [
-	| first empty |	first := self indexOfHash: hash.	empty := self emptySlot.	^self		findFirst: [:obj | 			obj == nil or: [obj == empty] or: [| k |				k := obj == NilToken ifFalse: [obj].				self equates: key with: k]]		startingAt: first
+	| first empty |
+	first := self indexOfHash: hash.
+	empty := self emptySlot.
+	^self
+		findFirst: [:obj | 
+			obj == nil or: [obj == empty] or: [| k |
+				k := obj == NilToken ifFalse: [obj].
+				self equates: key with: k]]
+		startingAt: first
 ]
 
 { #category : #private }
@@ -199,7 +242,17 @@ HashTable >> lookupKey: key [
 
 { #category : #accessing }
 HashTable >> lookupKey: key ifAbsent: aBlock [
-	| index hash first empty |	hash := self hashFor: key.	first := self indexOfHash: hash.	empty := self emptySlot.	index := self		findFirst: [:obj | 			obj == empty or: [| k |				k := obj == NilToken ifFalse: [obj].				self equates: key with: k]]		startingAt: first.	^self valueAt: index ifAbsent: aBlock
+	| index hash first empty |
+	hash := self hashFor: key.
+	first := self indexOfHash: hash.
+	empty := self emptySlot.
+	index := self
+		findFirst: [:obj | 
+			obj == empty or: [| k |
+				k := obj == NilToken ifFalse: [obj].
+				self equates: key with: k]]
+		startingAt: first.
+	^self valueAt: index ifAbsent: aBlock
 ]
 
 { #category : #accessing }
@@ -209,7 +262,9 @@ HashTable >> lookupValue: key ifAbsent: aBlock [
 
 { #category : #accessing }
 HashTable >> lookUpValue: key ifAbsent: aBlock ifPresent: pBlock [
-	| v |	v := self lookupValue: key ifAbsent: [^aBlock value].	^pBlock arity = 1 ifTrue: [pBlock evaluateWith: v] ifFalse: [pBlock value]
+	| v |
+	v := self lookupValue: key ifAbsent: [^aBlock value].
+	^pBlock arity = 1 ifTrue: [pBlock evaluateWith: v] ifFalse: [pBlock value]
 ]
 
 { #category : #accessing }
@@ -239,12 +294,38 @@ HashTable >> policy: aHashTablePolicy [
 
 { #category : #private }
 HashTable >> rehash: indexes [
-	| n index empty |	n := self size.	index := 1.	empty := self emptySlot.	indexes sort do: [:j | | v |		index := j max: index.		[			index := index = n ifTrue: [1] ifFalse: [index + 1].			v := self at: index.			v == nil or: [v == empty]]			whileFalse: [| k i |				k := self keyFor: v.				i := self indexOfKey: k.				v := self basicAt: i.				(v == nil or: [v == empty]) ifTrue: [self moveSlot: index to: i]]]
+	| n index empty |
+	n := self size.
+	index := 1.
+	empty := self emptySlot.
+	indexes sort do: [:j | | v |
+		index := j max: index.
+		[
+			index := index = n ifTrue: [1] ifFalse: [index + 1].
+			v := self at: index.
+			v == nil or: [v == empty]]
+			whileFalse: [| k i |
+				k := self keyFor: v.
+				i := self indexOfKey: k.
+				v := self basicAt: i.
+				(v == nil or: [v == empty]) ifTrue: [self moveSlot: index to: i]]]
 ]
 
 { #category : #private }
 HashTable >> rehashFrom: index1 to: index2 [
-	| max empty n |	max := index2.	empty := self emptySlot.	n := self size.	self		withIndexDo: [:obj :i | | j v k |			i = n ifTrue: [max := 0].			(obj == empty and: [i > max]) ifTrue: [^self].			k := self keyFor: obj.			j := self indexOfKey: k.			v := self basicAt: j.			(v == nil or: [v == empty]) ifTrue: [self moveSlot: i to: j]]		startingAt: index1
+	| max empty n |
+	max := index2.
+	empty := self emptySlot.
+	n := self size.
+	self
+		withIndexDo: [:obj :i | | j v k |
+			i = n ifTrue: [max := 0].
+			(obj == empty and: [i > max]) ifTrue: [^self].
+			k := self keyFor: obj.
+			j := self indexOfKey: k.
+			v := self basicAt: j.
+			(v == nil or: [v == empty]) ifTrue: [self moveSlot: i to: j]]
+		startingAt: index1
 ]
 
 { #category : #private }
@@ -254,22 +335,70 @@ HashTable >> removeAll [
 
 { #category : #removing }
 HashTable >> removeKey: key ifAbsent: aBlock [
-	| index empty object |	index := self indexOfKey: key.	empty := self emptySlot.	object := self basicAt: index.	object == nil ifTrue: [^aBlock value].	object == empty ifTrue: [^aBlock value].	self clearSlot: index.	index := index + self slotsPerElement.	index > self size ifTrue: [index := 1].	self		withIndexDo: [:obj :i | | j v k |			obj == empty ifTrue: [^self].			k := self keyFor: obj.			j := self indexOfKey: k.			v := self basicAt: j.			(v == nil or: [v == empty]) ifTrue: [self moveSlot: i to: j]]		startingAt: index
+	| index empty object |
+	index := self indexOfKey: key.
+	empty := self emptySlot.
+	object := self basicAt: index.
+	object == nil ifTrue: [^aBlock value].
+	object == empty ifTrue: [^aBlock value].
+	self clearSlot: index.
+	index := index + self slotsPerElement.
+	index > self size ifTrue: [index := 1].
+	self
+		withIndexDo: [:obj :i | | j v k |
+			obj == empty ifTrue: [^self].
+			k := self keyFor: obj.
+			j := self indexOfKey: k.
+			v := self basicAt: j.
+			(v == nil or: [v == empty]) ifTrue: [self moveSlot: i to: j]]
+		startingAt: index
 ]
 
 { #category : #private }
 HashTable >> removeKeys: keys ifAbsent: absentBlock [
-	| indexes min max |	keys isEmpty ifTrue: [^self].	min := self size + 1.	max := 0.	indexes := keys		collect: [:k | | index |			index := self indexOfKey: k.			index < min ifTrue: [min := index].			max < index ifTrue: [max := index].			index]		in: OrderedCollection new.	self clearSlots: indexes ifAbsent: absentBlock.	indexes size <= 1000		ifTrue: [self rehash: indexes]		ifFalse: [self rehashFrom: min to: max]
+	| indexes min max |
+	keys isEmpty ifTrue: [^self].
+	min := self size + 1.
+	max := 0.
+	indexes := keys
+		collect: [:k | | index |
+			index := self indexOfKey: k.
+			index < min ifTrue: [min := index].
+			max < index ifTrue: [max := index].
+			index]
+		in: OrderedCollection new.
+	self clearSlots: indexes ifAbsent: absentBlock.
+	indexes size <= 1000
+		ifTrue: [self rehash: indexes]
+		ifFalse: [self rehashFrom: min to: max]
 ]
 
 { #category : #replacing }
-HashTable >> replaceBackwardFrom: stopto: startwith: aCollectionstartingAt: position [
-	| i j |	i := stop.	j := position.	[start <= i] whileTrue: [		self basicAt: i put: (aCollection at: j).		i := i - 1.		j := j - 1]
+HashTable >> replaceBackwardFrom: stop
+to: start
+with: aCollection
+startingAt: position [
+	| i j |
+	i := stop.
+	j := position.
+	[start <= i] whileTrue: [
+		self basicAt: i put: (aCollection at: j).
+		i := i - 1.
+		j := j - 1]
 ]
 
 { #category : #replacing }
-HashTable >> replaceForwardFrom: startto: stopwith: aCollectionstartingAt: position [
-	| i j |	i := start.	j := position.	[i <= stop] whileTrue: [		self basicAt: i put: (aCollection at: j).		i := i + 1.		j := j + 1]
+HashTable >> replaceForwardFrom: start
+to: stop
+with: aCollection
+startingAt: position [
+	| i j |
+	i := start.
+	j := position.
+	[i <= stop] whileTrue: [
+		self basicAt: i put: (aCollection at: j).
+		i := i + 1.
+		j := j + 1]
 ]
 
 { #category : #removing }
@@ -279,11 +408,23 @@ HashTable >> slotsPerElement [
 
 { #category : #accessing }
 HashTable >> valueAt: index ifAbsent: aBlock [
-	| value |	value := self at: index.	value == nil ifTrue: [^aBlock value].	value == self emptySlot ifTrue: [^aBlock value].	^value == NilToken ifFalse: [value]
+	| value |
+	value := self at: index.
+	value == nil ifTrue: [^aBlock value].
+	value == self emptySlot ifTrue: [^aBlock value].
+	^value == NilToken ifFalse: [value]
 ]
 
 { #category : #removing }
 HashTable >> withIndexDo: aBlock startingAt: anInteger [
-	| n i first slots |	n := self size.	first := i := anInteger.	slots := self slotsPerElement.	[		aBlock evaluateWith: (self at: i) with: i.		i := i + slots.		i > n ifTrue: [i := 1].		i = first] whileFalse
+	| n i first slots |
+	n := self size.
+	first := i := anInteger.
+	slots := self slotsPerElement.
+	[
+		aBlock evaluateWith: (self at: i) with: i.
+		i := i + slots.
+		i > n ifTrue: [i := 1].
+		i = first] whileFalse
 ]
 

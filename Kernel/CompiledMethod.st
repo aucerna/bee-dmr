@@ -23,7 +23,16 @@ CompiledMethod class >> aspects [
 
 { #category : #initialization }
 CompiledMethod class >> initializeFlags [
-	Flags := PoolDictionary newConstantPool.	Flags		at: 'ArgCount' put: (1 thru: 6);		at: 'BlockCount' put: (7 thru: 17);		at: 'TempCount' put: (18 thru: 28);		at: 'TypeField' put: (29 thru: 31);		at: 'Debuggable' put: (1 bitShift: 28);		at: 'DMR' put: (1 bitShift: 29);		at: 'HasBlock'		put: ((1 bitShift: 30) negated bitAnd: 16r7FFFFFFF) negated
+	Flags := PoolDictionary newConstantPool.
+	Flags
+		at: 'ArgCount' put: (1 thru: 6);
+		at: 'BlockCount' put: (7 thru: 17);
+		at: 'TempCount' put: (18 thru: 28);
+		at: 'TypeField' put: (29 thru: 31);
+		at: 'Debuggable' put: (1 bitShift: 28);
+		at: 'DMR' put: (1 bitShift: 29);
+		at: 'HasBlock'
+		put: ((1 bitShift: 30) negated bitAnd: 16r7FFFFFFF) negated
 ]
 
 { #category : #initialization }
@@ -48,12 +57,15 @@ CompiledMethod class >> maxTempCount [
 
 { #category : #'instance creation' }
 CompiledMethod class >> new: anInteger [
-	| cm |	cm := super new: anInteger.	^cm initialize
+	| cm |
+	cm := super new: anInteger.
+	^cm initialize
 ]
 
 { #category : #comparing }
 CompiledMethod >> ~ aCompiledMethod [
-	self literals = aCompiledMethod literals ifFalse: [^false].	^bytecodes = aCompiledMethod bytecodes
+	self literals = aCompiledMethod literals ifFalse: [^false].
+	^bytecodes = aCompiledMethod bytecodes
 ]
 
 { #category : #comparing }
@@ -63,7 +75,10 @@ CompiledMethod >> = anObject [
 
 { #category : #queries }
 CompiledMethod >> addSymbolsIn: anArray to: aSet [
-	anArray do: [:elem | 		elem isSymbol			ifTrue: [aSet add: elem]			ifFalse: [elem class == Array ifTrue: [self addSymbolsIn: elem to: aSet]]]
+	anArray do: [:elem | 
+		elem isSymbol
+			ifTrue: [aSet add: elem]
+			ifFalse: [elem class == Array ifTrue: [self addSymbolsIn: elem to: aSet]]]
 ]
 
 { #category : #accessing }
@@ -93,17 +108,21 @@ CompiledMethod >> blockCount [
 
 { #category : #accessing }
 CompiledMethod >> blockCount: anInteger [
-	anInteger > 0 ifTrue: [format := format bitOr: HasBlock].	format := format bitsAt: BlockCount put: anInteger
+	anInteger > 0 ifTrue: [format := format bitOr: HasBlock].
+	format := format bitsAt: BlockCount put: anInteger
 ]
 
 { #category : #enumerating }
 CompiledMethod >> blocks [
-	self hasBlocks ifFalse: [^#()].	^self select: [:literal | literal isBlock]
+	self hasBlocks ifFalse: [^#()].
+	^self select: [:literal | literal isBlock]
 ]
 
 { #category : #enumerating }
 CompiledMethod >> blocksDo: aBlock [
-	self		select: [:b | b isBlock and: [b method == self]]		thenDo: [:b | aBlock evaluateWith: b]
+	self
+		select: [:b | b isBlock and: [b method == self]]
+		thenDo: [:b | aBlock evaluateWith: b]
 ]
 
 { #category : #accessing }
@@ -143,12 +162,20 @@ CompiledMethod >> dmrVersion [
 
 { #category : #accessing }
 CompiledMethod >> environmentSize [
-	"	should be stored in the flags	"	^bytecodes first = 0 ifTrue: [bytecodes second] ifFalse: [0]
+	"
+	should be stored in the flags
+	"
+	^bytecodes first = 0 ifTrue: [bytecodes second] ifFalse: [0]
 ]
 
 { #category : #evaluation }
 CompiledMethod >> executeOn: receiver withArguments: anArray [
-	| size |	self prepareForExecution.	size := anArray basicSize.	self argumentCount = size ifFalse: [^self error: 'incorrect arity'].	anArray _expandInStackSized: size.	^receiver _invoke: self validNativeCodeAddress _asNative
+	| size |
+	self prepareForExecution.
+	size := anArray basicSize.
+	self argumentCount = size ifFalse: [^self error: 'incorrect arity'].
+	anArray _expandInStackSized: size.
+	^receiver _invoke: self validNativeCodeAddress _asNative
 ]
 
 { #category : #accessing }
@@ -183,7 +210,8 @@ CompiledMethod >> hasNativeCode [
 
 { #category : #initialization }
 CompiledMethod >> initialize [
-	super initialize.	format := 0
+	super initialize.
+	format := 0
 ]
 
 { #category : #actions }
@@ -193,7 +221,8 @@ CompiledMethod >> install [
 
 { #category : #accessing }
 CompiledMethod >> invalidateNativeCode [
-	nativeCode := nil.	self blocksDo: [:b | b invalidateNativeCode]
+	nativeCode := nil.
+	self blocksDo: [:b | b invalidateNativeCode]
 ]
 
 { #category : #testing }
@@ -248,7 +277,13 @@ CompiledMethod >> isOverridden [
 
 { #category : #accessing }
 CompiledMethod >> literalIndexFrom: grossIndex [
-	| instVars index |	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].	instVars := self class instSize.	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])		ifFalse: [^self outOfBoundsIndex: grossIndex].	index := grossIndex + instVars.	^index
+	| instVars index |
+	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].
+	instVars := self class instSize.
+	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])
+		ifFalse: [^self outOfBoundsIndex: grossIndex].
+	index := grossIndex + instVars.
+	^index
 ]
 
 { #category : #accessing }
@@ -273,7 +308,8 @@ CompiledMethod >> nativeCode: code [
 
 { #category : #accessing }
 CompiledMethod >> nativeCodeAddress [
-	nativeCode isNil ifTrue: [self nativize].	nativeCode nativeCodeAddress
+	nativeCode isNil ifTrue: [self nativize].
+	nativeCode nativeCodeAddress
 ]
 
 { #category : #services }
@@ -283,12 +319,21 @@ CompiledMethod >> nativize [
 
 { #category : #copying }
 CompiledMethod >> postCopy [
-	super postCopy.	self		withIndexDo: [:b :i | | c |			b isBlock ifTrue: [				c := b copy method: self.				self at: i put: c]];		updateNativeCode
+	super postCopy.
+	self
+		withIndexDo: [:b :i | | c |
+			b isBlock ifTrue: [
+				c := b copy method: self.
+				self at: i put: c]];
+		updateNativeCode
 ]
 
 { #category : #unclassified }
 CompiledMethod >> prepareForExecution [
-	self isNativized ifFalse: [self nativize].	nativeCode isFresh ifFalse: [		nativeCode acquireReferences.		self refreshBlocks]
+	self isNativized ifFalse: [self nativize].
+	nativeCode isFresh ifFalse: [
+		nativeCode acquireReferences.
+		self refreshBlocks]
 ]
 
 { #category : #accessing }
@@ -298,12 +343,19 @@ CompiledMethod >> primitiveNumber [
 
 { #category : #printing }
 CompiledMethod >> printOn: aStream [
-	aStream		print: class;		nextPutAll: '>>';		print: selector
+	aStream
+		print: class;
+		nextPutAll: '>>';
+		print: selector
 ]
 
 { #category : #unclassified }
 CompiledMethod >> refreshBlocks [
-	| blocks |	blocks := self blocks.	1 to: blocks size do: [:index | | block |		block := blocks at: index.		block nativeCode refresh]
+	| blocks |
+	blocks := self blocks.
+	1 to: blocks size do: [:index | | block |
+		block := blocks at: index.
+		block nativeCode refresh]
 ]
 
 { #category : #accessing }
@@ -313,7 +365,8 @@ CompiledMethod >> selector [
 
 { #category : #accessing }
 CompiledMethod >> selector: aSymbol [
-	selector := aSymbol.	nativeCode notNil ifTrue: [self invalidateNativeCode; nativize]
+	selector := aSymbol.
+	nativeCode notNil ifTrue: [self invalidateNativeCode; nativize]
 ]
 
 { #category : #accessing }
@@ -343,22 +396,29 @@ CompiledMethod >> tempCount: anInteger [
 
 { #category : #accessing }
 CompiledMethod >> timestamp [
-	| s |	s := self sourceReference.	^(s respondsTo: #timestamp) ifTrue: [s timestamp]
+	| s |
+	s := self sourceReference.
+	^(s respondsTo: #timestamp) ifTrue: [s timestamp]
 ]
 
 { #category : #accessing }
 CompiledMethod >> type [
-	self ASSERT: false.	^format bitsAt: TypeField
+	self ASSERT: false.
+	^format bitsAt: TypeField
 ]
 
 { #category : #accessing }
 CompiledMethod >> type: anInteger [
-	self ASSERT: false.	format := format bitsAt: TypeField put: anInteger.	anInteger > 3		ifTrue: [format := (format negated bitAnd: 16r7FFFFFFF) negated]
+	self ASSERT: false.
+	format := format bitsAt: TypeField put: anInteger.
+	anInteger > 3
+		ifTrue: [format := (format negated bitAnd: 16r7FFFFFFF) negated]
 ]
 
 { #category : #accessing }
 CompiledMethod >> updateNativeCode [
-	nativeCode ifNil: [^self].	self invalidateNativeCode; prepareForExecution
+	nativeCode ifNil: [^self].
+	self invalidateNativeCode; prepareForExecution
 ]
 
 { #category : #unclassified }

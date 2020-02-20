@@ -19,7 +19,10 @@ Character class >> ampersand [
 
 { #category : #private }
 Character class >> ansiTable [
-	^#(8364 0 8218 402 8222 8230 8224 8225		710 8240 352 8249 338 0 381 0 0 8216		8217 8220 8221 8226 8211 8212 732		8482 353 8250 339 0 382 376)
+	^#(8364 0 8218 402 8222 8230 8224 8225
+		710 8240 352 8249 338 0 381 0 0 8216
+		8217 8220 8221 8226 8211 8212 732
+		8482 353 8250 339 0 382 376)
 ]
 
 { #category : #'named characters' }
@@ -64,7 +67,10 @@ Character class >> cr [
 
 { #category : #services }
 Character class >> digitValue: anInteger [
-	| n offset |	n := anInteger asInteger.	offset := n < 10 ifTrue: [48] ifFalse: [55].	^self value: n + offset
+	| n offset |
+	n := anInteger asInteger.
+	offset := n < 10 ifTrue: [48] ifFalse: [55].
+	^self value: n + offset
 ]
 
 { #category : #'named characters' }
@@ -209,7 +215,10 @@ Character class >> null [
 
 { #category : #'named characters' }
 Character class >> oplus [
-	"	Character tensor	"	^8853 asCharacter
+	"
+	Character tensor
+	"
+	^8853 asCharacter
 ]
 
 { #category : #'named characters' }
@@ -254,7 +263,12 @@ Character class >> sizeInBytes [
 
 { #category : #private }
 Character class >> sortedAnsiTable [
-	^#(338 339 352 353 376 381 382		402		710 732		8211 8212 8216 8217 8218 8220 8221 8222 8224 8225 8226 8230 8240 8249 8250		8364		8482)
+	^#(338 339 352 353 376 381 382
+		402
+		710 732
+		8211 8212 8216 8217 8218 8220 8221 8222 8224 8225 8226 8230 8240 8249 8250
+		8364
+		8482)
 ]
 
 { #category : #'named characters' }
@@ -269,7 +283,10 @@ Character class >> tab [
 
 { #category : #'named characters' }
 Character class >> tensor [
-	"	Character tensor	"	^8855 asCharacter
+	"
+	Character tensor
+	"
+	^8855 asCharacter
 ]
 
 { #category : #'named characters' }
@@ -284,12 +301,18 @@ Character class >> upArrow [
 
 { #category : #'instance creation' }
 Character class >> value: anInteger [
-	^(anInteger >= 0 and: [anInteger + 1 <= ByteCharacters _size])		ifTrue: [ByteCharacters _basicAt: anInteger + 1]		ifFalse: [Character basicNew setValue: anInteger]
+	^(anInteger >= 0 and: [anInteger + 1 <= ByteCharacters _size])
+		ifTrue: [ByteCharacters _basicAt: anInteger + 1]
+		ifFalse: [Character basicNew setValue: anInteger]
 ]
 
 { #category : #arithmetic }
 Character >> - aMagnitude [
-	| subtraction |	subtraction := aMagnitude isCharacter		ifTrue: [aMagnitude asInteger]		ifFalse: [aMagnitude].	^value - subtraction
+	| subtraction |
+	subtraction := aMagnitude isCharacter
+		ifTrue: [aMagnitude asInteger]
+		ifFalse: [aMagnitude].
+	^value - subtraction
 ]
 
 { #category : #converting }
@@ -299,7 +322,11 @@ Character >> , characterOrString [
 
 { #category : #arithmetic }
 Character >> + aMagnitude [
-	| addend |	addend := aMagnitude isCharacter		ifTrue: [aMagnitude asInteger]		ifFalse: [aMagnitude].	^self class value: value + addend
+	| addend |
+	addend := aMagnitude isCharacter
+		ifTrue: [aMagnitude asInteger]
+		ifFalse: [aMagnitude].
+	^self class value: value + addend
 ]
 
 { #category : #comparing }
@@ -334,7 +361,14 @@ Character >> >= aCharacter [
 
 { #category : #converting }
 Character >> asAnsi [
-	"	8364 asCharacter asAnsi	"	| index |	value < 256 ifTrue: [^self].	index := self class ansiTable indexOf: value.	index = 0 ifTrue: [^$?].	^Character value: index + 127
+	"
+	8364 asCharacter asAnsi
+	"
+	| index |
+	value < 256 ifTrue: [^self].
+	index := self class ansiTable indexOf: value.
+	index = 0 ifTrue: [^$?].
+	^Character value: index + 127
 ]
 
 { #category : #converting }
@@ -359,12 +393,16 @@ Character >> asParameter [
 
 { #category : #converting }
 Character >> asString [
-	| class |	class := self isAnsi ifTrue: [String] ifFalse: [WideString].	^class with: self
+	| class |
+	class := self isAnsi ifTrue: [String] ifFalse: [WideString].
+	^class with: self
 ]
 
 { #category : #converting }
 Character >> asUnicode [
-	| code |	code := Ansi current decodeInteger: value.	^Character value: code
+	| code |
+	code := Ansi current decodeInteger: value.
+	^Character value: code
 ]
 
 { #category : #operations }
@@ -394,7 +432,10 @@ Character >> deepCopy [
 
 { #category : #accessing }
 Character >> digitValue [
-	self isDigit ifTrue: [^value - 48].	self isAsciiLetter ifFalse: [self error: 'Cannot calculate digitValue'].	value > 96 ifTrue: [^value - 87].	^value - 55
+	self isDigit ifTrue: [^value - 48].
+	self isAsciiLetter ifFalse: [self error: 'Cannot calculate digitValue'].
+	value > 96 ifTrue: [^value - 87].
+	^value - 55
 ]
 
 { #category : #comparing }
@@ -409,7 +450,8 @@ Character >> highByte [
 
 { #category : #testing }
 Character >> isAlphanumeric [
-	value < 256 ifTrue: [^self isLetter or: [self isDigit]].	^UserLibrary IsCharAlphaNumericW: value
+	value < 256 ifTrue: [^self isLetter or: [self isDigit]].
+	^UserLibrary IsCharAlphaNumericW: value
 ]
 
 { #category : #testing }
@@ -424,7 +466,12 @@ Character >> isAnsi [
 
 { #category : #testing }
 Character >> isAnsiCompliant [
-	"	8240 asCharacter isAnsiCompliant	"	value < 128 ifTrue: [^true].	value < 160 ifTrue: [^false].	^value < 256
+	"
+	8240 asCharacter isAnsiCompliant
+	"
+	value < 128 ifTrue: [^true].
+	value < 160 ifTrue: [^false].
+	^value < 256
 ]
 
 { #category : #testing }
@@ -444,7 +491,14 @@ Character >> isBacktick [
 
 { #category : #testing }
 Character >> isBlank [
-	value <= 32 ifTrue: [^true].	value = 160 ifTrue: [^true].	value < 16r2000 ifTrue: [^false].	value < 16r200C ifTrue: [^true].	value = 16r202F ifTrue: [^true].	value = 16r205F ifTrue: [^true].	value = 16r3000 ifTrue: [^true].	^false
+	value <= 32 ifTrue: [^true].
+	value = 160 ifTrue: [^true].
+	value < 16r2000 ifTrue: [^false].
+	value < 16r200C ifTrue: [^true].
+	value = 16r202F ifTrue: [^true].
+	value = 16r205F ifTrue: [^true].
+	value = 16r3000 ifTrue: [^true].
+	^false
 ]
 
 { #category : #testing }
@@ -524,7 +578,8 @@ Character >> isHash [
 
 { #category : #testing }
 Character >> isIdentifierCharacter [
-	('$:_' includes: self) ifTrue: [^true].	^self isAlphanumeric
+	('$:_' includes: self) ifTrue: [^true].
+	^self isAlphanumeric
 ]
 
 { #category : #testing }
@@ -584,7 +639,14 @@ Character >> isPlus [
 
 { #category : #testing }
 Character >> isPunctuationMark [
-	self = $. ifTrue: [^true].	self = $; ifTrue: [^true].	self = $: ifTrue: [^true].	self = $_ ifTrue: [^true].	self = $, ifTrue: [^true].	self = $! ifTrue: [^true].	self = $? ifTrue: [^true].	^false
+	self = $. ifTrue: [^true].
+	self = $; ifTrue: [^true].
+	self = $: ifTrue: [^true].
+	self = $_ ifTrue: [^true].
+	self = $, ifTrue: [^true].
+	self = $! ifTrue: [^true].
+	self = $? ifTrue: [^true].
+	^false
 ]
 
 { #category : #testing }
@@ -614,7 +676,12 @@ Character >> isSemiColon [
 
 { #category : #testing }
 Character >> isSeparator [
-	self = Space ifTrue: [^true].	self = Tab ifTrue: [^true].	self = Cr ifTrue: [^true].	self = Lf ifTrue: [^true].	self = Ff ifTrue: [^true].	^false
+	self = Space ifTrue: [^true].
+	self = Tab ifTrue: [^true].
+	self = Cr ifTrue: [^true].
+	self = Lf ifTrue: [^true].
+	self = Ff ifTrue: [^true].
+	^false
 ]
 
 { #category : #testing }
@@ -639,7 +706,9 @@ Character >> isUnderscore [
 
 { #category : #testing }
 Character >> isUnicode [
-	value < 128 ifTrue: [^false].	(value between: 160 and: 255) ifTrue: [^true].	^value > 255
+	value < 128 ifTrue: [^false].
+	(value between: 160 and: 255) ifTrue: [^true].
+	^value > 255
 ]
 
 { #category : #testing }
@@ -659,17 +728,23 @@ Character >> lowByte [
 
 { #category : #accessing }
 Character >> numericValue [
-	self isDigit ifTrue: [^value - 48].	self isAsciiLetter ifFalse: [self error: 'Cannot calculate digitValue'].	value > 96 ifTrue: [^value - 87].	^value - 55
+	self isDigit ifTrue: [^value - 48].
+	self isAsciiLetter ifFalse: [self error: 'Cannot calculate digitValue'].
+	value > 96 ifTrue: [^value - 87].
+	^value - 55
 ]
 
 { #category : #printing }
 Character >> printOn: aStream [
-	self isUnicode ifTrue: [aStream beUnicode].	aStream nextPut: $$; nextPut: self
+	self isUnicode ifTrue: [aStream beUnicode].
+	aStream nextPut: $$; nextPut: self
 ]
 
 { #category : #converting }
 Character >> reduced [
-	self ASSERT: false.	value < 256 ifTrue: [^self].	^self isAnsiCompliant ifTrue: [self asAnsi] ifFalse: [self]
+	self ASSERT: false.
+	value < 256 ifTrue: [^self].
+	^self isAnsiCompliant ifTrue: [self asAnsi] ifFalse: [self]
 ]
 
 { #category : #private }
@@ -694,11 +769,51 @@ Character >> storeOn: aStream [
 
 { #category : #converting }
 Character >> storeUTF8On: aStream [
-	"	16r800 asCharacter utf8	"	| b1 b2 b3 b4 |	value < 16r80 ifTrue: [^aStream nextBytePut: value].	value < 16r800 ifTrue: [		b1 := value bitShift: -6.		b1 := b1 bitOr: 16rC0.		b2 := value bitAnd: 16r3F.		b2 := b2 bitOr: 16r80.		^aStream nextBytePut: b1; nextBytePut: b2].	value < 16r10000 ifTrue: [		b1 := value bitShift: -12.		b1 := b1 bitOr: 16rE0.		b2 := value bitShift: -6.		b2 := b2 bitAnd: 16r3F.		b2 := b2 bitOr: 16r80.		b3 := value bitAnd: 16r3F.		b3 := b3 bitOr: 16r80.		^aStream			nextBytePut: b1;			nextBytePut: b2;			nextBytePut: b3].	b1 := value bitShift: -18.	b1 := b1 bitOr: 16rF0.	b2 := value bitShift: -12.	b2 := b2 bitAnd: 16r3F.	b2 := b2 bitOr: 16r80.	b3 := value bitShift: -6.	b3 := b3 bitAnd: 16r3F.	b3 := b3 bitOr: 16r80.	b4 := value bitAnd: 16r3F.	b4 := b4 bitOr: 16r80.	^aStream		nextBytePut: b1;		nextBytePut: b2;		nextBytePut: b3;		nextBytePut: b4
+	"
+	16r800 asCharacter utf8
+	"
+	| b1 b2 b3 b4 |
+	value < 16r80 ifTrue: [^aStream nextBytePut: value].
+	value < 16r800 ifTrue: [
+		b1 := value bitShift: -6.
+		b1 := b1 bitOr: 16rC0.
+		b2 := value bitAnd: 16r3F.
+		b2 := b2 bitOr: 16r80.
+		^aStream nextBytePut: b1; nextBytePut: b2].
+	value < 16r10000 ifTrue: [
+		b1 := value bitShift: -12.
+		b1 := b1 bitOr: 16rE0.
+		b2 := value bitShift: -6.
+		b2 := b2 bitAnd: 16r3F.
+		b2 := b2 bitOr: 16r80.
+		b3 := value bitAnd: 16r3F.
+		b3 := b3 bitOr: 16r80.
+		^aStream
+			nextBytePut: b1;
+			nextBytePut: b2;
+			nextBytePut: b3].
+	b1 := value bitShift: -18.
+	b1 := b1 bitOr: 16rF0.
+	b2 := value bitShift: -12.
+	b2 := b2 bitAnd: 16r3F.
+	b2 := b2 bitOr: 16r80.
+	b3 := value bitShift: -6.
+	b3 := b3 bitAnd: 16r3F.
+	b3 := b3 bitOr: 16r80.
+	b4 := value bitAnd: 16r3F.
+	b4 := b4 bitOr: 16r80.
+	^aStream
+		nextBytePut: b1;
+		nextBytePut: b2;
+		nextBytePut: b3;
+		nextBytePut: b4
 ]
 
 { #category : #converting }
 Character >> utf8 [
-	"	16r800 asCharacter utf8	"	^UTF8 current encodeCharacter: self
+	"
+	16r800 asCharacter utf8
+	"
+	^UTF8 current encodeCharacter: self
 ]
 

@@ -6,22 +6,28 @@ Class {
 
 { #category : #accessing }
 InlinedDictionary >> associationAt: key ifAbsent: exceptionBlock [
-	| value |	value := table lookupValue: key ifAbsent: [^exceptionBlock value].	^self associationClass key: key value: value
+	| value |
+	value := table lookupValue: key ifAbsent: [^exceptionBlock value].
+	^self associationClass key: key value: value
 ]
 
 { #category : #enumerating }
 InlinedDictionary >> associationsDo: aBlock [
-	table keysAndValuesDo: [:key :value | | assoc |		assoc := Association key: key value: value.		aBlock evaluateWith: assoc]
+	table keysAndValuesDo: [:key :value | | assoc |
+		assoc := Association key: key value: value.
+		aBlock evaluateWith: assoc]
 ]
 
 { #category : #accessing }
 InlinedDictionary >> at: key put: element [
-	(table atKey: key put: element) == nil ifTrue: [self incrementTally].	^element
+	(table atKey: key put: element) == nil ifTrue: [self incrementTally].
+	^element
 ]
 
 { #category : #adding }
 InlinedDictionary >> basicAdd: anAssociation [
-	self at: anAssociation key put: anAssociation value.	^anAssociation
+	self at: anAssociation key put: anAssociation value.
+	^anAssociation
 ]
 
 { #category : #private }
@@ -41,12 +47,16 @@ InlinedDictionary >> equates: key with: element [
 
 { #category : #accessing }
 InlinedDictionary >> indexOf: element ifAbsent: aBlock [
-	self keysAndValuesDo: [:key :value | value = element ifTrue: [^key]].	^aBlock value
+	self keysAndValuesDo: [:key :value | value = element ifTrue: [^key]].
+	^aBlock value
 ]
 
 { #category : #inquiries }
 InlinedDictionary >> keyAtValue: anObject ifAbsent: aBlock [
-	1 to: table size by: 2 do: [:index | 		(table at: index + 1) = anObject			ifTrue: [(table at: index) ifNotNil: [:k | ^k]]].	^aBlock value
+	1 to: table size by: 2 do: [:index | 
+		(table at: index + 1) = anObject
+			ifTrue: [(table at: index) ifNotNil: [:k | ^k]]].
+	^aBlock value
 ]
 
 { #category : #private }
@@ -76,6 +86,9 @@ InlinedDictionary >> storesAssociations [
 
 { #category : #accessing }
 InlinedDictionary >> values [
-	| values |	values := Bag new.	self do: [:element | values add: element].	^values
+	| values |
+	values := Bag new.
+	self do: [:element | values add: element].
+	^values
 ]
 

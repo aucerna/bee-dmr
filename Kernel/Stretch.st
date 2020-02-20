@@ -25,12 +25,15 @@ Stretch >> // anInteger [
 
 { #category : #arithmetic }
 Stretch >> + delta [
-	delta isInteger ifTrue: [^start + delta thru: end + delta].	delta isPoint ifTrue: [^start + delta x thru: end + delta y].	^start + delta start thru: end + delta end
+	delta isInteger ifTrue: [^start + delta thru: end + delta].
+	delta isPoint ifTrue: [^start + delta x thru: end + delta y].
+	^start + delta start thru: end + delta end
 ]
 
 { #category : #comparing }
 Stretch >> = aStretch [
-	self class == aStretch class ifFalse: [^false].	^start = aStretch start and: [end = aStretch end]
+	self class == aStretch class ifFalse: [^false].
+	^start = aStretch start and: [end = aStretch end]
 ]
 
 { #category : #arithmetic }
@@ -65,7 +68,9 @@ Stretch >> includes: anInteger [
 
 { #category : #testing }
 Stretch >> intersects: aStretch [
-	self isEmpty ifTrue: [^false].	(aStretch includes: start) ifTrue: [^true].	^aStretch includes: end
+	self isEmpty ifTrue: [^false].
+	(aStretch includes: start) ifTrue: [^true].
+	^aStretch includes: end
 ]
 
 { #category : #testing }
@@ -100,7 +105,10 @@ Stretch >> notEmpty [
 
 { #category : #printing }
 Stretch >> printOn: aStream [
-	aStream		nextPutAll: start asString;		nextPutAll: ' thru: ';		nextPutAll: end asString
+	aStream
+		nextPutAll: start asString;
+		nextPutAll: ' thru: ';
+		nextPutAll: end asString
 ]
 
 { #category : #accessing }

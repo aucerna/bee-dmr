@@ -71,6 +71,9 @@ Stream >> skip [
 
 { #category : #positioning }
 Stream >> skip: n [
-	| p |	p := self position + n min: self size.	p := p max: 0.	self position: p
+	| p |
+	p := self position + n min: self size.
+	p := p max: 0.
+	self position: p
 ]
 

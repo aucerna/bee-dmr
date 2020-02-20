@@ -15,7 +15,15 @@ Point class >> fromString: aString [
 
 { #category : #'instance creation' }
 Point class >> readFrom: aStream [
-	"	Point readFrom: '1 @ 2' readStream	"	| x y |	aStream skipSeparators.	x := Integer readFrom: aStream.	aStream skipTo: $@; skipSeparators.	y := Integer readFrom: aStream.	^x @ y
+	"
+	Point readFrom: '1 @ 2' readStream
+	"
+	| x y |
+	aStream skipSeparators.
+	x := Integer readFrom: aStream.
+	aStream skipTo: $@; skipSeparators.
+	y := Integer readFrom: aStream.
+	^x @ y
 ]
 
 { #category : #'instance creation' }
@@ -25,32 +33,44 @@ Point class >> x: x y: y [
 
 { #category : #arithmetic }
 Point >> - operand [
-	| point |	point := operand asPoint.	^x - point x @ (y - point y)
+	| point |
+	point := operand asPoint.
+	^x - point x @ (y - point y)
 ]
 
 { #category : #arithmetic }
 Point >> * operand [
-	| point |	point := operand asPoint.	^x * point x @ (y * point y)
+	| point |
+	point := operand asPoint.
+	^x * point x @ (y * point y)
 ]
 
 { #category : #arithmetic }
 Point >> / operand [
-	| point |	point := operand asPoint.	^x / point x @ (y / point y)
+	| point |
+	point := operand asPoint.
+	^x / point x @ (y / point y)
 ]
 
 { #category : #arithmetic }
 Point >> // operand [
-	| point |	point := operand asPoint.	^x // point x @ (y // point y)
+	| point |
+	point := operand asPoint.
+	^x // point x @ (y // point y)
 ]
 
 { #category : #arithmetic }
 Point >> \\ operand [
-	| point |	point := operand asPoint.	^x \\ point x @ (y \\ point y)
+	| point |
+	point := operand asPoint.
+	^x \\ point x @ (y \\ point y)
 ]
 
 { #category : #arithmetic }
 Point >> + operand [
-	| point |	point := operand asPoint.	^x + point x @ (y + point y)
+	| point |
+	point := operand asPoint.
+	^x + point x @ (y + point y)
 ]
 
 { #category : #comparing }
@@ -130,12 +150,16 @@ Point >> left: aNumber [
 
 { #category : #geometry }
 Point >> leftAndDown: delta [
-	| point |	point := delta asPoint.	^x - point x @ (y + point y)
+	| point |
+	point := delta asPoint.
+	^x - point x @ (y + point y)
 ]
 
 { #category : #geometry }
 Point >> leftAndUp: delta [
-	| point |	point := delta asPoint.	^x - point x @ (y - point y)
+	| point |
+	point := delta asPoint.
+	^x - point x @ (y - point y)
 ]
 
 { #category : #comparing }
@@ -145,12 +169,15 @@ Point >> max: aPoint [
 
 { #category : #comparing }
 Point >> min: aPoint [
-	| max |	max := aPoint asPoint.	^(x min: max x) @ (y min: max y)
+	| max |
+	max := aPoint asPoint.
+	^(x min: max x) @ (y min: max y)
 ]
 
 { #category : #arithmetic }
 Point >> moveBy: aPoint [
-	x := x + aPoint x.	y := y + aPoint y
+	x := x + aPoint x.
+	y := y + aPoint y
 ]
 
 { #category : #arithmetic }
@@ -160,7 +187,19 @@ Point >> negated [
 
 { #category : #printing }
 Point >> printOn: aStream [
-	x isFraction		ifTrue: [			aStream nextPut: $(.			x printOn: aStream.			aStream nextPut: $)]		ifFalse: [x printOn: aStream].	aStream nextPutAll: ' @ '.	y isFraction		ifTrue: [			aStream nextPut: $(.			y printOn: aStream.			aStream nextPut: $)]		ifFalse: [y printOn: aStream]
+	x isFraction
+		ifTrue: [
+			aStream nextPut: $(.
+			x printOn: aStream.
+			aStream nextPut: $)]
+		ifFalse: [x printOn: aStream].
+	aStream nextPutAll: ' @ '.
+	y isFraction
+		ifTrue: [
+			aStream nextPut: $(.
+			y printOn: aStream.
+			aStream nextPut: $)]
+		ifFalse: [y printOn: aStream]
 ]
 
 { #category : #geometry }
@@ -170,7 +209,9 @@ Point >> right: aNumber [
 
 { #category : #geometry }
 Point >> rightAndUp: delta [
-	| point |	point := delta asPoint.	^x + point x @ (y - point y)
+	| point |
+	point := delta asPoint.
+	^x + point x @ (y - point y)
 ]
 
 { #category : #geometry }
@@ -225,7 +266,8 @@ Point >> x: aNumber [
 
 { #category : #accessing }
 Point >> x: abscissa y: ordinate [
-	x := abscissa.	y := ordinate
+	x := abscissa.
+	y := ordinate
 ]
 
 { #category : #accessing }

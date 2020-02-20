@@ -24,7 +24,8 @@ ExceptionSet class >> with: aClass withAll: classesCollection [
 
 { #category : #adding }
 ExceptionSet >> , aClass [
-	(exceptions includes: aClass) ifTrue: [^self].	^self class with: aClass withAll: exceptions
+	(exceptions includes: aClass) ifTrue: [^self].
+	^self class with: aClass withAll: exceptions
 ]
 
 { #category : #adding }
@@ -44,6 +45,7 @@ ExceptionSet >> includesException: anException [
 
 { #category : #initialization }
 ExceptionSet >> initialize [
-	super initialize.	exceptions := Set new
+	super initialize.
+	exceptions := Set new
 ]
 

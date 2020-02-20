@@ -17,12 +17,20 @@ Array >> asByteArray [
 
 { #category : #printing }
 Array >> canBePrintedAsLiteral [
-	^Recursion		checkOn: self		while: [self conform: [:each | each canBePrintedAsLiteral]]		onSignal: [false]
+	^Recursion
+		checkOn: self
+		while: [self conform: [:each | each canBePrintedAsLiteral]]
+		onSignal: [false]
 ]
 
 { #category : #unclassified }
 Array >> crash [
-	| t |	t := 1.	self do: [:each | | n |		n := self size + each + t.		(1 to: n) do: [:i | i]].	^self size
+	| t |
+	t := 1.
+	self do: [:each | | n |
+		n := self size + each + t.
+		(1 to: n) do: [:i | i]].
+	^self size
 ]
 
 { #category : #testing }

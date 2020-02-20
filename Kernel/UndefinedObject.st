@@ -56,7 +56,10 @@ UndefinedObject >> externalCopy [
 
 { #category : #'ffi support' }
 UndefinedObject >> free [
-	"	do nothing	"	
+	"
+	do nothing
+	"
+	
 ]
 
 { #category : #services }
@@ -76,7 +79,9 @@ UndefinedObject >> ifNotNil: aBlock [
 
 { #category : #testing }
 UndefinedObject >> ifNotNil: aBlock ifNil: nilBlock [
-	^nilBlock argumentCount = 1		ifTrue: [nilBlock value: self]		ifFalse: [nilBlock value]
+	^nilBlock argumentCount = 1
+		ifTrue: [nilBlock value: self]
+		ifFalse: [nilBlock value]
 ]
 
 { #category : #testing }

@@ -22,7 +22,10 @@ ActionSequence >> asActionSequence [
 
 { #category : #converting }
 ActionSequence >> asArray [
-	| array |	array := Array new: self size.	self withIndexDo: [:ai :i | array at: i put: ai].	^array
+	| array |
+	array := Array new: self size.
+	self withIndexDo: [:ai :i | array at: i put: ai].
+	^array
 ]
 
 { #category : #accessing }
@@ -32,16 +35,21 @@ ActionSequence >> compressed [
 
 { #category : #evaluating }
 ActionSequence >> evaluate [
-	| value |	self do: [:action | value := action evaluate].	^value
+	| value |
+	self do: [:action | value := action evaluate].
+	^value
 ]
 
 { #category : #evaluating }
 ActionSequence >> evaluateWithArguments: anArray [
-	| value |	self do: [:action | value := action evaluateWithArguments: anArray].	^value
+	| value |
+	self do: [:action | value := action evaluateWithArguments: anArray].
+	^value
 ]
 
 { #category : #printing }
 ActionSequence >> printOn: aStream [
-	aStream nextPutAll: self class name; space.	super printOn: aStream
+	aStream nextPutAll: self class name; space.
+	super printOn: aStream
 ]
 

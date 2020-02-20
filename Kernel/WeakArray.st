@@ -7,5 +7,8 @@ Class {
 
 { #category : #'instance creation' }
 WeakArray class >> new: anInteger [
-	| array |	array := super new: anInteger.	array beWeak.	^array
+	| array |
+	array := super new: anInteger.
+	array beWeak.
+	^array
 ]

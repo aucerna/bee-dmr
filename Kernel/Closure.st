@@ -14,12 +14,21 @@ Class {
 
 { #category : #initialization }
 Closure class >> initializeIndexes [
-	Indexes := PoolDictionary newConstantPool		at: #ReceiverIndex put: 1;		at: #ParentEnvironmentIndex put: 2;		yourself
+	Indexes := PoolDictionary newConstantPool
+		at: #ReceiverIndex put: 1;
+		at: #ParentEnvironmentIndex put: 2;
+		yourself
 ]
 
 { #category : #gs }
 Closure class >> newFrom: aBlock [
-	| size closure |	size := aBlock size + self instSize.	closure := self allocate: size * WordSize size: size.	closure _beNamed; _beArrayed.	self nil: size slotsOf: closure.	closure _basicAt: 1 put: aBlock.	^closure
+	| size closure |
+	size := aBlock size + self instSize.
+	closure := self allocate: size * WordSize size: size.
+	closure _beNamed; _beArrayed.
+	self nil: size slotsOf: closure.
+	closure _basicAt: 1 put: aBlock.
+	^closure
 ]
 
 { #category : #private }
@@ -29,7 +38,8 @@ Closure class >> receiverIndex [
 
 { #category : #handling }
 Closure >> _return: result [
-	self canReturn ifFalse: [^self cannotReturn].	^ActiveProcess returnTo: homeFrame methodFrame with: result
+	self canReturn ifFalse: [^self cannotReturn].
+	^ActiveProcess returnTo: homeFrame methodFrame with: result
 ]
 
 { #category : #accessing }
@@ -44,12 +54,22 @@ Closure >> arity [
 
 { #category : #errors }
 Closure >> arityError: anInteger [
-	| arity msg count |	arity := block argumentCount.	count := anInteger = 0 ifTrue: ['none'] ifFalse: [anInteger asString].	msg := 'The ' , self class name , ' expects ' , arity printString		, (' argument' pluralize: arity > 1)		, ', but was called with '		, count.	^self error: msg
+	| arity msg count |
+	arity := block argumentCount.
+	count := anInteger = 0 ifTrue: ['none'] ifFalse: [anInteger asString].
+	msg := 'The ' , self class name , ' expects ' , arity printString
+		, (' argument' pluralize: arity > 1)
+		, ', but was called with '
+		, count.
+	^self error: msg
 ]
 
 { #category : #errors }
 Closure >> basicAt: anInteger [
-	anInteger _isSmallInteger ifFalse: [^self outOfBoundsIndex: anInteger].	(1 <= anInteger and: [anInteger <= self _size])		ifFalse: [^self outOfBoundsIndex: anInteger].	^self _basicAt: anInteger
+	anInteger _isSmallInteger ifFalse: [^self outOfBoundsIndex: anInteger].
+	(1 <= anInteger and: [anInteger <= self _size])
+		ifFalse: [^self outOfBoundsIndex: anInteger].
+	^self _basicAt: anInteger
 ]
 
 { #category : #private }
@@ -64,17 +84,27 @@ Closure >> blockNumber [
 
 { #category : #converting }
 Closure >> canReturn [
-	| env |	homeFrame == nil ifTrue: [^false].	homeFrame stackPointer < self _thisContext ifTrue: [^false].	homeFrame hasBlocks ifFalse: [^false].	env := self methodEnvironment.	homeFrame environment == env ifTrue: [^true].	^homeFrame methodEnvironment == env
+	| env |
+	homeFrame == nil ifTrue: [^false].
+	homeFrame stackPointer < self _thisContext ifTrue: [^false].
+	homeFrame hasBlocks ifFalse: [^false].
+	env := self methodEnvironment.
+	homeFrame environment == env ifTrue: [^true].
+	^homeFrame methodEnvironment == env
 ]
 
 { #category : #evaluating }
 Closure >> cull: a cull: b [
-	^self argumentCount < 2		ifTrue: [self cull: a]		ifFalse: [self value: a value: b]
+	^self argumentCount < 2
+		ifTrue: [self cull: a]
+		ifFalse: [self value: a value: b]
 ]
 
 { #category : #services }
 Closure >> do: aClosure [
-	1 to: self size do: [:index | | slot |		slot := self at: index.		aClosure value: slot]
+	1 to: self size do: [:index | | slot |
+		slot := self at: index.
+		aClosure value: slot]
 ]
 
 { #category : #handling }
@@ -89,7 +119,9 @@ Closure >> evaluate [
 
 { #category : #handling }
 Closure >> evaluateAtomically [
-	| enabled |	enabled := Processor enableInterrupts: false.	^self ensure: [Processor enableInterrupts: enabled]
+	| enabled |
+	enabled := Processor enableInterrupts: false.
+	^self ensure: [Processor enableInterrupts: enabled]
 ]
 
 { #category : #handling }
@@ -99,17 +131,26 @@ Closure >> evaluateFor: anObject [
 
 { #category : #handling }
 Closure >> evaluateWith: value [
-	block argumentCount = 1 ifFalse: [^self arityError: 1].	self _transferControlTo: block blockCode
+	block argumentCount = 1 ifFalse: [^self arityError: 1].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #handling }
 Closure >> evaluateWith: anObject with: anotherObject [
-	block argumentCount = 2		ifFalse: [^super evaluateWith: anObject with: anotherObject].	self _transferControlTo: block blockCode
+	block argumentCount = 2
+		ifFalse: [^super evaluateWith: anObject with: anotherObject].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #evaluating }
 Closure >> evaluateWithArguments: anArray [
-	| n args |	n := self argumentCount.	n = 0 ifTrue: [^self value].	args := anArray size > n		ifTrue: [anArray copyFrom: 1 to: n]		ifFalse: [anArray].	^self valueWithArguments: args
+	| n args |
+	n := self argumentCount.
+	n = 0 ifTrue: [^self value].
+	args := anArray size > n
+		ifTrue: [anArray copyFrom: 1 to: n]
+		ifFalse: [anArray].
+	^self valueWithArguments: args
 ]
 
 { #category : #handling }
@@ -144,12 +185,20 @@ Closure >> hasMethodEnvironment [
 
 { #category : #evaluating }
 Closure >> ifCurtailed: exceptionClosure [
-	| success |	success := false.	^[		self value.		success := true]		ensure: [success ifFalse: [exceptionClosure value]]
+	| success |
+	success := false.
+	^[
+		self value.
+		success := true]
+		ensure: [success ifFalse: [exceptionClosure value]]
 ]
 
 { #category : #testing }
 Closure >> isBlockClosure [
-	"	FIXME: fix senders and remove me	"	^true
+	"
+	FIXME: fix senders and remove me
+	"
+	^true
 ]
 
 { #category : #testing }
@@ -194,7 +243,12 @@ Closure >> newProcess [
 
 { #category : #handling }
 Closure >> newProcessWith: anArray [
-	| message |	message := MessageSend		receiver: self		selector: #valueWithArguments:		argument: anArray.	^Process evaluating: message
+	| message |
+	message := MessageSend
+		receiver: self
+		selector: #valueWithArguments:
+		argument: anArray.
+	^Process evaluating: message
 ]
 
 { #category : #accessing }
@@ -208,13 +262,28 @@ Closure >> on: aClass do: aClosure [
 ]
 
 { #category : #handling }
-Closure >> on: exception1do: closure1on: exception2do: closure2 [
-	^self on: exception1 , exception2 do: [:ex | | handler |		handler := (exception1 includesException: ex)			ifTrue: [closure1]			ifFalse: [closure2].		handler evaluateWith: ex]
+Closure >> on: exception1
+do: closure1
+on: exception2
+do: closure2 [
+	^self on: exception1 , exception2 do: [:ex | | handler |
+		handler := (exception1 includesException: ex)
+			ifTrue: [closure1]
+			ifFalse: [closure2].
+		handler evaluateWith: ex]
 ]
 
 { #category : #handling }
 Closure >> printOn: aStream [
-	self class printOn: aStream.	aStream nextPut: $(.	block basicPrintOn: aStream.	(1 to: self size)		do: [:i | | field |			field := self at: i.			field printOn: aStream]		separatedBy: [aStream space].	aStream nextPut: $)
+	self class printOn: aStream.
+	aStream nextPut: $(.
+	block basicPrintOn: aStream.
+	(1 to: self size)
+		do: [:i | | field |
+			field := self at: i.
+			field printOn: aStream]
+		separatedBy: [aStream space].
+	aStream nextPut: $)
 ]
 
 { #category : #handling }
@@ -234,12 +303,18 @@ Closure >> repeat [
 
 { #category : #handling }
 Closure >> repeatUntil: aBlock [
-	[		self value.		aBlock value] whileFalse
+	[
+		self value.
+		aBlock value] whileFalse
 ]
 
 { #category : #handling }
 Closure >> spawnAndWait [
-	| s result |	s := Semaphore new.	[result := self ensure: [s signal]] fork.	s wait.	^result
+	| s result |
+	s := Semaphore new.
+	[result := self ensure: [s signal]] fork.
+	s wait.
+	^result
 ]
 
 { #category : #accessing }
@@ -254,26 +329,33 @@ Closure >> templateIndex [
 
 { #category : #handling }
 Closure >> value [
-	block argumentCount = 0 ifFalse: [^self arityError: 0].	self _transferControlTo: block blockCode
+	block argumentCount = 0 ifFalse: [^self arityError: 0].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #handling }
 Closure >> value: value [
-	block argumentCount = 1 ifFalse: [^self arityError: 1].	self _transferControlTo: block blockCode
+	block argumentCount = 1 ifFalse: [^self arityError: 1].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second [
-	block argumentCount = 2 ifFalse: [^self arityError: 2].	self _transferControlTo: block blockCode
+	block argumentCount = 2 ifFalse: [^self arityError: 2].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second value: third [
-	block argumentCount = 3 ifFalse: [^self arityError: 3].	self _transferControlTo: block blockCode
+	block argumentCount = 3 ifFalse: [^self arityError: 3].
+	self _transferControlTo: block blockCode
 ]
 
 { #category : #evaluating }
-Closure >> value: arg1value: arg2value: arg3value: arg4 [
+Closure >> value: arg1
+value: arg2
+value: arg3
+value: arg4 [
 	^self valueWithArguments: {arg1. arg2. arg3. arg4}
 ]
 
@@ -284,7 +366,11 @@ Closure >> valueSelector [
 
 { #category : #handling }
 Closure >> valueWithArguments: arguments [
-	| size |	size := arguments basicSize.	block argumentCount = size ifFalse: [^self arityError: size].	arguments _expandInStackSized: size.	^self _invoke: block blockCode
+	| size |
+	size := arguments basicSize.
+	block argumentCount = size ifFalse: [^self arityError: size].
+	arguments _expandInStackSized: size.
+	^self _invoke: block blockCode
 ]
 
 { #category : #handling }

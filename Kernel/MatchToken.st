@@ -11,7 +11,10 @@ Class {
 
 { #category : #'instance creation' }
 MatchToken class >> on: aString from: start to: stop [
-	^self new		string: aString;		start: start;		stop: stop
+	^self new
+		string: aString;
+		start: start;
+		stop: stop
 ]
 
 { #category : #converting }
@@ -26,12 +29,22 @@ MatchToken >> at: i [
 
 { #category : #inquiries }
 MatchToken >> beginsWith: aMatchToken [
-	self length >= aMatchToken length ifFalse: [^false].	aMatchToken start to: aMatchToken stop do: [:i | | char |		char := aMatchToken at: i.		((self at: start + i - 1) = char or: [char isQuestionMark]) ifFalse: [^false]].	^true
+	self length >= aMatchToken length ifFalse: [^false].
+	aMatchToken start to: aMatchToken stop do: [:i | | char |
+		char := aMatchToken at: i.
+		((self at: start + i - 1) = char or: [char isQuestionMark]) ifFalse: [^false]].
+	^true
 ]
 
 { #category : #inquiries }
 MatchToken >> endsWith: aMatchToken [
-	| end |	self length >= aMatchToken length ifFalse: [^false].	end := aMatchToken stop.	end to: aMatchToken start by: -1 do: [:i | | char |		char := aMatchToken at: i.		((self at: stop - end + i) = char or: [char isQuestionMark]) ifFalse: [^false]].	^true
+	| end |
+	self length >= aMatchToken length ifFalse: [^false].
+	end := aMatchToken stop.
+	end to: aMatchToken start by: -1 do: [:i | | char |
+		char := aMatchToken at: i.
+		((self at: stop - end + i) = char or: [char isQuestionMark]) ifFalse: [^false]].
+	^true
 ]
 
 { #category : #inquiries }

@@ -12,7 +12,10 @@ DeletedClass class >> canBeDeleted [
 
 { #category : #services }
 DeletedClass >> beDeleted [
-	"	Do nothing	"	
+	"
+	Do nothing
+	"
+	
 ]
 
 { #category : #testing }

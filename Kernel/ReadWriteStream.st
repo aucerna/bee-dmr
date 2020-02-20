@@ -14,17 +14,30 @@ ReadWriteStream >> atEnd [
 
 { #category : #configuration }
 ReadWriteStream >> beUnicode [
-	| pos delimiter |	self isUnicode ifTrue: [^self].	super beUnicode.	pos := reader position.	delimiter := reader eol asWideString.	reader := InternalReadStream on: contents.	reader eol: delimiter; position: pos
+	| pos delimiter |
+	self isUnicode ifTrue: [^self].
+	super beUnicode.
+	pos := reader position.
+	delimiter := reader eol asWideString.
+	reader := InternalReadStream on: contents.
+	reader eol: delimiter; position: pos
 ]
 
 { #category : #reading }
 ReadWriteStream >> copyFrom: start to: stop [
-	| result |	result := reader copyFrom: start to: stop.	reader position: position.	^result
+	| result |
+	result := reader copyFrom: start to: stop.
+	reader position: position.
+	^result
 ]
 
 { #category : #private }
 ReadWriteStream >> doReading: aBlock [
-	| next |	reader position: position.	next := aBlock value.	position := reader position.	^next
+	| next |
+	reader position: position.
+	next := aBlock value.
+	position := reader position.
+	^next
 ]
 
 { #category : #marshalling }
@@ -34,12 +47,15 @@ ReadWriteStream >> getInteger [
 
 { #category : #private }
 ReadWriteStream >> grow: extra [
-	super grow: extra.	reader on: contents; position: position
+	super grow: extra.
+	reader on: contents; position: position
 ]
 
 { #category : #initialization }
 ReadWriteStream >> initialize [
-	super initialize.	reader := InternalReadStream on: contents.	size := contents size
+	super initialize.
+	reader := InternalReadStream on: contents.
+	size := contents size
 ]
 
 { #category : #reading }
@@ -59,7 +75,10 @@ ReadWriteStream >> nextByte [
 
 { #category : #marshalling }
 ReadWriteStream >> nextBytePut: byte [
-	| b |	b := super nextBytePut: byte.	size < position ifTrue: [size := position].	^b
+	| b |
+	b := super nextBytePut: byte.
+	size < position ifTrue: [size := position].
+	^b
 ]
 
 { #category : #marshalling }
@@ -79,12 +98,18 @@ ReadWriteStream >> nextNoFail: anInteger [
 
 { #category : #writing }
 ReadWriteStream >> nextPut: token [
-	| t |	t := super nextPut: token.	size < position ifTrue: [size := position].	^t
+	| t |
+	t := super nextPut: token.
+	size < position ifTrue: [size := position].
+	^t
 ]
 
 { #category : #writing }
 ReadWriteStream >> nextPutAll: aCollection [
-	| c |	c := super nextPutAll: aCollection.	size < position ifTrue: [size := position].	^c
+	| c |
+	c := super nextPutAll: aCollection.
+	size < position ifTrue: [size := position].
+	^c
 ]
 
 { #category : #parsing }
@@ -104,27 +129,37 @@ ReadWriteStream >> nextUShort [
 
 { #category : #private }
 ReadWriteStream >> on: aCollection [
-	super on: aCollection.	reader on: contents; position: position.	limit := aCollection size.	size := 0
+	super on: aCollection.
+	reader on: contents; position: position.
+	limit := aCollection size.
+	size := 0
 ]
 
 { #category : #peeking }
 ReadWriteStream >> peek [
-	reader position: position.	^reader peek
+	reader position: position.
+	^reader peek
 ]
 
 { #category : #peeking }
 ReadWriteStream >> peek: anInteger [
-	reader position: position.	^reader peek: anInteger
+	reader position: position.
+	^reader peek: anInteger
 ]
 
 { #category : #peeking }
 ReadWriteStream >> peekFor: token [
-	| found |	reader position: position.	found := reader peekFor: token.	found ifTrue: [self position: reader position].	^found
+	| found |
+	reader position: position.
+	found := reader peekFor: token.
+	found ifTrue: [self position: reader position].
+	^found
 ]
 
 { #category : #services }
 ReadWriteStream >> putBytesFrom: aByteArray from: start to: stop [
-	super putBytesFrom: aByteArray from: start to: stop.	size < position ifTrue: [size := position]
+	super putBytesFrom: aByteArray from: start to: stop.
+	size < position ifTrue: [size := position]
 ]
 
 { #category : #positioning }

@@ -15,12 +15,16 @@ StackFrameCursor class >> at: position [
 
 { #category : #'instance creation' }
 StackFrameCursor class >> classFor: aStackWrapper [
-	^aStackWrapper isNative		ifTrue: [StackFrameCursor]		ifFalse: [ReifiedStackFrameCursor]
+	^aStackWrapper isNative
+		ifTrue: [StackFrameCursor]
+		ifFalse: [ReifiedStackFrameCursor]
 ]
 
 { #category : #'instance creation' }
 StackFrameCursor class >> on: aStackWrapper [
-	| class |	class := self classFor: aStackWrapper.	^class new current: aStackWrapper lastFrame previous: aStackWrapper top
+	| class |
+	class := self classFor: aStackWrapper.
+	^class new current: aStackWrapper lastFrame previous: aStackWrapper top
 ]
 
 { #category : #'accessing instances' }
@@ -30,7 +34,10 @@ StackFrameCursor class >> top [
 
 { #category : #accessing }
 StackFrameCursor >> addObjectsTo: aCollection [
-	self slotCount - 2		to: 1		by: -1		do: [:i | aCollection add: (self slotAt: i)]
+	self slotCount - 2
+		to: 1
+		by: -1
+		do: [:i | aCollection add: (self slotAt: i)]
 ]
 
 { #category : #accessing }
@@ -45,12 +52,19 @@ StackFrameCursor >> argumentAt: index put: argument [
 
 { #category : #accessing }
 StackFrameCursor >> arguments [
-	| arity arguments |	arity := self method arity.	arguments := Array new: arity.	self copy: arity argumentsInto: arguments.	^arguments
+	| arity arguments |
+	arity := self method arity.
+	arguments := Array new: arity.
+	self copy: arity argumentsInto: arguments.
+	^arguments
 ]
 
 { #category : #accessing }
 StackFrameCursor >> argumentsWithArity: arity [
-	| arguments |	arguments := Array new: arity.	self copy: arity argumentsInto: arguments.	^arguments
+	| arguments |
+	arguments := Array new: arity.
+	self copy: arity argumentsInto: arguments.
+	^arguments
 ]
 
 { #category : #accessing }
@@ -75,12 +89,19 @@ StackFrameCursor >> context: aContext [
 
 { #category : #accessing }
 StackFrameCursor >> copy: arity argumentsInto: arguments [
-	1		to: arity		do: [:i | arguments at: arity - i + 1 put: (self argumentAt: i)]
+	1
+		to: arity
+		do: [:i | arguments at: arity - i + 1 put: (self argumentAt: i)]
 ]
 
 { #category : #accessing }
 StackFrameCursor >> copyTo: basePointer [
-	| size |	size := self slotCount - 1.	1 to: size do: [:i | | slot |		slot := self slotAt: i.		basePointer _asObject _basicAt: 1 - i put: slot].	^basePointer - (size * WordSize) _asPointer
+	| size |
+	size := self slotCount - 1.
+	1 to: size do: [:i | | slot |
+		slot := self slotAt: i.
+		basePointer _asObject _basicAt: 1 - i put: slot].
+	^basePointer - (size * WordSize) _asPointer
 ]
 
 { #category : #accessing }
@@ -90,7 +111,8 @@ StackFrameCursor >> current [
 
 { #category : #actions }
 StackFrameCursor >> current: bp previous: sp [
-	previous := sp.	current := bp
+	previous := sp.
+	current := bp
 ]
 
 { #category : #testing }
@@ -110,7 +132,9 @@ StackFrameCursor >> firstTemporary: temp [
 
 { #category : #testing }
 StackFrameCursor >> hasBlocks [
-	| m |	m := self method.	^m isBlock or: [m hasBlocks]
+	| m |
+	m := self method.
+	^m isBlock or: [m hasBlocks]
 ]
 
 { #category : #actions }
@@ -125,7 +149,9 @@ StackFrameCursor >> method [
 
 { #category : #accessing }
 StackFrameCursor >> methodEnvironment [
-	^self method isBlock		ifTrue: [self environment methodEnvironment]		ifFalse: [self environment]
+	^self method isBlock
+		ifTrue: [self environment methodEnvironment]
+		ifFalse: [self environment]
 ]
 
 { #category : #accessing }
@@ -140,7 +166,8 @@ StackFrameCursor >> moveLast [
 
 { #category : #actions }
 StackFrameCursor >> moveNext [
-	previous := current.	current := self caller
+	previous := current.
+	current := self caller
 ]
 
 { #category : #accessing }

@@ -15,12 +15,16 @@ Association class >> key: anObject [
 
 { #category : #'instance creation' }
 Association class >> key: key value: value [
-	| assoc |	assoc := self key: key.	^assoc value: value
+	| assoc |
+	assoc := self key: key.
+	^assoc value: value
 ]
 
 { #category : #comparing }
 Association >> = anAssociation [
-	^anAssociation isAssociation		and: [key = anAssociation key]		and: [value = anAssociation value]
+	^anAssociation isAssociation
+		and: [key = anAssociation key]
+		and: [value = anAssociation value]
 ]
 
 { #category : #accessing }
@@ -50,12 +54,18 @@ Association >> key: anObject [
 
 { #category : #printing }
 Association >> printOn: aStream [
-	key printOn: aStream.	aStream nextPutAll: ' -> '.	value printOn: aStream
+	key printOn: aStream.
+	aStream nextPutAll: ' -> '.
+	value printOn: aStream
 ]
 
 { #category : #printing }
 Association >> storeOn: aStream [
-	aStream nextPut: $(.	key storeOn: aStream.	aStream nextPutAll: ' -> '.	value storeOn: aStream.	aStream nextPut: $)
+	aStream nextPut: $(.
+	key storeOn: aStream.
+	aStream nextPutAll: ' -> '.
+	value storeOn: aStream.
+	aStream nextPut: $)
 ]
 
 { #category : #accessing }

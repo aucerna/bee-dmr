@@ -19,7 +19,8 @@ ZeroDivide >> dividend: aNumber [
 
 { #category : #initialization }
 ZeroDivide >> initialize [
-	super initialize.	description := 'Floating Point exception when trying to divide by zero'
+	super initialize.
+	description := 'Floating Point exception when trying to divide by zero'
 ]
 
 { #category : #testing }
@@ -29,6 +30,9 @@ ZeroDivide >> isResumable [
 
 { #category : #accessing }
 ZeroDivide >> operation: aSymbol [
-	super operation: aSymbol.	description := aSymbol == #'/'		ifTrue: ['Floating Point exception when trying to divide by zero']		ifFalse: ['Divide by Zero exception in ''' , aSymbol , ''' operation']
+	super operation: aSymbol.
+	description := aSymbol == #'/'
+		ifTrue: ['Floating Point exception when trying to divide by zero']
+		ifFalse: ['Divide by Zero exception in ''' , aSymbol , ''' operation']
 ]
 

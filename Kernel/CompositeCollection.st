@@ -14,7 +14,9 @@ CompositeCollection class >> withAll: collection [
 
 { #category : #adding }
 CompositeCollection >> & collection [
-	collection class == self class		ifTrue: [collection addTo: self]		ifFalse: [self add: collection]
+	collection class == self class
+		ifTrue: [collection addTo: self]
+		ifFalse: [self add: collection]
 ]
 
 { #category : #adding }
@@ -39,7 +41,10 @@ CompositeCollection >> addTo: aCompositeCollection [
 
 { #category : #converting }
 CompositeCollection >> asOrderedCollection [
-	| collection |	collection := OrderedCollection new: self size.	contents do: [:c | collection addAll: c].	^collection
+	| collection |
+	collection := OrderedCollection new: self size.
+	contents do: [:c | collection addAll: c].
+	^collection
 ]
 
 { #category : #accessing }
@@ -49,7 +54,13 @@ CompositeCollection >> at: index [
 
 { #category : #accessing }
 CompositeCollection >> at: index ifAbsent: aBlock [
-	| s end |	s := 0.	contents do: [:collection | 		end := s + collection size.		index <= end ifTrue: [^collection at: index - s].		s := end].	^aBlock value
+	| s end |
+	s := 0.
+	contents do: [:collection | 
+		end := s + collection size.
+		index <= end ifTrue: [^collection at: index - s].
+		s := end].
+	^aBlock value
 ]
 
 { #category : #accessing }
@@ -59,12 +70,20 @@ CompositeCollection >> contents [
 
 { #category : #accessing }
 CompositeCollection >> copyFrom: start to: stop [
-	| size copy |	size := stop - start + 1 max: 0.	copy := self species new: size.	self withIndexDo: [:e :i | 		i >= start ifTrue: [copy add: e].		i = stop ifTrue: [^copy]].	^copy
+	| size copy |
+	size := stop - start + 1 max: 0.
+	copy := self species new: size.
+	self withIndexDo: [:e :i | 
+		i >= start ifTrue: [copy add: e].
+		i = stop ifTrue: [^copy]].
+	^copy
 ]
 
 { #category : #copying }
 CompositeCollection >> copyWithout: anObject [
-	| copy |	copy := contents collect: [:c | c copyWithout: anObject].	^self class withAll: copy
+	| copy |
+	copy := contents collect: [:c | c copyWithout: anObject].
+	^self class withAll: copy
 ]
 
 { #category : #enumerating }
@@ -74,7 +93,8 @@ CompositeCollection >> do: aBlock [
 
 { #category : #accessing }
 CompositeCollection >> findFirst: aBlock ifAbsent: errorBlock [
-	self withIndexDo: [:ai :i | (aBlock evaluateWith: ai) ifTrue: [^i]].	^errorBlock value
+	self withIndexDo: [:ai :i | (aBlock evaluateWith: ai) ifTrue: [^i]].
+	^errorBlock value
 ]
 
 { #category : #accessing }
@@ -89,7 +109,8 @@ CompositeCollection >> indexOf: anObject [
 
 { #category : #inquiries }
 CompositeCollection >> indexOf: anObject ifAbsent: aBlock [
-	self withIndexDo: [:o :i | o = anObject ifTrue: [^i]].	^aBlock value
+	self withIndexDo: [:o :i | o = anObject ifTrue: [^i]].
+	^aBlock value
 ]
 
 { #category : #inquiries }
@@ -99,17 +120,21 @@ CompositeCollection >> indexOfIdentical: anObject [
 
 { #category : #inquiries }
 CompositeCollection >> indexOfIdentical: anObject ifAbsent: aBlock [
-	self withIndexDo: [:o :i | o = anObject ifTrue: [^i]].	^aBlock value
+	self withIndexDo: [:o :i | o = anObject ifTrue: [^i]].
+	^aBlock value
 ]
 
 { #category : #initialization }
 CompositeCollection >> initialize [
-	super initialize.	contents := OrderedCollection new
+	super initialize.
+	contents := OrderedCollection new
 ]
 
 { #category : #testing }
 CompositeCollection >> isEmpty [
-	contents isEmpty ifTrue: [^true].	contents do: [:c | c isEmpty ifFalse: [^false]].	^true
+	contents isEmpty ifTrue: [^true].
+	contents do: [:c | c isEmpty ifFalse: [^false]].
+	^true
 ]
 
 { #category : #testing }
@@ -119,7 +144,9 @@ CompositeCollection >> isSequenceableCollection [
 
 { #category : #accessing }
 CompositeCollection >> last [
-	^(contents notEmpty and: [contents last notEmpty])		ifTrue: [contents last last]		ifFalse: [self at: self size]
+	^(contents notEmpty and: [contents last notEmpty])
+		ifTrue: [contents last last]
+		ifFalse: [self at: self size]
 ]
 
 { #category : #accessing }
@@ -129,7 +156,8 @@ CompositeCollection >> owningResource [
 
 { #category : #copying }
 CompositeCollection >> postCopy [
-	super postCopy.	contents := contents copy
+	super postCopy.
+	contents := contents copy
 ]
 
 { #category : #converting }
@@ -139,7 +167,17 @@ CompositeCollection >> readStream [
 
 { #category : #removing }
 CompositeCollection >> remove: anObject [
-	| index |	index := contents findFirst: [:c | c == anObject] ifAbsent: [| continue |		continue := Object new.		contents withIndexDo: [:c :i | | answer |			answer := c remove: anObject ifAbsent: continue.			answer == continue ifFalse: [				c isEmpty ifTrue: [contents removeIndex: i].				^answer]].		self errorNotFound].	contents removeIndex: index.	^anObject
+	| index |
+	index := contents findFirst: [:c | c == anObject] ifAbsent: [| continue |
+		continue := Object new.
+		contents withIndexDo: [:c :i | | answer |
+			answer := c remove: anObject ifAbsent: continue.
+			answer == continue ifFalse: [
+				c isEmpty ifTrue: [contents removeIndex: i].
+				^answer]].
+		self errorNotFound].
+	contents removeIndex: index.
+	^anObject
 ]
 
 { #category : #enumerating }
@@ -169,12 +207,21 @@ CompositeCollection >> species [
 
 { #category : #enumerating }
 CompositeCollection >> with: aCollection do: aBlock [
-	self		with: aCollection		withIndexDo: [:e1 :e2 :i | aBlock value: e1 value: e2]
+	self
+		with: aCollection
+		withIndexDo: [:e1 :e2 :i | aBlock value: e1 value: e2]
 ]
 
 { #category : #enumerating }
 CompositeCollection >> with: aCollection withIndexDo: aBlock [
-	self ASSERT: self isSequenceableCollection.	aCollection size = self size		ifFalse: [self error: 'both collections must have the same size'].	self		withIndexDo: [:each :index | aBlock			value: each			value: (aCollection at: index)			value: index]
+	self ASSERT: self isSequenceableCollection.
+	aCollection size = self size
+		ifFalse: [self error: 'both collections must have the same size'].
+	self
+		withIndexDo: [:each :index | aBlock
+			value: each
+			value: (aCollection at: index)
+			value: index]
 ]
 
 { #category : #private }
@@ -184,6 +231,11 @@ CompositeCollection >> withAll: collection [
 
 { #category : #enumerating }
 CompositeCollection >> withIndexDo: aBlock [
-	| i |	self ASSERT: self isSequenceableCollection.	i := 1.	self do: [:each | 		aBlock value: each value: i.		i := i + 1]
+	| i |
+	self ASSERT: self isSequenceableCollection.
+	i := 1.
+	self do: [:each | 
+		aBlock value: each value: i.
+		i := i + 1]
 ]
 

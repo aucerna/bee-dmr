@@ -20,12 +20,19 @@ MessageNotUnderstood class >> message: aMessage receiver: anObject [
 
 { #category : #actions }
 MessageNotUnderstood >> defaultAction [
-	Processor activeProcess		suspendBecause: self defaultDescription		resumable: true.	^message performOn: receiver
+	Processor activeProcess
+		suspendBecause: self defaultDescription
+		resumable: true.
+	^message performOn: receiver
 ]
 
 { #category : #accessing }
 MessageNotUnderstood >> defaultDescription [
-	| selector |	message isNil ifTrue: [^super defaultDescription].	selector := message selector ifNil: [^super defaultDescription].	receiver isNil ifTrue: [^selector storeString , ' was sent to nil'].	^selector storeString , ' not understood by ' , receiver printString
+	| selector |
+	message isNil ifTrue: [^super defaultDescription].
+	selector := message selector ifNil: [^super defaultDescription].
+	receiver isNil ifTrue: [^selector storeString , ' was sent to nil'].
+	^selector storeString , ' not understood by ' , receiver printString
 ]
 
 { #category : #testing }

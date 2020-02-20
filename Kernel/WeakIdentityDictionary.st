@@ -9,7 +9,8 @@ Class {
 
 { #category : #adding }
 WeakIdentityDictionary >> add: anAssociation [
-	self ASSERT: anAssociation class == Ephemeron.	^self critical: [super add: anAssociation]
+	self ASSERT: anAssociation class == Ephemeron.
+	^self critical: [super add: anAssociation]
 ]
 
 { #category : #private }
@@ -19,12 +20,18 @@ WeakIdentityDictionary >> associationClass [
 
 { #category : #enumerating }
 WeakIdentityDictionary >> associationsDo: aBlock [
-	self critical: [		super associationsDo: [:ephemeron | | hold |			hold := ephemeron key.			hold notNil ifTrue: [aBlock value: ephemeron]]]
+	self critical: [
+		super associationsDo: [:ephemeron | | hold |
+			hold := ephemeron key.
+			hold notNil ifTrue: [aBlock value: ephemeron]]]
 ]
 
 { #category : #private }
 WeakIdentityDictionary >> critical: aBlock [
-	| save |	save := critical.	critical := true.	^[aBlock value] ensure: [critical := save]
+	| save |
+	save := critical.
+	critical := true.
+	^[aBlock value] ensure: [critical := save]
 ]
 
 { #category : #enumerating }
@@ -54,11 +61,14 @@ WeakIdentityDictionary >> keyCollector [
 
 { #category : #initialization }
 WeakIdentityDictionary >> onTable: aHashTable [
-	critical := false.	super onTable: aHashTable
+	critical := false.
+	super onTable: aHashTable
 ]
 
 { #category : #private }
 WeakIdentityDictionary >> rescue: anEphemeron [
-	critical		ifTrue: [anEphemeron activate]		ifFalse: [self removeKey: anEphemeron key ifAbsent: nil]
+	critical
+		ifTrue: [anEphemeron activate]
+		ifFalse: [self removeKey: anEphemeron key ifAbsent: nil]
 ]
 

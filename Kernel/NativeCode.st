@@ -22,7 +22,11 @@ NativeCode class >> code: code references: references [
 
 { #category : #private }
 NativeCode >> acquireReferences [
-	self registerSendSites.	GC critical: [		self overwritePointers.		references := self encodedReferences].	fresh := true
+	self registerSendSites.
+	GC critical: [
+		self overwritePointers.
+		references := self encodedReferences].
+	fresh := true
 ]
 
 { #category : #actions }
@@ -37,7 +41,10 @@ NativeCode >> code [
 
 { #category : #accessing }
 NativeCode >> code: bytes references: aCollection [
-	code := bytes.	references := aCollection asArray.	fresh := false.	Smalltalk isBee ifTrue: [self acquireReferences]
+	code := bytes.
+	references := aCollection asArray.
+	fresh := false.
+	Smalltalk isBee ifTrue: [self acquireReferences]
 ]
 
 { #category : #accessing }
@@ -52,7 +59,9 @@ NativeCode >> decodedReferenceOffset: encoded [
 
 { #category : #private }
 NativeCode >> decodedReferences [
-	^references collect: [:encoded | 		(self isObjectReference: encoded)			ifTrue: [code _objectAtOffset: (encoded bitAnd: 16rFFFFFF)]]
+	^references collect: [:encoded | 
+		(self isObjectReference: encoded)
+			ifTrue: [code _objectAtOffset: (encoded bitAnd: 16rFFFFFF)]]
 ]
 
 { #category : #accessing }
@@ -77,7 +86,8 @@ NativeCode >> entryPoint [
 
 { #category : #services }
 NativeCode >> initialize [
-	super initialize.	fresh := false
+	super initialize.
+	fresh := false
 ]
 
 { #category : #services }
@@ -107,7 +117,9 @@ NativeCode >> nativeCodeAddress [
 
 { #category : #accessing }
 NativeCode >> nilReference: reference [
-	| offset |	offset := reference sourceOffset.	code _objectAtOffset: offset put: nil
+	| offset |
+	offset := reference sourceOffset.
+	code _objectAtOffset: offset put: nil
 ]
 
 { #category : #services }
@@ -122,7 +134,13 @@ NativeCode >> objectAtOffset: offset put: position [
 
 { #category : #private }
 NativeCode >> overwritePointerIn: reference [
-	| address memory |	address := reference valueToWriteWith: WordSize.	code _objectAtOffset: reference sourceOffset put: address _asNative.	self _isRemembered ifTrue: [^self].	memory := Memory current.	((memory isYoung: address _asNative) andNot: [memory isYoungSafe: code])		ifTrue: [memory remember: self]
+	| address memory |
+	address := reference valueToWriteWith: WordSize.
+	code _objectAtOffset: reference sourceOffset put: address _asNative.
+	self _isRemembered ifTrue: [^self].
+	memory := Memory current.
+	((memory isYoung: address _asNative) andNot: [memory isYoungSafe: code])
+		ifTrue: [memory remember: self]
 ]
 
 { #category : #private }
@@ -142,12 +160,19 @@ NativeCode >> pointerAtOffset: offset put: position [
 
 { #category : #copying }
 NativeCode >> postCopyFrom: aNativeCode [
-	self isFresh		ifTrue: [			self				relocateReferencesFrom: aNativeCode code _asNative * 2				to: code _asNative * 2]		ifFalse: [self retargetOneselfReferences]
+	self isFresh
+		ifTrue: [
+			self
+				relocateReferencesFrom: aNativeCode code _asNative * 2
+				to: code _asNative * 2]
+		ifFalse: [self retargetOneselfReferences]
 ]
 
 { #category : #accessing }
 NativeCode >> referencedObjects [
-	^fresh		ifTrue: [self decodedReferences]		ifFalse: [references collect: [:o | o target]]
+	^fresh
+		ifTrue: [self decodedReferences]
+		ifFalse: [references collect: [:o | o target]]
 ]
 
 { #category : #accessing }
@@ -162,17 +187,29 @@ NativeCode >> refresh [
 
 { #category : #services }
 NativeCode >> registerSendSites [
-	references		do: [:o | | send | (send := o target) class == SendSite			ifTrue: [send register]]
+	references
+		do: [:o | | send | (send := o target) class == SendSite
+			ifTrue: [send register]]
 ]
 
 { #category : #relocations }
 NativeCode >> relocateReference: encodedOffset from: sourceCodeAddress to: targetCodeAddress [
-	| offset old delta |	(self isObjectReference: encodedOffset) ifTrue: [^self].	"is reference to class check or block in ourself" 	offset := self decodedReferenceOffset: encodedOffset.	old := code pointerAtOffset: offset.	delta := targetCodeAddress - sourceCodeAddress.	self pointerAtOffset: offset put: old + delta
+	| offset old delta |
+	(self isObjectReference: encodedOffset) ifTrue: [^self].
+	"is reference to class check or block in ourself" 
+	offset := self decodedReferenceOffset: encodedOffset.
+	old := code pointerAtOffset: offset.
+	delta := targetCodeAddress - sourceCodeAddress.
+	self pointerAtOffset: offset put: old + delta
 ]
 
 { #category : #relocations }
 NativeCode >> relocateReferencesFrom: sourceCodeAddress to: targetCodeAddress [
-	references do: [:encoded | 		self			relocateReference: encoded			from: sourceCodeAddress			to: targetCodeAddress]
+	references do: [:encoded | 
+		self
+			relocateReference: encoded
+			from: sourceCodeAddress
+			to: targetCodeAddress]
 ]
 
 { #category : #private }

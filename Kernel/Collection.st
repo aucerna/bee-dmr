@@ -16,12 +16,24 @@ Collection class >> with: object1 with: object2 [
 
 { #category : #'instance creation' }
 Collection class >> with: object1 with: object2 with: object3 [
-	^self new		add: object1;		add: object2;		add: object3;		yourself
+	^self new
+		add: object1;
+		add: object2;
+		add: object3;
+		yourself
 ]
 
 { #category : #'instance creation' }
-Collection class >> with: object1with: object2with: object3with: object4 [
-	^self new		add: object1;		add: object2;		add: object3;		add: object4;		yourself
+Collection class >> with: object1
+with: object2
+with: object3
+with: object4 [
+	^self new
+		add: object1;
+		add: object2;
+		add: object3;
+		add: object4;
+		yourself
 ]
 
 { #category : #'instance creation' }
@@ -46,7 +58,8 @@ Collection >> add: anObject [
 
 { #category : #adding }
 Collection >> addAll: aCollection [
-	aCollection do: [:element | self add: element].	^aCollection
+	aCollection do: [:element | self add: element].
+	^aCollection
 ]
 
 { #category : #accessing }
@@ -56,7 +69,8 @@ Collection >> anyone [
 
 { #category : #inquiries }
 Collection >> anySatisfy: aBlock [
-	self detect: aBlock ifNone: [^false].	^true
+	self detect: aBlock ifNone: [^false].
+	^true
 ]
 
 { #category : #converting }
@@ -96,42 +110,73 @@ Collection >> asSortedCollection: aBlock [
 
 { #category : #printing }
 Collection >> basicPrintOn: aStream [
-	Recursion		checkOn: self		while: [			self class printOn: aStream.			aStream nextPut: $(.			self				do: [:element | element printOn: aStream]				separatedBy: [aStream space].			aStream nextPut: $)]		onSignal: [:e | 			aStream nextPutAll: e description.			^self]
+	Recursion
+		checkOn: self
+		while: [
+			self class printOn: aStream.
+			aStream nextPut: $(.
+			self
+				do: [:element | element printOn: aStream]
+				separatedBy: [aStream space].
+			aStream nextPut: $)]
+		onSignal: [:e | 
+			aStream nextPutAll: e description.
+			^self]
 ]
 
 { #category : #enumerating }
 Collection >> collect: evaluable [
-	| collector |	collector := self species new: self size.	^self collect: evaluable in: collector
+	| collector |
+	collector := self species new: self size.
+	^self collect: evaluable in: collector
 ]
 
 { #category : #enumerating }
 Collection >> collect: evaluable in: aCollection [
-	self do: [:x | | fx |		fx := evaluable evaluateWith: x.		aCollection add: fx].	^aCollection
+	self do: [:x | | fx |
+		fx := evaluable evaluateWith: x.
+		aCollection add: fx].
+	^aCollection
 ]
 
 { #category : #enumerating }
 Collection >> collect: aBlock thenDetect: anotherBlock [
-	self do: [:x | | fx |		fx := aBlock evaluateWith: x.		(anotherBlock evaluateWith: fx) ifTrue: [^fx]].	^nil
+	self do: [:x | | fx |
+		fx := aBlock evaluateWith: x.
+		(anotherBlock evaluateWith: fx) ifTrue: [^fx]].
+	^nil
 ]
 
 { #category : #enumerating }
 Collection >> collect: aBlock thenDo: anotherBlock [
-	self do: [:x | | fx |		fx := aBlock evaluateWith: x.		anotherBlock evaluateWith: fx]
+	self do: [:x | | fx |
+		fx := aBlock evaluateWith: x.
+		anotherBlock evaluateWith: fx]
 ]
 
 { #category : #enumerating }
 Collection >> collect: aBlock thenSelect: anotherBlock [
-	| collector |	collector := self species new: self size.	^self collect: aBlock thenSelect: anotherBlock in: collector
+	| collector |
+	collector := self species new: self size.
+	^self collect: aBlock thenSelect: anotherBlock in: collector
 ]
 
 { #category : #enumerating }
 Collection >> collect: aBlock thenSelect: anotherBlock in: aCollection [
-	self do: [:x | | fx |		fx := aBlock evaluateWith: x.		(anotherBlock evaluateWith: fx) ifTrue: [aCollection add: fx]].	^aCollection
+	self do: [:x | | fx |
+		fx := aBlock evaluateWith: x.
+		(anotherBlock evaluateWith: fx) ifTrue: [aCollection add: fx]].
+	^aCollection
 ]
 
 { #category : #inquiries }
 Collection >> conform: evaluable [
-	self		detect: [:x | | fx |			fx := evaluable evaluateWith: x.			fx not]		ifNone: [^true].	^false
+	self
+		detect: [:x | | fx |
+			fx := evaluable evaluateWith: x.
+			fx not]
+		ifNone: [^true].
+	^false
 ]
 
 { #category : #copying }
@@ -146,7 +191,10 @@ Collection >> copyWithout: anObject [
 
 { #category : #inquiries }
 Collection >> count: evaluable [
-	| count |	count := 0.	self select: evaluable thenDo: [:x | count := count + 1].	^count
+	| count |
+	count := 0.
+	self select: evaluable thenDo: [:x | count := count + 1].
+	^count
 ]
 
 { #category : #copying }
@@ -166,7 +214,10 @@ Collection >> detect: evaluable ifFound: aBlock [
 
 { #category : #inquiries }
 Collection >> detect: aBlock ifFound: foundBlock ifNone: exceptionBlock [
-	self do: [:element | | found |		found := aBlock evaluateWith: element.		found ifTrue: [^foundBlock evaluateWith: element]].	^exceptionBlock value
+	self do: [:element | | found |
+		found := aBlock evaluateWith: element.
+		found ifTrue: [^foundBlock evaluateWith: element]].
+	^exceptionBlock value
 ]
 
 { #category : #inquiries }
@@ -181,12 +232,19 @@ Collection >> do: aBlock [
 
 { #category : #enumerating }
 Collection >> do: aBlock separatedBy: separatorBlock [
-	| separate |	separate := false.	self do: [:element | 		separate ifTrue: [separatorBlock value] ifFalse: [separate := true].		aBlock evaluateWith: element]
+	| separate |
+	separate := false.
+	self do: [:element | 
+		separate ifTrue: [separatorBlock value] ifFalse: [separate := true].
+		aBlock evaluateWith: element]
 ]
 
 { #category : #comparing }
 Collection >> equalsTo: aCollection [
-	self size = aCollection size ifFalse: [^false].	aCollection do: [:element | (self includes: element) ifFalse: [^false]].	self do: [:element | (aCollection includes: element) ifFalse: [^false]].	^true
+	self size = aCollection size ifFalse: [^false].
+	aCollection do: [:element | (self includes: element) ifFalse: [^false]].
+	self do: [:element | (aCollection includes: element) ifFalse: [^false]].
+	^true
 ]
 
 { #category : #errors }
@@ -201,7 +259,9 @@ Collection >> errorNotIndexable [
 
 { #category : #errors }
 Collection >> errorNotKeyed [
-	self		error: 'instances of ' , self class name			, ' do not respond to keyed accessing messages'
+	self
+		error: 'instances of ' , self class name
+			, ' do not respond to keyed accessing messages'
 ]
 
 { #category : #enumerating }
@@ -211,12 +271,20 @@ Collection >> gather: aBlock [
 
 { #category : #enumerating }
 Collection >> gather: aBlock in: collection [
-	self do: [:each | | things |		things := aBlock evaluateWith: each.		collection addAll: things].	^collection
+	self do: [:each | | things |
+		things := aBlock evaluateWith: each.
+		collection addAll: things].
+	^collection
 ]
 
 { #category : #enumerating }
 Collection >> gather: aBlock thenSelect: anotherBlock in: aCollection [
-	self do: [:each | | things |		things := aBlock evaluateWith: each.		things			do: [:element | (anotherBlock evaluateWith: element)				ifTrue: [aCollection add: element]]].	^aCollection
+	self do: [:each | | things |
+		things := aBlock evaluateWith: each.
+		things
+			do: [:element | (anotherBlock evaluateWith: element)
+				ifTrue: [aCollection add: element]]].
+	^aCollection
 ]
 
 { #category : #inquiries }
@@ -226,12 +294,16 @@ Collection >> includes: anObject [
 
 { #category : #inquiries }
 Collection >> includesIdentical: anObject [
-	self do: [:each | each == anObject ifTrue: [^true]].	^false
+	self do: [:each | each == anObject ifTrue: [^true]].
+	^false
 ]
 
 { #category : #enumerating }
 Collection >> inject: anObject into: aBlock [
-	| result |	result := anObject.	self do: [:element | result := aBlock value: result value: element].	^result
+	| result |
+	result := anObject.
+	self do: [:element | result := aBlock value: result value: element].
+	^result
 ]
 
 { #category : #testing }
@@ -251,7 +323,8 @@ Collection >> isEmptyOrNil [
 
 { #category : #enumerating }
 Collection >> noneSatisfy: evaluable [
-	self do: [:item | (evaluable evaluateWith: item) ifTrue: [^false]].	^true
+	self do: [:item | (evaluable evaluateWith: item) ifTrue: [^false]].
+	^true
 ]
 
 { #category : #testing }
@@ -261,7 +334,10 @@ Collection >> notEmpty [
 
 { #category : #inquiries }
 Collection >> occurrencesOf: anObject [
-	| count |	count := 0.	self do: [:element | element = anObject ifTrue: [count := count + 1]].	^count
+	| count |
+	count := 0.
+	self do: [:element | element = anObject ifTrue: [count := count + 1]].
+	^count
 ]
 
 { #category : #printing }
@@ -281,7 +357,24 @@ Collection >> printOn: aStream [
 
 { #category : #printing }
 Collection >> printOn: aStream limit: aNumber [
-	| limit |	Recursion		checkOn: self		while: [			limit := aStream position + (aNumber ifNil: [Number infinity]).			self class printOn: aStream.			aStream nextPut: $(.			self				do: [:element | 					aStream position > limit ifTrue: [						'…etc…)' printOn: aStream.						^self].					element printOn: aStream]				separatedBy: [aStream space].			aStream nextPut: $)]		onSignal: [:e | 			aStream nextPutAll: e description.			^self]
+	| limit |
+	Recursion
+		checkOn: self
+		while: [
+			limit := aStream position + (aNumber ifNil: [Number infinity]).
+			self class printOn: aStream.
+			aStream nextPut: $(.
+			self
+				do: [:element | 
+					aStream position > limit ifTrue: [
+						'…etc…)' printOn: aStream.
+						^self].
+					element printOn: aStream]
+				separatedBy: [aStream space].
+			aStream nextPut: $)]
+		onSignal: [:e | 
+			aStream nextPutAll: e description.
+			^self]
 ]
 
 { #category : #enumerating }
@@ -291,7 +384,9 @@ Collection >> reject: aBlock [
 
 { #category : #enumerating }
 Collection >> reject: aBlock thenDo: anotherBlock [
-	self		do: [:each | (aBlock evaluateWith: each)			ifFalse: [anotherBlock evaluateWith: each]]
+	self
+		do: [:each | (aBlock evaluateWith: each)
+			ifFalse: [anotherBlock evaluateWith: each]]
 ]
 
 { #category : #removing }
@@ -306,12 +401,14 @@ Collection >> remove: anObject ifAbsent: aBlock [
 
 { #category : #removing }
 Collection >> removeAll [
-	self isEmpty ifTrue: [^self].	self copy do: [:x | self remove: x]
+	self isEmpty ifTrue: [^self].
+	self copy do: [:x | self remove: x]
 ]
 
 { #category : #removing }
 Collection >> removeAll: aCollection [
-	aCollection do: [:x | self remove: x].	^aCollection
+	aCollection do: [:x | self remove: x].
+	^aCollection
 ]
 
 { #category : #removing }
@@ -326,27 +423,45 @@ Collection >> select: aBlock [
 
 { #category : #enumerating }
 Collection >> select: evaluable in: aCollection [
-	self select: evaluable thenDo: [:x | aCollection add: x].	^aCollection
+	self select: evaluable thenDo: [:x | aCollection add: x].
+	^aCollection
 ]
 
 { #category : #enumerating }
 Collection >> select: aBlock thenCollect: anotherBlock [
-	| collection |	collection := self species new.	self select: aBlock thenCollect: anotherBlock in: collection.	^collection
+	| collection |
+	collection := self species new.
+	self select: aBlock thenCollect: anotherBlock in: collection.
+	^collection
 ]
 
 { #category : #errors }
 Collection >> select: aBlock thenCollect: anotherBlock in: aCollection [
-	self select: aBlock thenDo: [:x | | fx |		fx := anotherBlock evaluateWith: x.		aCollection add: fx].	^aCollection
+	self select: aBlock thenDo: [:x | | fx |
+		fx := anotherBlock evaluateWith: x.
+		aCollection add: fx].
+	^aCollection
 ]
 
 { #category : #enumerating }
 Collection >> select: aBlock thenDo: anotherBlock [
-	self		do: [:element | (aBlock evaluateWith: element)			ifTrue: [anotherBlock evaluateWith: element]]
+	self
+		do: [:element | (aBlock evaluateWith: element)
+			ifTrue: [anotherBlock evaluateWith: element]]
 ]
 
 { #category : #printing }
 Collection >> storeOn: aStream [
-	Recursion checkOn: self while: [		aStream			nextPut: $(;			nextPutAll: self class name;			nextPutAll: ' new'.		self do: [:x | 			aStream nextPutAll: ' add: ('.			x storeOn: aStream.			aStream nextPutAll: ');'].		aStream nextPutAll: ' yourself'; nextPut: $)]
+	Recursion checkOn: self while: [
+		aStream
+			nextPut: $(;
+			nextPutAll: self class name;
+			nextPutAll: ' new'.
+		self do: [:x | 
+			aStream nextPutAll: ' add: ('.
+			x storeOn: aStream.
+			aStream nextPutAll: ');'].
+		aStream nextPutAll: ' yourself'; nextPut: $)]
 ]
 
 { #category : #arithmetic }
@@ -361,6 +476,11 @@ Collection >> sum: aBlock [
 
 { #category : #functions }
 Collection >> sum: aBlock ifNone: exceptionBlock [
-	| sum |	self do: [:each | | value |		value := aBlock evaluateWith: each.		value isUndefinedValue			ifFalse: [sum := sum == nil ifTrue: [value] ifFalse: [sum + value]]].	^sum isUndefinedValue ifTrue: [exceptionBlock value] ifFalse: [sum]
+	| sum |
+	self do: [:each | | value |
+		value := aBlock evaluateWith: each.
+		value isUndefinedValue
+			ifFalse: [sum := sum == nil ifTrue: [value] ifFalse: [sum + value]]].
+	^sum isUndefinedValue ifTrue: [exceptionBlock value] ifFalse: [sum]
 ]
 

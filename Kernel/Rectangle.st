@@ -50,7 +50,9 @@ Rectangle class >> rightBottom: rightBottomPoint extent: extentPoint [
 
 { #category : #comparing }
 Rectangle >> = aRectangle [
-	^aRectangle isRectangle		and: [origin = aRectangle leftTop]		and: [corner = aRectangle rightBottom]
+	^aRectangle isRectangle
+		and: [origin = aRectangle leftTop]
+		and: [corner = aRectangle rightBottom]
 ]
 
 { #category : #inquiries }
@@ -60,7 +62,25 @@ Rectangle >> area [
 
 { #category : #inquiries }
 Rectangle >> areasOutside: aRectangle [
-	| areas y0 y1 area |	(self intersects: aRectangle) ifFalse: [^{self}].	areas := OrderedCollection new: 4.	y0 := self top.	aRectangle top > y0 ifTrue: [		y0 := aRectangle top.		areas addLast: (origin corner: corner x @ y0)].	y1 := self bottom.	aRectangle bottom < y1 ifTrue: [		y1 := aRectangle bottom.		area := self left @ y1 corner: corner.		areas addLast: area].	aRectangle left > self left ifTrue: [		area := self left @ y0 corner: aRectangle left @ y1.		areas addLast: area].	aRectangle right < self right ifTrue: [		area := aRectangle right @ y0 corner: self right @ y1.		areas addLast: area].	^areas
+	| areas y0 y1 area |
+	(self intersects: aRectangle) ifFalse: [^{self}].
+	areas := OrderedCollection new: 4.
+	y0 := self top.
+	aRectangle top > y0 ifTrue: [
+		y0 := aRectangle top.
+		areas addLast: (origin corner: corner x @ y0)].
+	y1 := self bottom.
+	aRectangle bottom < y1 ifTrue: [
+		y1 := aRectangle bottom.
+		area := self left @ y1 corner: corner.
+		areas addLast: area].
+	aRectangle left > self left ifTrue: [
+		area := self left @ y0 corner: aRectangle left @ y1.
+		areas addLast: area].
+	aRectangle right < self right ifTrue: [
+		area := aRectangle right @ y0 corner: self right @ y1.
+		areas addLast: area].
+	^areas
 ]
 
 { #category : #converting }
@@ -90,7 +110,9 @@ Rectangle >> bottomLeft [
 
 { #category : #accessing }
 Rectangle >> bottomLeft: aPoint [
-	self		topLeft: aPoint x @ self topLeft y;		bottomRight: self bottomRight x @ aPoint y
+	self
+		topLeft: aPoint x @ self topLeft y;
+		bottomRight: self bottomRight x @ aPoint y
 ]
 
 { #category : #accessing }
@@ -135,12 +157,18 @@ Rectangle >> corners [
 
 { #category : #movements }
 Rectangle >> down: delta [
-	origin := origin down: delta.	corner := corner down: delta
+	origin := origin down: delta.
+	corner := corner down: delta
 ]
 
 { #category : #operations }
 Rectangle >> expandBy: delta [
-	delta isRectangle		ifTrue: [			^(origin leftAndUp: delta leftTop)				rightBottom: (corner translatedBy: delta rightBottom)]		ifFalse: [^(origin leftAndUp: delta)			rightBottom: (corner translatedBy: delta)]
+	delta isRectangle
+		ifTrue: [
+			^(origin leftAndUp: delta leftTop)
+				rightBottom: (corner translatedBy: delta rightBottom)]
+		ifFalse: [^(origin leftAndUp: delta)
+			rightBottom: (corner translatedBy: delta)]
 ]
 
 { #category : #accessing }
@@ -170,12 +198,26 @@ Rectangle >> height: aNumber [
 
 { #category : #operations }
 Rectangle >> insetBy: delta [
-	| o c |	delta isRectangle		ifTrue: [			o := origin translatedBy: delta leftTop.			c := corner leftAndUp: delta rightBottom]		ifFalse: [			o := origin translatedBy: delta.			c := corner leftAndUp: delta].	^o rightBottom: c
+	| o c |
+	delta isRectangle
+		ifTrue: [
+			o := origin translatedBy: delta leftTop.
+			c := corner leftAndUp: delta rightBottom]
+		ifFalse: [
+			o := origin translatedBy: delta.
+			c := corner leftAndUp: delta].
+	^o rightBottom: c
 ]
 
 { #category : #operations }
 Rectangle >> intersect: aRectangle [
-	| o c |	aRectangle isNil ifTrue: [^self].	o := origin max: aRectangle origin.	c := corner min: aRectangle corner.	o x > c x ifTrue: [c x: o x].	o y > c y ifTrue: [c y: o y].	^o corner: c
+	| o c |
+	aRectangle isNil ifTrue: [^self].
+	o := origin max: aRectangle origin.
+	c := corner min: aRectangle corner.
+	o x > c x ifTrue: [c x: o x].
+	o y > c y ifTrue: [c y: o y].
+	^o corner: c
 ]
 
 { #category : #testing }
@@ -205,17 +247,20 @@ Rectangle >> leftBottom [
 
 { #category : #accessing }
 Rectangle >> leftBottom: aPoint [
-	origin := aPoint x @ self top.	corner := self right @ aPoint y
+	origin := aPoint x @ self top.
+	corner := self right @ aPoint y
 ]
 
 { #category : #accessing }
 Rectangle >> leftBottom: point extent: extent [
-	origin := point up: extent y.	corner := point right: extent x
+	origin := point up: extent y.
+	corner := point right: extent x
 ]
 
 { #category : #accessing }
 Rectangle >> leftBottom: point1 rightTop: point2 [
-	origin := point1 x @ point2 y.	corner := point2 x @ point1 y
+	origin := point1 x @ point2 y.
+	corner := point2 x @ point1 y
 ]
 
 { #category : #accessing }
@@ -235,27 +280,35 @@ Rectangle >> leftTop: aPoint [
 
 { #category : #accessing }
 Rectangle >> leftTop: originPoint extent: extent [
-	corner := originPoint + extent.	origin := originPoint
+	corner := originPoint + extent.
+	origin := originPoint
 ]
 
 { #category : #accessing }
 Rectangle >> leftTop: oPoint rightBottom: cPoint [
-	origin := oPoint.	corner := cPoint
+	origin := oPoint.
+	corner := cPoint
 ]
 
 { #category : #operations }
 Rectangle >> merge: aRectangle [
-	| o c |	aRectangle isNil ifTrue: [^self].	o := origin min: aRectangle leftTop.	c := corner max: aRectangle rightBottom.	^o rightBottom: c
+	| o c |
+	aRectangle isNil ifTrue: [^self].
+	o := origin min: aRectangle leftTop.
+	c := corner max: aRectangle rightBottom.
+	^o rightBottom: c
 ]
 
 { #category : #operations }
 Rectangle >> mergeWith: aRectangle [
-	origin := origin min: aRectangle origin.	corner := corner max: aRectangle corner
+	origin := origin min: aRectangle origin.
+	corner := corner max: aRectangle corner
 ]
 
 { #category : #accessing }
 Rectangle >> moveBy: aPoint [
-	origin := origin + aPoint.	corner := corner + aPoint
+	origin := origin + aPoint.
+	corner := corner + aPoint
 ]
 
 { #category : #operations }
@@ -285,12 +338,17 @@ Rectangle >> origin: oPoint extent: ePoint [
 
 { #category : #printing }
 Rectangle >> printOn: aStream [
-	origin printOn: aStream.	aStream nextPutAll: ' rightBottom: '.	corner printOn: aStream
+	origin printOn: aStream.
+	aStream nextPutAll: ' rightBottom: '.
+	corner printOn: aStream
 ]
 
 { #category : #operations }
 Rectangle >> relativeTo: aRectangle [
-	| extent |	extent := aRectangle extent.	(extent x = 0 or: [extent y = 0]) ifTrue: [^self].	^origin - aRectangle leftTop / extent extent: self extent / extent
+	| extent |
+	extent := aRectangle extent.
+	(extent x = 0 or: [extent y = 0]) ifTrue: [^self].
+	^origin - aRectangle leftTop / extent extent: self extent / extent
 ]
 
 { #category : #accessing }
@@ -315,7 +373,8 @@ Rectangle >> rightBottom: aPoint [
 
 { #category : #accessing }
 Rectangle >> rightBottom: point extent: extent [
-	origin := (point up: extent y) left: extent x.	corner := point
+	origin := (point up: extent y) left: extent x.
+	corner := point
 ]
 
 { #category : #accessing }
@@ -330,17 +389,20 @@ Rectangle >> rightTop [
 
 { #category : #accessing }
 Rectangle >> rightTop: aPoint [
-	origin := self left @ aPoint y.	corner := aPoint x @ self bottom
+	origin := self left @ aPoint y.
+	corner := aPoint x @ self bottom
 ]
 
 { #category : #accessing }
 Rectangle >> round [
-	origin := origin rounded.	corner := corner rounded
+	origin := origin rounded.
+	corner := corner rounded
 ]
 
 { #category : #accessing }
 Rectangle >> rounded [
-	origin := origin rounded.	corner := corner rounded
+	origin := origin rounded.
+	corner := corner rounded
 ]
 
 { #category : #operations }
@@ -350,7 +412,9 @@ Rectangle >> scaleBy: delta [
 
 { #category : #operations }
 Rectangle >> scaleTo: aRectangle [
-	| scaled |	scaled := aRectangle scaleBy: self extent.	^scaled truncated moveBy: self origin
+	| scaled |
+	scaled := aRectangle scaleBy: self extent.
+	^scaled truncated moveBy: self origin
 ]
 
 { #category : #accessing }
@@ -395,7 +459,9 @@ Rectangle >> topRight [
 
 { #category : #accessing }
 Rectangle >> topRight: aPoint [
-	self		topLeft: self left @ aPoint y;		bottomRight: aPoint x @ self bottom
+	self
+		topLeft: self left @ aPoint y;
+		bottomRight: aPoint x @ self bottom
 ]
 
 { #category : #operations }
@@ -410,7 +476,8 @@ Rectangle >> translatedBy: delta [
 
 { #category : #accessing }
 Rectangle >> truncate [
-	origin := origin truncated.	corner := corner truncated
+	origin := origin truncated.
+	corner := corner truncated
 ]
 
 { #category : #accessing }

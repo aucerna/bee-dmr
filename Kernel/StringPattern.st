@@ -15,12 +15,24 @@ StringPattern class >> on: aString [
 
 { #category : #scanning }
 StringPattern >> addStar [
-	stream atEnd ifTrue: [^self].	tokens add: StarToken current.	stream next.	[stream peek ifNil: [^self] ifNotNil: [:c | c isAsterisk]]		whileTrue: [stream next]
+	stream atEnd ifTrue: [^self].
+	tokens add: StarToken current.
+	stream next.
+	[stream peek ifNil: [^self] ifNotNil: [:c | c isAsterisk]]
+		whileTrue: [stream next]
 ]
 
 { #category : #scanning }
 StringPattern >> addToken [
-	| star pos end token |	star := false.	pos := stream position + 1.	[stream atEnd or: [star := stream next isAsterisk]] whileFalse.	star ifTrue: [stream skip: -1].	end := stream position.	pos <= end ifTrue: [		token := MatchToken on: stream collection from: pos to: end.		tokens add: token]
+	| star pos end token |
+	star := false.
+	pos := stream position + 1.
+	[stream atEnd or: [star := stream next isAsterisk]] whileFalse.
+	star ifTrue: [stream skip: -1].
+	end := stream position.
+	pos <= end ifTrue: [
+		token := MatchToken on: stream collection from: pos to: end.
+		tokens add: token]
 ]
 
 { #category : #accessing }
@@ -45,17 +57,31 @@ StringPattern >> match: aString index: anInteger [
 
 { #category : #inquiries }
 StringPattern >> match: aString index: anInteger ifAbsent: aBlock [
-	| algorithm |	algorithm := MatchAlgorithm new		pattern: self;		string: aString;		index: anInteger.	algorithm run.	algorithm hasMatched ifTrue: [^algorithm matchRange].	^aBlock notNil ifTrue: [		aBlock arity = 0			ifTrue: [aBlock value]			ifFalse: [aBlock evaluateWith: algorithm failure]]
+	| algorithm |
+	algorithm := MatchAlgorithm new
+		pattern: self;
+		string: aString;
+		index: anInteger.
+	algorithm run.
+	algorithm hasMatched ifTrue: [^algorithm matchRange].
+	^aBlock notNil ifTrue: [
+		aBlock arity = 0
+			ifTrue: [aBlock value]
+			ifFalse: [aBlock evaluateWith: algorithm failure]]
 ]
 
 { #category : #inquiries }
 StringPattern >> matches: aString [
-	| range |	range := self match: aString.	^range notNil and: [range x = 1 and: [range y = aString size]]
+	| range |
+	range := self match: aString.
+	^range notNil and: [range x = 1 and: [range y = aString size]]
 ]
 
 { #category : #accessing }
 StringPattern >> on: aString [
-	stream := aString readStream.	tokens := OrderedCollection new.	self scan
+	stream := aString readStream.
+	tokens := OrderedCollection new.
+	self scan
 ]
 
 { #category : #printing }

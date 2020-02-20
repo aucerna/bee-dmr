@@ -53,7 +53,9 @@ Exception >> activeHandler: anExceptionHandler [
 
 { #category : #actions }
 Exception >> defaultAction [
-	Processor activeProcess		suspendBecause: self description		resumable: self isResumable
+	Processor activeProcess
+		suspendBecause: self description
+		resumable: self isResumable
 ]
 
 { #category : #accessing }
@@ -83,17 +85,29 @@ Exception >> doDefaultAction [
 
 { #category : #signaling }
 Exception >> doSignal [
-	self isActive ifTrue: [^self ASSERT: false].	signalContext := ActiveProcess.	^self outer
+	self isActive ifTrue: [^self ASSERT: false].
+	signalContext := ActiveProcess.
+	^self outer
 ]
 
 { #category : #handling }
 Exception >> evaluateHandler: anExceptionHandler [
-	| prev result |	prev := activeHandler.	activeHandler := anExceptionHandler.	[		result := anExceptionHandler isNil			ifTrue: [self doDefaultAction]			ifFalse: [anExceptionHandler handle: self]]		ensure: [activeHandler := prev].	^result
+	| prev result |
+	prev := activeHandler.
+	activeHandler := anExceptionHandler.
+	[
+		result := anExceptionHandler isNil
+			ifTrue: [self doDefaultAction]
+			ifFalse: [anExceptionHandler handle: self]]
+		ensure: [activeHandler := prev].
+	^result
 ]
 
 { #category : #handling }
 Exception >> evaluateHandlers [
-	| handler |	handler := ActiveProcess findHandlerFor: self.	^self evaluateHandler: handler
+	| handler |
+	handler := ActiveProcess findHandlerFor: self.
+	^self evaluateHandler: handler
 ]
 
 { #category : #handling }
@@ -118,7 +132,9 @@ Exception >> isActive [
 
 { #category : #testing }
 Exception >> isHandled [
-	| handler |	handler := ActiveProcess findHandlerFor: self.	^handler notNil
+	| handler |
+	handler := ActiveProcess findHandlerFor: self.
+	^handler notNil
 ]
 
 { #category : #testing }
@@ -133,7 +149,13 @@ Exception >> nextHandler [
 
 { #category : #handling }
 Exception >> outer [
-	| prev result |	prev := resumeBlock.	[		resumeBlock := [:res | ^res].		result := self evaluateHandlers]		ensure: [resumeBlock := prev].	^result
+	| prev result |
+	prev := resumeBlock.
+	[
+		resumeBlock := [:res | ^res].
+		result := self evaluateHandlers]
+		ensure: [resumeBlock := prev].
+	^result
 ]
 
 { #category : #handling }
@@ -153,7 +175,8 @@ Exception >> resignal [
 
 { #category : #signaling }
 Exception >> resignalAs: anException [
-	resignaledException := anException.	self resume: nil
+	resignaledException := anException.
+	self resume: nil
 ]
 
 { #category : #handling }
@@ -163,7 +186,9 @@ Exception >> resume [
 
 { #category : #handling }
 Exception >> resume: value [
-	self isResumable		ifFalse: [Error signal: 'cannot resume from a non-resumable exception'].	resumeBlock value: value
+	self isResumable
+		ifFalse: [Error signal: 'cannot resume from a non-resumable exception'].
+	resumeBlock value: value
 ]
 
 { #category : #handling }
@@ -183,17 +208,25 @@ Exception >> return [
 
 { #category : #handling }
 Exception >> return: value [
-	signalContext := nil.	activeHandler return: value
+	signalContext := nil.
+	activeHandler return: value
 ]
 
 { #category : #signaling }
 Exception >> signal [
-	| signaller result |	signaller := self.	[signaller notNil] whileTrue: [		resignaledException := nil.		result := signaller doSignal.		signaller := resignaledException].	^result
+	| signaller result |
+	signaller := self.
+	[signaller notNil] whileTrue: [
+		resignaledException := nil.
+		result := signaller doSignal.
+		signaller := resignaledException].
+	^result
 ]
 
 { #category : #services }
 Exception >> stacktrace [
-	^signalContext backtrace.]
+	^signalContext backtrace.
+]
 
 { #category : #sunit }
 Exception >> sunitRetry [

@@ -11,7 +11,11 @@ StarToken class >> current [
 
 { #category : #initialization }
 StarToken class >> initialize [
-	"	StarToken initialize	"	super initialize.	self initializeCurrent
+	"
+	StarToken initialize
+	"
+	super initialize.
+	self initializeCurrent
 ]
 
 { #category : #initialization }
@@ -31,7 +35,10 @@ StarToken >> matchFirstOn: aMatchAlgorithm [
 
 { #category : #'double dispatching' }
 StarToken >> matchLastOn: aMatchAlgorithm [
-	"	do nothing	"	
+	"
+	do nothing
+	"
+	
 ]
 
 { #category : #printing }

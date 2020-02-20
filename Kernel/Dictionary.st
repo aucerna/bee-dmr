@@ -6,7 +6,13 @@ Class {
 
 { #category : #comparing }
 Dictionary >> = aCollection [
-	self == aCollection ifTrue: [^true].	self class = aCollection class ifFalse: [^false].	self size = aCollection size ifFalse: [^false].	self keysAndValuesDo: [:k :v | | w |		w := aCollection at: k ifAbsent: [^false].		v = w ifFalse: [^false]].	^true
+	self == aCollection ifTrue: [^true].
+	self class = aCollection class ifFalse: [^false].
+	self size = aCollection size ifFalse: [^false].
+	self keysAndValuesDo: [:k :v | | w |
+		w := aCollection at: k ifAbsent: [^false].
+		v = w ifFalse: [^false]].
+	^true
 ]
 
 { #category : #adding }
@@ -16,12 +22,16 @@ Dictionary >> add: anAssociation [
 
 { #category : #adding }
 Dictionary >> addAll: aCollection [
-	aCollection isDictionary		ifTrue: [aCollection associationsDo: [:assoc | self add: assoc]]		ifFalse: [aCollection do: [:assoc | self add: assoc]].	^aCollection
+	aCollection isDictionary
+		ifTrue: [aCollection associationsDo: [:assoc | self add: assoc]]
+		ifFalse: [aCollection do: [:assoc | self add: assoc]].
+	^aCollection
 ]
 
 { #category : #accessing }
 Dictionary >> anyone [
-	self associationsDo: [:assoc | ^assoc value].	^nil
+	self associationsDo: [:assoc | ^assoc value].
+	^nil
 ]
 
 { #category : #accessing }
@@ -31,7 +41,9 @@ Dictionary >> associationAt: key [
 
 { #category : #accessing }
 Dictionary >> associationAt: key ifAbsent: aBlock [
-	| assoc |	assoc := table lookupKey: key.	^assoc isNil ifTrue: [aBlock value] ifFalse: [assoc]
+	| assoc |
+	assoc := table lookupKey: key.
+	^assoc isNil ifTrue: [aBlock value] ifFalse: [assoc]
 ]
 
 { #category : #private }
@@ -41,7 +53,8 @@ Dictionary >> associationClass [
 
 { #category : #accessing }
 Dictionary >> associations [
-	^Array		streamContents: [:strm | self associationsDo: [:a | strm nextPut: a]]
+	^Array
+		streamContents: [:strm | self associationsDo: [:a | strm nextPut: a]]
 ]
 
 { #category : #enumerating }
@@ -51,7 +64,12 @@ Dictionary >> associationsDo: aBlock [
 
 { #category : #enumerating }
 Dictionary >> associationsSelect: aBlock [
-	| selection |	selection := self species new.	self		associationsDo: [:assoc | (aBlock evaluateWith: assoc)			ifTrue: [selection add: assoc]].	^selection
+	| selection |
+	selection := self species new.
+	self
+		associationsDo: [:assoc | (aBlock evaluateWith: assoc)
+			ifTrue: [selection add: assoc]].
+	^selection
 ]
 
 { #category : #accessing }
@@ -81,52 +99,96 @@ Dictionary >> at: key ifPresent: aBlock [
 
 { #category : #accessing }
 Dictionary >> at: key put: element [
-	| assoc |	assoc := self associationClass key: key value: element.	self add: assoc.	^element
+	| assoc |
+	assoc := self associationClass key: key value: element.
+	self add: assoc.
+	^element
 ]
 
 { #category : #accessing }
 Dictionary >> at: key put: anObject ifPresent: aBlock [
-	| assoc existing answer |	assoc := self associationClass key: key value: anObject.	existing := table atKey: key put: assoc.	existing isNil		ifTrue: [			self incrementTally.			answer := anObject]		ifFalse: [			answer := aBlock value: existing value.			existing value: answer].	^answer
+	| assoc existing answer |
+	assoc := self associationClass key: key value: anObject.
+	existing := table atKey: key put: assoc.
+	existing isNil
+		ifTrue: [
+			self incrementTally.
+			answer := anObject]
+		ifFalse: [
+			answer := aBlock value: existing value.
+			existing value: answer].
+	^answer
 ]
 
 { #category : #arithmetic }
 Dictionary >> at: key sum: aNumber [
-	| prev |	prev := table atKey: key sum: aNumber.	^prev isNil		ifTrue: [			self incrementTally.			aNumber]		ifFalse: [self storesAssociations ifTrue: [prev value] ifFalse: [prev]]
+	| prev |
+	prev := table atKey: key sum: aNumber.
+	^prev isNil
+		ifTrue: [
+			self incrementTally.
+			aNumber]
+		ifFalse: [self storesAssociations ifTrue: [prev value] ifFalse: [prev]]
 ]
 
 { #category : #private }
 Dictionary >> basicAdd: anAssociation [
-	| assoc |	assoc := table atKey: anAssociation key put: anAssociation.	assoc == nil		ifTrue: [self incrementTally]		ifFalse: [assoc value: anAssociation value].	^anAssociation
+	| assoc |
+	assoc := table atKey: anAssociation key put: anAssociation.
+	assoc == nil
+		ifTrue: [self incrementTally]
+		ifFalse: [assoc value: anAssociation value].
+	^anAssociation
 ]
 
 { #category : #private }
 Dictionary >> basicAt: key put: element for: aDictionary [
-	table basicAtKey: key put: element.	tally := tally + 1
+	table basicAtKey: key put: element.
+	tally := tally + 1
 ]
 
 { #category : #removing }
 Dictionary >> basicRemoveKey: key ifAbsent: aBlock [
-	table removeKey: key ifAbsent: [^aBlock value].	tally := tally - 1.	^key
+	table removeKey: key ifAbsent: [^aBlock value].
+	tally := tally - 1.
+	^key
 ]
 
 { #category : #enumerating }
 Dictionary >> collect: aBlock [
-	| answer |	answer := self species new: self size.	self keysAndValuesDo: [:key :value | 		answer			add: (answer associationClass key: key value: (aBlock evaluateWith: value))].	^answer
+	| answer |
+	answer := self species new: self size.
+	self keysAndValuesDo: [:key :value | 
+		answer
+			add: (answer associationClass key: key value: (aBlock evaluateWith: value))].
+	^answer
 ]
 
 { #category : #enumerating }
 Dictionary >> collect: collectBlock thenDo: actionBlock [
-	self associationsDo: [:x | | fx |		fx := collectBlock evaluateWith: x value.		actionBlock evaluateWith: fx]
+	self associationsDo: [:x | | fx |
+		fx := collectBlock evaluateWith: x value.
+		actionBlock evaluateWith: fx]
 ]
 
 { #category : #enumerating }
 Dictionary >> collect: collectBlock thenSelect: selectBlock [
-	| answer |	answer := self species new.	self associationsDo: [:x | | fx |		fx := collectBlock evaluateWith: x value.		(selectBlock evaluateWith: fx)			ifTrue: [answer add: (answer associationClass key: x key value: fx)]].	^answer
+	| answer |
+	answer := self species new.
+	self associationsDo: [:x | | fx |
+		fx := collectBlock evaluateWith: x value.
+		(selectBlock evaluateWith: fx)
+			ifTrue: [answer add: (answer associationClass key: x key value: fx)]].
+	^answer
 ]
 
 { #category : #copying }
 Dictionary >> deepCopy [
-	| copy |	copy := self species new: tally.	table policy == self ifFalse: [copy usePolicy: table policy copy].	self associationsDo: [:element | copy add: element copy].	^copy
+	| copy |
+	copy := self species new: tally.
+	table policy == self ifFalse: [copy usePolicy: table policy copy].
+	self associationsDo: [:element | copy add: element copy].
+	^copy
 ]
 
 { #category : #private }
@@ -141,7 +203,9 @@ Dictionary >> do: aBlock [
 
 { #category : #system }
 Dictionary >> doesNotUnderstand: aMessage [
-	^self		at: aMessage selector asString asLowercase		ifAbsent: [super doesNotUnderstand: aMessage]
+	^self
+		at: aMessage selector asString asLowercase
+		ifAbsent: [super doesNotUnderstand: aMessage]
 ]
 
 { #category : #private }
@@ -171,7 +235,8 @@ Dictionary >> keyAtValue: anObject [
 
 { #category : #inquiries }
 Dictionary >> keyAtValue: anObject ifAbsent: aBlock [
-	self associationsDo: [:assoc | assoc value = anObject ifTrue: [^assoc key]].	^aBlock value
+	self associationsDo: [:assoc | assoc value = anObject ifTrue: [^assoc key]].
+	^aBlock value
 ]
 
 { #category : #private }
@@ -191,7 +256,10 @@ Dictionary >> keyNotFound: anObject [
 
 { #category : #accessing }
 Dictionary >> keys [
-	| keys |	keys := self keyCollector.	self keysDo: [:k | keys add: k].	^keys
+	| keys |
+	keys := self keyCollector.
+	self keysDo: [:k | keys add: k].
+	^keys
 ]
 
 { #category : #enumerating }
@@ -211,17 +279,26 @@ Dictionary >> keysDo: aBlock [
 
 { #category : #inquiries }
 Dictionary >> occurrencesOf: anObject [
-	| count |	count := 0.	self do: [:value | value = anObject ifTrue: [count := count + 1]].	^count
+	| count |
+	count := 0.
+	self do: [:value | value = anObject ifTrue: [count := count + 1]].
+	^count
 ]
 
 { #category : #copying }
 Dictionary >> postCopy [
-	super postCopy.	self storesAssociations ifTrue: [table copyAssociations]
+	super postCopy.
+	self storesAssociations ifTrue: [table copyAssociations]
 ]
 
 { #category : #private }
 Dictionary >> rebuildOn: aDictionary [
-	self		keysAndElementsDo: [:key :assoc | aDictionary			basicAt: key			put: assoc			for: aDictionary].	table := aDictionary table
+	self
+		keysAndElementsDo: [:key :assoc | aDictionary
+			basicAt: key
+			put: assoc
+			for: aDictionary].
+	table := aDictionary table
 ]
 
 { #category : #removing }
@@ -246,17 +323,47 @@ Dictionary >> removeKey: key ifAbsent: aBlock [
 
 { #category : #enumerating }
 Dictionary >> select: aBlock [
-	| selection |	selection := self species new.	self		associationsDo: [:assoc | (aBlock evaluateWith: assoc value)			ifTrue: [selection add: assoc]].	^selection
+	| selection |
+	selection := self species new.
+	self
+		associationsDo: [:assoc | (aBlock evaluateWith: assoc value)
+			ifTrue: [selection add: assoc]].
+	^selection
 ]
 
 { #category : #enumerating }
 Dictionary >> select: selectBlock thenCollect: collectBlock [
-	| answer |	answer := self species new.	self keysAndValuesDo: [:key :value | | assoc |		(selectBlock evaluateWith: value) ifTrue: [			assoc := answer associationClass				key: key				value: (collectBlock evaluateWith: value).			answer add: assoc]].	^answer
+	| answer |
+	answer := self species new.
+	self keysAndValuesDo: [:key :value | | assoc |
+		(selectBlock evaluateWith: value) ifTrue: [
+			assoc := answer associationClass
+				key: key
+				value: (collectBlock evaluateWith: value).
+			answer add: assoc]].
+	^answer
 ]
 
 { #category : #printing }
 Dictionary >> storeOn: aStream [
-	| first |	self isEmpty		ifTrue: [^aStream nextPutAll: self class name; nextPutAll: ' new'].	first := true.	aStream		nextPut: $(;		nextPutAll: self class name;		nextPutAll: ' new'.	self associationsDo: [:assoc | 		first ifFalse: [aStream nextPut: $;].		aStream crtab; nextPutAll: 'add: '.		assoc storeOn: aStream.		first := false].	aStream		nextPut: $;;		crtab;		nextPutAll: 'yourself';		nextPut: $)
+	| first |
+	self isEmpty
+		ifTrue: [^aStream nextPutAll: self class name; nextPutAll: ' new'].
+	first := true.
+	aStream
+		nextPut: $(;
+		nextPutAll: self class name;
+		nextPutAll: ' new'.
+	self associationsDo: [:assoc | 
+		first ifFalse: [aStream nextPut: $;].
+		aStream crtab; nextPutAll: 'add: '.
+		assoc storeOn: aStream.
+		first := false].
+	aStream
+		nextPut: $;;
+		crtab;
+		nextPutAll: 'yourself';
+		nextPut: $)
 ]
 
 { #category : #testing }
@@ -266,6 +373,9 @@ Dictionary >> storesAssociations [
 
 { #category : #accessing }
 Dictionary >> values [
-	| values |	values := Bag new.	self do: [:each | values add: each].	^values
+	| values |
+	values := Bag new.
+	self do: [:each | values add: each].
+	^values
 ]
 

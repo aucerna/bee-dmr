@@ -48,7 +48,9 @@ Locale >> dateFormat [
 
 { #category : #dates }
 Locale >> dateFrom: aString [
-	| stream |	stream := aString isString ifTrue: [aString readStream] ifFalse: [aString].	^date dateFromStream: stream
+	| stream |
+	stream := aString isString ifTrue: [aString readStream] ifFalse: [aString].
+	^date dateFromStream: stream
 ]
 
 { #category : #dates }
@@ -93,7 +95,11 @@ Locale >> indexOfMonth: aString [
 
 { #category : #initialization }
 Locale >> initialize [
-	collator := CharacterCollator new.	currency := CurrencyFormat default.	date := DateFormat default.	number := NumberFormat default.	time := TimeFormat default
+	collator := CharacterCollator new.
+	currency := CurrencyFormat default.
+	date := DateFormat default.
+	number := NumberFormat default.
+	time := TimeFormat default
 ]
 
 { #category : #strings }

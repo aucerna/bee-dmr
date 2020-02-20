@@ -22,12 +22,16 @@ CriticalArray class >> on: anArray [
 
 { #category : #'instance creation' }
 CriticalArray class >> on: space reserving: anInteger [
-	| array |	array := space shallowCopy: #() growingTo: anInteger.	^self new space: space; contents: array; yourself
+	| array |
+	array := space shallowCopy: #() growingTo: anInteger.
+	^self new space: space; contents: array; yourself
 ]
 
 { #category : #actions }
 CriticalArray >> add: object [
-	size = contents _size ifTrue: [self grow].	size := size + 1.	self at: size put: object
+	size = contents _size ifTrue: [self grow].
+	size := size + 1.
+	self at: size put: object
 ]
 
 { #category : #accessing }
@@ -37,7 +41,9 @@ CriticalArray >> at: index [
 
 { #category : #accessing }
 CriticalArray >> at: index put: anObject [
-	^writeBarrier		ifTrue: [contents objectAtValid: index put: anObject]		ifFalse: [contents _basicAt: index put: anObject]
+	^writeBarrier
+		ifTrue: [contents objectAtValid: index put: anObject]
+		ifFalse: [contents _basicAt: index put: anObject]
 ]
 
 { #category : #accessing }
@@ -52,7 +58,9 @@ CriticalArray >> contents: collection [
 
 { #category : #enumerating }
 CriticalArray >> do: aBlock [
-	1 to: self size do: [:index | | element |		element := self at: index.		aBlock value: element]
+	1 to: self size do: [:index | | element |
+		element := self at: index.
+		aBlock value: element]
 ]
 
 { #category : #enumerating }
@@ -62,7 +70,17 @@ CriticalArray >> grow [
 
 { #category : #private }
 CriticalArray >> growToHold: n [
-	"	Change the contents to the expanded version 	before remembering, as remembering may trigger	an insertion in this very same array.	"	| expanded original |	contents _size < n ifTrue: [		expanded := space shallowCopy: contents growingTo: n.		original := contents.		contents := expanded.		original _isRemembered ifTrue: [Memory current remember: expanded]]
+	"
+	Change the contents to the expanded version 
+	before remembering, as remembering may trigger
+	an insertion in this very same array.
+	"
+	| expanded original |
+	contents _size < n ifTrue: [
+		expanded := space shallowCopy: contents growingTo: n.
+		original := contents.
+		contents := expanded.
+		original _isRemembered ifTrue: [Memory current remember: expanded]]
 ]
 
 { #category : #accessing }
@@ -72,17 +90,22 @@ CriticalArray >> ignoreWriteBarrier [
 
 { #category : #testing }
 CriticalArray >> includes: anObject [
-	1 to: size do: [:i | anObject = (contents at: i) ifTrue: [^true]].	^false
+	1 to: size do: [:i | anObject = (contents at: i) ifTrue: [^true]].
+	^false
 ]
 
 { #category : #testing }
 CriticalArray >> includesIdentical: anObject [
-	1 to: size do: [:i | anObject == (contents at: i) ifTrue: [^true]].	^false
+	1 to: size do: [:i | anObject == (contents at: i) ifTrue: [^true]].
+	^false
 ]
 
 { #category : #testing }
 CriticalArray >> initialize [
-	super initialize.	size := 0.	writeBarrier := true.	space := Memory current
+	super initialize.
+	size := 0.
+	writeBarrier := true.
+	space := Memory current
 ]
 
 { #category : #testing }
@@ -92,12 +115,17 @@ CriticalArray >> isEmpty [
 
 { #category : #accessing }
 CriticalArray >> pop [
-	| answer |	answer := self at: size.	contents _basicAt: size put: nil.	size := size - 1.	^answer
+	| answer |
+	answer := self at: size.
+	contents _basicAt: size put: nil.
+	size := size - 1.
+	^answer
 ]
 
 { #category : #copying }
 CriticalArray >> postCopy [
-	super postCopy.	contents := contents copy
+	super postCopy.
+	contents := contents copy
 ]
 
 { #category : #actions }
@@ -107,7 +135,8 @@ CriticalArray >> push: object [
 
 { #category : #actions }
 CriticalArray >> reset [
-	1 to: self size do: [:i | contents _basicAt: i put: nil].	size := 0
+	1 to: self size do: [:i | contents _basicAt: i put: nil].
+	size := 0
 ]
 
 { #category : #accessing }
@@ -127,7 +156,9 @@ CriticalArray >> space: aSpace [
 
 { #category : #'adding / removing' }
 CriticalArray >> unsafeAdd: anObject [
-	size = contents _size ifTrue: [self grow].	size := size + 1.	self unsafeAt: size put: anObject
+	size = contents _size ifTrue: [self grow].
+	size := size + 1.
+	self unsafeAt: size put: anObject
 ]
 
 { #category : #accessing }

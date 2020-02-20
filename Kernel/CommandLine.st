@@ -33,22 +33,42 @@ CommandLine >> addOption: option [
 
 { #category : #accessing }
 CommandLine >> addOption: option with: arguments [
-	| op args |	op := self canonize: option.	args := (arguments isCollection andNot: [arguments isString])		ifTrue: [arguments asArray]		ifFalse: [{arguments}].	args := args collect: #asString.	^options at: op put: args
+	| op args |
+	op := self canonize: option.
+	args := (arguments isCollection andNot: [arguments isString])
+		ifTrue: [arguments asArray]
+		ifFalse: [{arguments}].
+	args := args collect: #asString.
+	^options at: op put: args
 ]
 
 { #category : #accessing }
 CommandLine >> argumentAt: option [
-	| arguments |	arguments := self argumentsAt: option.	arguments ifNil: [^nil].	^arguments size = 1		ifTrue: [arguments first]		ifFalse: [self error: 'The option has a different number of arguments']
+	| arguments |
+	arguments := self argumentsAt: option.
+	arguments ifNil: [^nil].
+	^arguments size = 1
+		ifTrue: [arguments first]
+		ifFalse: [self error: 'The option has a different number of arguments']
 ]
 
 { #category : #accessing }
 CommandLine >> argumentsAt: option [
-	| op |	op := self canonize: option.	^options at: op ifAbsent: nil
+	| op |
+	op := self canonize: option.
+	^options at: op ifAbsent: nil
 ]
 
 { #category : #accessing }
 CommandLine >> booleanAt: option [
-	| arguments value |	arguments := self argumentsAt: option.	arguments ifNil: [^false].	arguments size = 0 ifTrue: [^true].	arguments size = 1 ifTrue: [		value := arguments first.		^(value = '0' or: [value = 'false' or: [value = 'no']]) not].	self error: 'The option has a different number of arguments'
+	| arguments value |
+	arguments := self argumentsAt: option.
+	arguments ifNil: [^false].
+	arguments size = 0 ifTrue: [^true].
+	arguments size = 1 ifTrue: [
+		value := arguments first.
+		^(value = '0' or: [value = 'false' or: [value = 'no']]) not].
+	self error: 'The option has a different number of arguments'
 ]
 
 { #category : #private }
@@ -68,12 +88,19 @@ CommandLine >> command: aString [
 
 { #category : #private }
 CommandLine >> formatArgument: argument [
-	^(argument includes: Space)		ifTrue: [argument doubleQuoted]		ifFalse: [argument]
+	^(argument includes: Space)
+		ifTrue: [argument doubleQuoted]
+		ifFalse: [argument]
 ]
 
 { #category : #private }
 CommandLine >> formatOption: option [
-	| prefix string |	prefix := option size = 1 ifTrue: ['-'] ifFalse: ['--'].	string := (option includes: Space)		ifTrue: [option doubleQuoted]		ifFalse: [option].	^prefix , string
+	| prefix string |
+	prefix := option size = 1 ifTrue: ['-'] ifFalse: ['--'].
+	string := (option includes: Space)
+		ifTrue: [option doubleQuoted]
+		ifFalse: [option].
+	^prefix , string
 ]
 
 { #category : #private }
@@ -83,17 +110,26 @@ CommandLine >> fromString: aString [
 
 { #category : #processing }
 CommandLine >> getArguments: anInteger for: option [
-	| args |	args := self nextTokens: anInteger.	args size < anInteger ifTrue: [		args := anInteger = 1 ifTrue: [' argument'] ifFalse: [' arguments'].		self error: 'Option ' , option , ' expects ' , anInteger asString , args].	^args
+	| args |
+	args := self nextTokens: anInteger.
+	args size < anInteger ifTrue: [
+		args := anInteger = 1 ifTrue: [' argument'] ifFalse: [' arguments'].
+		self error: 'Option ' , option , ' expects ' , anInteger asString , args].
+	^args
 ]
 
 { #category : #testing }
 CommandLine >> includesOption: aString [
-	| option |	option := self canonize: aString.	^options includesKey: option
+	| option |
+	option := self canonize: aString.
+	^options includesKey: option
 ]
 
 { #category : #initialization }
 CommandLine >> initialize [
-	super initialize.	options := OrderedDictionary new.	rules := OrderedDictionary new
+	super initialize.
+	options := OrderedDictionary new.
+	rules := OrderedDictionary new
 ]
 
 { #category : #processing }
@@ -108,7 +144,9 @@ CommandLine >> nextToken [
 
 { #category : #parsing }
 CommandLine >> nextTokens: anInteger [
-	| max |	max := anInteger min: tokens size - tokens position.	^(tokens next: max) asArray
+	| max |
+	max := anInteger min: tokens size - tokens position.
+	^(tokens next: max) asArray
 ]
 
 { #category : #private }
@@ -133,32 +171,61 @@ CommandLine >> parse [
 
 { #category : #processing }
 CommandLine >> process [
-	tokens isNil ifTrue: [self parse].	tokens := tokens readStream.	command := tokens next.	[tokens atEnd] whileFalse: [| option arguments token |		token := self nextToken.		(self seemsOption: token) ifTrue: [self processOption: token] ifFalse: [			option := self canonize: token.			arguments := self nextArgumentTokens.			self addOption: option with: arguments]]
+	tokens isNil ifTrue: [self parse].
+	tokens := tokens readStream.
+	command := tokens next.
+	[tokens atEnd] whileFalse: [| option arguments token |
+		token := self nextToken.
+		(self seemsOption: token) ifTrue: [self processOption: token] ifFalse: [
+			option := self canonize: token.
+			arguments := self nextArgumentTokens.
+			self addOption: option with: arguments]]
 ]
 
 { #category : #processing }
 CommandLine >> processOption: token [
-	| action option |	option := self canonize: token.	action := self actionFor: option.	(action isNil and: [self seemsMultipleOption: token])		ifTrue: [option do: [:char | self processOption: char asString]]		ifFalse: [self processOption: option action: action]
+	| action option |
+	option := self canonize: token.
+	action := self actionFor: option.
+	(action isNil and: [self seemsMultipleOption: token])
+		ifTrue: [option do: [:char | self processOption: char asString]]
+		ifFalse: [self processOption: option action: action]
 ]
 
 { #category : #processing }
 CommandLine >> processOption: option action: action [
-	| arguments |	arguments := action notNil		ifTrue: [self getArguments: action arity for: option]		ifFalse: [self nextArgumentTokens].	action notNil ifTrue: [action evaluateWithArguments: arguments].	self addOption: option with: arguments
+	| arguments |
+	arguments := action notNil
+		ifTrue: [self getArguments: action arity for: option]
+		ifFalse: [self nextArgumentTokens].
+	action notNil ifTrue: [action evaluateWithArguments: arguments].
+	self addOption: option with: arguments
 ]
 
 { #category : #private }
 CommandLine >> readTokenFrom: aStream [
-	^String streamContents: [:strm | | next end t |		next := aStream next.		end := next = $" ifTrue: [$"] ifFalse: [			strm nextPut: next.			Space].		t := aStream upTo: end.		strm nextPutAll: t]
+	^String streamContents: [:strm | | next end t |
+		next := aStream next.
+		end := next = $" ifTrue: [$"] ifFalse: [
+			strm nextPut: next.
+			Space].
+		t := aStream upTo: end.
+		strm nextPutAll: t]
 ]
 
 { #category : #private }
 CommandLine >> reset [
-	command := tokens := nil.	options removeAll
+	command := tokens := nil.
+	options removeAll
 ]
 
 { #category : #processing }
 CommandLine >> seemsMultipleOption: token [
-	| option |	(token beginsWith: '--') ifTrue: [^false].	option := self canonize: token.	^option size > 1		and: [option conform: [:char | rules includesKey: char asString]]
+	| option |
+	(token beginsWith: '--') ifTrue: [^false].
+	option := self canonize: token.
+	^option size > 1
+		and: [option conform: [:char | rules includesKey: char asString]]
 ]
 
 { #category : #testing }
@@ -168,16 +235,30 @@ CommandLine >> seemsOption: aString [
 
 { #category : #parsing }
 CommandLine >> tokenize [
-	| stream |	tokens := OrderedCollection new.	stream := input readStream.	[stream skipSeparators; atEnd] whileFalse: [| token |		token := self readTokenFrom: stream.		tokens add: token]
+	| stream |
+	tokens := OrderedCollection new.
+	stream := input readStream.
+	[stream skipSeparators; atEnd] whileFalse: [| token |
+		token := self readTokenFrom: stream.
+		tokens add: token]
 ]
 
 { #category : #accessing }
 CommandLine >> withOption: aString do: aBlock [
-	| option |	option := self canonize: aString.	rules at: option put: aBlock.	self reset
+	| option |
+	option := self canonize: aString.
+	rules at: option put: aBlock.
+	self reset
 ]
 
 { #category : #accessing }
 CommandLine >> withOption: short or: long do: aBlock [
-	| s l |	s := self canonize: short.	l := self canonize: long.	rules		at: s put: aBlock;		at: l put: aBlock.	self reset
+	| s l |
+	s := self canonize: short.
+	l := self canonize: long.
+	rules
+		at: s put: aBlock;
+		at: l put: aBlock.
+	self reset
 ]
 

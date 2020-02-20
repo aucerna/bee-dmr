@@ -82,12 +82,20 @@ ObjectReference >> targetOffset [
 
 { #category : #unclassified }
 ObjectReference >> valueToWriteAt: sourceAddress targeting: targetAddress with: wordSize [
-	| address correction |	address := targetAddress + self targetOffset.	correction := absolute		ifTrue: [0]		ifFalse: [sourceAddress + sourceOffset + wordSize].	^address - correction
+	| address correction |
+	address := targetAddress + self targetOffset.
+	correction := absolute
+		ifTrue: [0]
+		ifFalse: [sourceAddress + sourceOffset + wordSize].
+	^address - correction
 ]
 
 { #category : #accessing }
 ObjectReference >> valueToWriteAt: sourceAddress with: wordSize [
-	^self		valueToWriteAt: sourceAddress		targeting: target _asSmallInteger		with: wordSize
+	^self
+		valueToWriteAt: sourceAddress
+		targeting: target _asSmallInteger
+		with: wordSize
 ]
 
 { #category : #accessing }

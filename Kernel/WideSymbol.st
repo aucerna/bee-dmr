@@ -7,12 +7,22 @@ Class {
 
 { #category : #accessing }
 WideSymbol class >> findInterned: aString [
-	| symbol string |	string := aString reduced.	string == aString ifFalse: [^super findInterned: string].	symbol := aString asByteArray changeClassTo: self.	^SymbolTable lookup: symbol
+	| symbol string |
+	string := aString reduced.
+	string == aString ifFalse: [^super findInterned: string].
+	symbol := aString asByteArray changeClassTo: self.
+	^SymbolTable lookup: symbol
 ]
 
 { #category : #accessing }
 WideSymbol class >> intern: aString [
-	| symbol canonical |	aString isAnsiCompliant ifTrue: [^Symbol intern: aString reduced].	symbol := aString asByteArray.	symbol changeClassTo: self.	canonical := SymbolTable lookup: symbol.	canonical == nil ifTrue: [^SymbolTable add: symbol].	^canonical
+	| symbol canonical |
+	aString isAnsiCompliant ifTrue: [^Symbol intern: aString reduced].
+	symbol := aString asByteArray.
+	symbol changeClassTo: self.
+	canonical := SymbolTable lookup: symbol.
+	canonical == nil ifTrue: [^SymbolTable add: symbol].
+	^canonical
 ]
 
 { #category : #comparing }
@@ -32,12 +42,17 @@ WideSymbol >> asLowercase [
 
 { #category : #converting }
 WideSymbol >> asSelector [
-	^self isAnsiCompliant		ifTrue: [self asString asAnsi asSelector]		ifFalse: [self]
+	^self isAnsiCompliant
+		ifTrue: [self asString asAnsi asSelector]
+		ifFalse: [self]
 ]
 
 { #category : #converting }
 WideSymbol >> asString [
-	| n string |	n := self size.	string := WideString new: n.	^string replaceFrom: 1 to: n with: self
+	| n string |
+	n := self size.
+	string := WideString new: n.
+	^string replaceFrom: 1 to: n with: self
 ]
 
 { #category : #converting }
@@ -52,17 +67,23 @@ WideSymbol >> asWideSymbol [
 
 { #category : #accessing }
 WideSymbol >> at: index [
-	| cp |	cp := self checkIndex: index; codeAt: index.	^Character value: cp
+	| cp |
+	cp := self checkIndex: index; codeAt: index.
+	^Character value: cp
 ]
 
 { #category : #accessing }
 WideSymbol >> at: index putCode: codePoint [
-	^self		checkIndex: index;		uLongAtOffset: index - 1 * 4 put: codePoint
+	^self
+		checkIndex: index;
+		uLongAtOffset: index - 1 * 4 put: codePoint
 ]
 
 { #category : #accessing }
 WideSymbol >> atValid: index [
-	| cp |	cp := self codeAt: index.	^Character value: cp
+	| cp |
+	cp := self codeAt: index.
+	^Character value: cp
 ]
 
 { #category : #private }
@@ -97,6 +118,12 @@ WideSymbol >> species [
 
 { #category : #private }
 WideSymbol >> td1 [
-	| m td1 |	m := self size.	td1 := Dictionary new: m.	m to: 1 by: -1 do: [:i | | code |		code := self uLongAtOffset: i - 1 * 4.		td1 at: code + 1 ifAbsentPut: [m - i + 1]].	^td1
+	| m td1 |
+	m := self size.
+	td1 := Dictionary new: m.
+	m to: 1 by: -1 do: [:i | | code |
+		code := self uLongAtOffset: i - 1 * 4.
+		td1 at: code + 1 ifAbsentPut: [m - i + 1]].
+	^td1
 ]
 

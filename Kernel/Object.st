@@ -21,7 +21,10 @@ Object class >> hasRegisteredEvent: aSymbol [
 
 { #category : #accessing }
 Object class >> registeredEvents [
-	| events |	events := Smalltalk registeredEventsFor: self.	events isNil ifTrue: [self registerEvents].	^Smalltalk registeredEventsFor: self
+	| events |
+	events := Smalltalk registeredEventsFor: self.
+	events isNil ifTrue: [self registerEvents].
+	^Smalltalk registeredEventsFor: self
 ]
 
 { #category : #initialization }
@@ -66,12 +69,16 @@ Object >> actionForEvent: aSymbol [
 
 { #category : #'event handling' }
 Object >> actionsForEvent: aSymbol [
-	| action |	action := self eventAt: aSymbol ifAbsent: [^ActionSequence new].	^action asActionSequence
+	| action |
+	action := self eventAt: aSymbol ifAbsent: [^ActionSequence new].
+	^action asActionSequence
 ]
 
 { #category : #'instance behavior' }
 Object >> addInstanceMethods: aMethodDictionary [
-	| behavior |	behavior := self behavior enhancedWith: aMethodDictionary.	self behavior: behavior
+	| behavior |
+	behavior := self behavior enhancedWith: aMethodDictionary.
+	self behavior: behavior
 ]
 
 { #category : #'event handling' }
@@ -86,7 +93,8 @@ Object >> aspects [
 
 { #category : #debugging }
 Object >> ASSERT: aBoolean [
-	aBoolean value ifFalse: [AssertionFailure signal].	^aBoolean
+	aBoolean value ifFalse: [AssertionFailure signal].
+	^aBoolean
 ]
 
 { #category : #converting }
@@ -116,27 +124,49 @@ Object >> basicAt: anInteger put: anObject [
 
 { #category : #unclassified }
 Object >> basicByteAt: index [
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].	(1 <= index and: [index <= self _size])		ifFalse: [self outOfBoundsIndex: index].	^self byteAtValid: index
+	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
+	(1 <= index and: [index <= self _size])
+		ifFalse: [self outOfBoundsIndex: index].
+	^self byteAtValid: index
 ]
 
 { #category : #unclassified }
 Object >> basicByteAt: index put: value [
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].	(1 <= index and: [index <= self _size])		ifFalse: [self outOfBoundsIndex: index].	value _isSmallInteger		ifFalse: [^self error: 'value does not fit in a byte'].	(0 <= value and: [value < 256])		ifFalse: [^self error: 'value does not fit in a byte'].	^self byteAtValid: index put: value
+	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
+	(1 <= index and: [index <= self _size])
+		ifFalse: [self outOfBoundsIndex: index].
+	value _isSmallInteger
+		ifFalse: [^self error: 'value does not fit in a byte'].
+	(0 <= value and: [value < 256])
+		ifFalse: [^self error: 'value does not fit in a byte'].
+	^self byteAtValid: index put: value
 ]
 
 { #category : #unclassified }
 Object >> basicObjectAt: grossIndex [
-	| index |	index := self basicObjectIndexOf: grossIndex.	^self _basicAt: index
+	| index |
+	index := self basicObjectIndexOf: grossIndex.
+	^self _basicAt: index
 ]
 
 { #category : #unclassified }
 Object >> basicObjectAt: grossIndex put: anObject [
-	| index |	index := self basicObjectIndexOf: grossIndex.	^self objectAtValid: index put: anObject
+	| index |
+	index := self basicObjectIndexOf: grossIndex.
+	^self objectAtValid: index put: anObject
 ]
 
 { #category : #unclassified }
 Object >> basicObjectIndexOf: grossIndex [
-	| instVars index |	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].	instVars := (self _hasNamedSlots and: [self _isArrayed])		ifTrue: [self class instSize]		ifFalse: [0].	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])		ifFalse: [^self outOfBoundsIndex: grossIndex].	index := grossIndex + instVars.	^index
+	| instVars index |
+	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].
+	instVars := (self _hasNamedSlots and: [self _isArrayed])
+		ifTrue: [self class instSize]
+		ifFalse: [0].
+	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])
+		ifFalse: [^self outOfBoundsIndex: grossIndex].
+	index := grossIndex + instVars.
+	^index
 ]
 
 { #category : #private }
@@ -246,12 +276,19 @@ Object >> evaluateWithArguments: anArray [
 
 { #category : #private }
 Object >> eventAt: aSymbol ifAbsent: aBlock [
-	| table |	table := self eventTable ifNil: [^aBlock value].	^table at: aSymbol asSymbol ifAbsent: aBlock
+	| table |
+	table := self eventTable ifNil: [^aBlock value].
+	^table at: aSymbol asSymbol ifAbsent: aBlock
 ]
 
 { #category : #private }
 Object >> eventAt: aSymbol put: action [
-	| table |	table := self eventTable.	table isNil ifTrue: [		table := IdentityDictionary new: 1.		self bindEventTable: table].	table at: aSymbol asSymbol put: action
+	| table |
+	table := self eventTable.
+	table isNil ifTrue: [
+		table := IdentityDictionary new: 1.
+		self bindEventTable: table].
+	table at: aSymbol asSymbol put: action
 ]
 
 { #category : #private }
@@ -271,12 +308,17 @@ Object >> halt: errorMessage [
 
 { #category : #'event handling' }
 Object >> handledEvents [
-	| table |	table := self eventTable.	table isNil ifTrue: [^#()].	^table keys
+	| table |
+	table := self eventTable.
+	table isNil ifTrue: [^#()].
+	^table keys
 ]
 
 { #category : #'event handling' }
 Object >> hasActionForEvent: aSymbol [
-	| table |	table := self eventTable ifNil: [^false].	^table includesKey: aSymbol asSymbol
+	| table |
+	table := self eventTable ifNil: [^false].
+	^table includesKey: aSymbol asSymbol
 ]
 
 { #category : #testing }
@@ -290,38 +332,112 @@ Object >> hash: anInteger [
 ]
 
 { #category : #services }
-Object >> hashedWith: awith: bwith: cwith: dwith: ewith: fcount: n [
-	| hash |	hash := n hashMultiply bitXor: self hash.	hash := hash hashMultiply bitXor: a hash.	n = 2 ifTrue: [^hash].	hash := hash hashMultiply bitXor: b hash.	n = 3 ifTrue: [^hash].	hash := hash hashMultiply bitXor: c hash.	n = 4 ifTrue: [^hash].	hash := hash hashMultiply bitXor: d hash.	n = 5 ifTrue: [^hash].	hash := hash hashMultiply bitXor: e hash.	n = 6 ifTrue: [^hash].	hash := hash hashMultiply bitXor: f hash.	n = 7 ifTrue: [^hash].	self error: 'Invalid argument count'
+Object >> hashedWith: a
+with: b
+with: c
+with: d
+with: e
+with: f
+count: n [
+	| hash |
+	hash := n hashMultiply bitXor: self hash.
+	hash := hash hashMultiply bitXor: a hash.
+	n = 2 ifTrue: [^hash].
+	hash := hash hashMultiply bitXor: b hash.
+	n = 3 ifTrue: [^hash].
+	hash := hash hashMultiply bitXor: c hash.
+	n = 4 ifTrue: [^hash].
+	hash := hash hashMultiply bitXor: d hash.
+	n = 5 ifTrue: [^hash].
+	hash := hash hashMultiply bitXor: e hash.
+	n = 6 ifTrue: [^hash].
+	hash := hash hashMultiply bitXor: f hash.
+	n = 7 ifTrue: [^hash].
+	self error: 'Invalid argument count'
 ]
 
 { #category : #services }
 Object >> hashWith: a [
-	^self		hashedWith: a		with: nil		with: nil		with: nil		with: nil		with: nil		count: 2
+	^self
+		hashedWith: a
+		with: nil
+		with: nil
+		with: nil
+		with: nil
+		with: nil
+		count: 2
 ]
 
 { #category : #services }
 Object >> hashWith: a with: b [
-	^self		hashedWith: a		with: b		with: nil		with: nil		with: nil		with: nil		count: 3
+	^self
+		hashedWith: a
+		with: b
+		with: nil
+		with: nil
+		with: nil
+		with: nil
+		count: 3
 ]
 
 { #category : #services }
 Object >> hashWith: a with: b with: c [
-	^self		hashedWith: a		with: b		with: c		with: nil		with: nil		with: nil		count: 4
+	^self
+		hashedWith: a
+		with: b
+		with: c
+		with: nil
+		with: nil
+		with: nil
+		count: 4
 ]
 
 { #category : #services }
-Object >> hashWith: awith: bwith: cwith: d [
-	^self		hashedWith: a		with: b		with: c		with: d		with: nil		with: nil		count: 5
+Object >> hashWith: a
+with: b
+with: c
+with: d [
+	^self
+		hashedWith: a
+		with: b
+		with: c
+		with: d
+		with: nil
+		with: nil
+		count: 5
 ]
 
 { #category : #services }
-Object >> hashWith: awith: bwith: cwith: dwith: e [
-	^self		hashedWith: a		with: b		with: c		with: d		with: e		with: nil		count: 6
+Object >> hashWith: a
+with: b
+with: c
+with: d
+with: e [
+	^self
+		hashedWith: a
+		with: b
+		with: c
+		with: d
+		with: e
+		with: nil
+		count: 6
 ]
 
 { #category : #services }
-Object >> hashWith: awith: bwith: cwith: dwith: ewith: f [
-	^self		hashedWith: a		with: b		with: c		with: d		with: e		with: f		count: 7
+Object >> hashWith: a
+with: b
+with: c
+with: d
+with: e
+with: f [
+	^self
+		hashedWith: a
+		with: b
+		with: c
+		with: d
+		with: e
+		with: f
+		count: 7
 ]
 
 { #category : #testing }
@@ -331,12 +447,18 @@ Object >> hasRegisteredEvent: aSymbol [
 
 { #category : #testing }
 Object >> ifNil: aBlock ifNotNil: anotherBlock [
-	"	This method is inlined	"	^anotherBlock evaluateWith: self
+	"
+	This method is inlined
+	"
+	^anotherBlock evaluateWith: self
 ]
 
 { #category : #testing }
 Object >> ifNotNil: aBlock ifNil: anotherBlock [
-	"	This method is inlined	"	^aBlock evaluateWith: self
+	"
+	This method is inlined
+	"
+	^aBlock evaluateWith: self
 ]
 
 { #category : #accessing }
@@ -591,7 +713,11 @@ Object >> literalString [
 
 { #category : #errors }
 Object >> marshalOn: aStream [
-	| s |	s := self sizeInBytes.	aStream putBytesFrom: self from: 1 to: s.	s < WordSize		ifTrue: [aStream putBytesFrom: #[0 0 0 0 0 0 0 0] from: 1 to: WordSize - s]
+	| s |
+	s := self sizeInBytes.
+	aStream putBytesFrom: self from: 1 to: s.
+	s < WordSize
+		ifTrue: [aStream putBytesFrom: #[0 0 0 0 0 0 0 0] from: 1 to: WordSize - s]
 ]
 
 { #category : #'instance behavior' }
@@ -611,17 +737,43 @@ Object >> mustBeBoolean [
 
 { #category : #copying }
 Object >> objectDeepCopy [
-	| class ivars copy |	class := self class.	class _instancesAreFixed		ifTrue: [			ivars := 0.			copy := class basicNew]		ifFalse: [			ivars := self basicSize.			copy := class basicNew: ivars].	class _instancesHavePointers		ifTrue: [			1 to: ivars + class instSize do: [:index | | ivar |				ivar := self instVarAt: index.				copy instVarAt: index put: ivar copy]]		ifFalse: [			1 to: ivars do: [:index | | byte |				byte := self basicAt: index.				copy basicAt: index put: byte]].	^copy
+	| class ivars copy |
+	class := self class.
+	class _instancesAreFixed
+		ifTrue: [
+			ivars := 0.
+			copy := class basicNew]
+		ifFalse: [
+			ivars := self basicSize.
+			copy := class basicNew: ivars].
+	class _instancesHavePointers
+		ifTrue: [
+			1 to: ivars + class instSize do: [:index | | ivar |
+				ivar := self instVarAt: index.
+				copy instVarAt: index put: ivar copy]]
+		ifFalse: [
+			1 to: ivars do: [:index | | byte |
+				byte := self basicAt: index.
+				copy basicAt: index put: byte]].
+	^copy
 ]
 
 { #category : #copying }
 Object >> objectShallowCopy [
-	| copy class |	class := self class.	copy := class _instancesAreArrayed		ifTrue: [class basicNew: self basicSize]		ifFalse: [class basicNew].	self shallowCopyTo: copy.	^copy
+	| copy class |
+	class := self class.
+	copy := class _instancesAreArrayed
+		ifTrue: [class basicNew: self basicSize]
+		ifFalse: [class basicNew].
+	self shallowCopyTo: copy.
+	^copy
 ]
 
 { #category : #private }
 Object >> onEvent: aSymbol do: anActionSequence [
-	anActionSequence compressed		ifNil: [self removeActionsForEvent: aSymbol]		ifNotNil: [:action | self eventAt: aSymbol asSymbol put: action]
+	anActionSequence compressed
+		ifNil: [self removeActionsForEvent: aSymbol]
+		ifNotNil: [:action | self eventAt: aSymbol asSymbol put: action]
 ]
 
 { #category : #accessing }
@@ -635,7 +787,10 @@ Object >> perform: aSymbol with: firstObject with: secondObject [
 ]
 
 { #category : #services }
-Object >> perform: aSymbolwith: arg1with: arg2with: arg3 [
+Object >> perform: aSymbol
+with: arg1
+with: arg2
+with: arg3 [
 	^self perform: aSymbol withArguments: {arg1. arg2. arg3}
 ]
 
@@ -646,7 +801,10 @@ Object >> postCopy [
 
 { #category : #unclassified }
 Object >> primitiveAt: i put: anObject [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].	^self _isBytes		ifTrue: [self basicByteAt: i put: anObject]		ifFalse: [self basicObjectAt: i put: anObject]
+	self _isSmallInteger ifTrue: [^self shouldNotImplement].
+	^self _isBytes
+		ifTrue: [self basicByteAt: i put: anObject]
+		ifFalse: [self basicObjectAt: i put: anObject]
 ]
 
 { #category : #printing }
@@ -666,12 +824,14 @@ Object >> propertyAt: aSymbol ifAbsent: aBlock [
 
 { #category : #accessing }
 Object >> propertyAt: aSymbol ifAbsentPut: aBlock [
-	self ensurePropertyTable.	^self propertyTable at: aSymbol ifAbsentPut: aBlock
+	self ensurePropertyTable.
+	^self propertyTable at: aSymbol ifAbsentPut: aBlock
 ]
 
 { #category : #accessing }
 Object >> propertyAt: aSymbol put: anObject [
-	self ensurePropertyTable.	^self propertyTable at: aSymbol put: anObject
+	self ensurePropertyTable.
+	^self propertyTable at: aSymbol put: anObject
 ]
 
 { #category : #private }
@@ -696,27 +856,40 @@ Object >> releaseEventTable [
 
 { #category : #'event handling' }
 Object >> removeAction: anAction forEvent: aSymbol [
-	self		removeActionsSatisfying: [:action | action = anAction]		forEvent: aSymbol
+	self
+		removeActionsSatisfying: [:action | action = anAction]
+		forEvent: aSymbol
 ]
 
 { #category : #'event handling' }
 Object >> removeActionsForEvent: eventName [
-	| table |	table := self eventTable.	table isNil ifTrue: [^self].	table removeKey: eventName asSymbol ifAbsent: [].	table isEmpty ifTrue: [self releaseEventTable]
+	| table |
+	table := self eventTable.
+	table isNil ifTrue: [^self].
+	table removeKey: eventName asSymbol ifAbsent: [].
+	table isEmpty ifTrue: [self releaseEventTable]
 ]
 
 { #category : #'event handling' }
 Object >> removeActionsSatisfying: aBlock forEvent: aSymbol [
-	| actions |	actions := (self actionsForEvent: aSymbol)		reject: [:action | aBlock value: action].	self onEvent: aSymbol do: actions
+	| actions |
+	actions := (self actionsForEvent: aSymbol)
+		reject: [:action | aBlock value: action].
+	self onEvent: aSymbol do: actions
 ]
 
 { #category : #'event handling' }
 Object >> removeActionsWithReceiver: anObject forEvent: aSymbol [
-	self		removeActionsSatisfying: [:action | (action respondsTo: #receiver)			and: [action receiver == anObject]]		forEvent: aSymbol
+	self
+		removeActionsSatisfying: [:action | (action respondsTo: #receiver)
+			and: [action receiver == anObject]]
+		forEvent: aSymbol
 ]
 
 { #category : #'event handling' }
 Object >> removeAllActionsFor: anObject [
-	self handledEvents		do: [:event | self removeActionsWithReceiver: anObject forEvent: event]
+	self handledEvents
+		do: [:event | self removeActionsWithReceiver: anObject forEvent: event]
 ]
 
 { #category : #'event handling' }
@@ -731,37 +904,83 @@ Object >> removeInstanceBehavior [
 
 { #category : #'instance behavior' }
 Object >> removeMethods: aMethodDictionary [
-	| behavior copy |	self hasInstanceBehavior ifFalse: [^self].	behavior := self behavior.	copy := behavior copyWithout: aMethodDictionary.	copy == behavior ifFalse: [self behavior: copy]
+	| behavior copy |
+	self hasInstanceBehavior ifFalse: [^self].
+	behavior := self behavior.
+	copy := behavior copyWithout: aMethodDictionary.
+	copy == behavior ifFalse: [self behavior: copy]
 ]
 
 { #category : #'accessing-properties' }
 Object >> removeProperty: aSymbol [
-	self		removeProperty: aSymbol		ifAbsent: [self error: 'property is not in the collection']
+	self
+		removeProperty: aSymbol
+		ifAbsent: [self error: 'property is not in the collection']
 ]
 
 { #category : #'accessing-properties' }
 Object >> removeProperty: aSymbol ifAbsent: aBlock [
-	| t |	t := Smalltalk propertiesFor: self.	t notNil ifTrue: [t removeKey: aSymbol ifAbsent: aBlock]
+	| t |
+	t := Smalltalk propertiesFor: self.
+	t notNil ifTrue: [t removeKey: aSymbol ifAbsent: aBlock]
 ]
 
 { #category : #replacing }
-Object >> replaceBytesBackwardFrom: stopto: startwith: aCollectionstartingAt: position [
-	| i j |	i := stop.	j := position.	[start <= i] whileTrue: [		self byteAt: i put: (aCollection byteAt: j).		i := i - 1.		j := j - 1]
+Object >> replaceBytesBackwardFrom: stop
+to: start
+with: aCollection
+startingAt: position [
+	| i j |
+	i := stop.
+	j := position.
+	[start <= i] whileTrue: [
+		self byteAt: i put: (aCollection byteAt: j).
+		i := i - 1.
+		j := j - 1]
 ]
 
 { #category : #replacing }
-Object >> replaceBytesForwardFrom: startto: stopwith: aCollectionstartingAt: position [
-	| i j |	i := start.	j := position.	[i <= stop] whileTrue: [		self byteAt: i put: (aCollection byteAt: j).		i := i + 1.		j := j + 1]
+Object >> replaceBytesForwardFrom: start
+to: stop
+with: aCollection
+startingAt: position [
+	| i j |
+	i := start.
+	j := position.
+	[i <= stop] whileTrue: [
+		self byteAt: i put: (aCollection byteAt: j).
+		i := i + 1.
+		j := j + 1]
 ]
 
 { #category : #replacing }
-Object >> replaceBytesFrom: startto: stopwith: aCollectionstartingAt: position [
-	| end |	(self == aCollection and: [		end := position + stop - start.		start between: position and: end])		ifTrue: [			self				replaceBytesBackwardFrom: stop				to: start				with: aCollection				startingAt: end]		ifFalse: [			self				replaceBytesForwardFrom: start				to: stop				with: aCollection				startingAt: position]
+Object >> replaceBytesFrom: start
+to: stop
+with: aCollection
+startingAt: position [
+	| end |
+	(self == aCollection and: [
+		end := position + stop - start.
+		start between: position and: end])
+		ifTrue: [
+			self
+				replaceBytesBackwardFrom: stop
+				to: start
+				with: aCollection
+				startingAt: end]
+		ifFalse: [
+			self
+				replaceBytesForwardFrom: start
+				to: stop
+				with: aCollection
+				startingAt: position]
 ]
 
 { #category : #services }
 Object >> respondsTo: aSymbol [
-	| cm |	cm := self methodFor: aSymbol.	^cm !== nil
+	| cm |
+	cm := self methodFor: aSymbol.
+	^cm !== nil
 ]
 
 { #category : #private }
@@ -771,7 +990,10 @@ Object >> sender [
 
 { #category : #finalization }
 Object >> sessionShutdown [
-	"	Default is do nothing.	"	
+	"
+	Default is do nothing.
+	"
+	
 ]
 
 { #category : #startup }
@@ -786,7 +1008,25 @@ Object >> shallowCopy [
 
 { #category : #copying }
 Object >> shallowCopyTo: anObject [
-	| n |	self class isBytes ifTrue: [		anObject class isBytes ifFalse: [self error: 'cannot copy'].		n := self sizeInBytes min: anObject sizeInBytes.		1 to: n do: [:i | | byte |			byte := self byteAt: i.			anObject byteAt: i put: byte].		^anObject].	anObject class isBytes ifTrue: [self error: 'cannot copy'].	n := self class instSize min: anObject class instSize.	1 to: n do: [:index | | slot |		slot := self instVarAt: index.		anObject instVarAt: index put: slot].	self class _instancesAreArrayed ifTrue: [		n := self basicSize min: anObject basicSize.		1 to: n do: [:index | | slot |			slot := self basicAt: index.			anObject basicAt: index put: slot]].	^anObject
+	| n |
+	self class isBytes ifTrue: [
+		anObject class isBytes ifFalse: [self error: 'cannot copy'].
+		n := self sizeInBytes min: anObject sizeInBytes.
+		1 to: n do: [:i | | byte |
+			byte := self byteAt: i.
+			anObject byteAt: i put: byte].
+		^anObject].
+	anObject class isBytes ifTrue: [self error: 'cannot copy'].
+	n := self class instSize min: anObject class instSize.
+	1 to: n do: [:index | | slot |
+		slot := self instVarAt: index.
+		anObject instVarAt: index put: slot].
+	self class _instancesAreArrayed ifTrue: [
+		n := self basicSize min: anObject basicSize.
+		1 to: n do: [:index | | slot |
+			slot := self basicAt: index.
+			anObject basicAt: index put: slot]].
+	^anObject
 ]
 
 { #category : #errors }
@@ -801,7 +1041,8 @@ Object >> size [
 
 { #category : #accessing }
 Object >> sizeInBytes [
-	self _isBytes ifFalse: [^nil].	^self _size
+	self _isBytes ifFalse: [^nil].
+	^self _size
 ]
 
 { #category : #private }
@@ -811,12 +1052,37 @@ Object >> species [
 
 { #category : #printing }
 Object >> storeOn: aStream [
-	| class yourself |	Recursion checkOn: self while: [		class := self class.		aStream			nextPutAll: '((';			nextPutAll: class name;			nextPutAll: ' basicNew'.		class _instancesAreArrayed ifTrue: [			aStream nextPut: $:.			self basicSize printOn: aStream].		aStream nextPut: $).		yourself := false.		(1 to: class instSize + self basicSize)			do: [:i | | ivar |				yourself := true.				aStream nextPutAll: ' instVarAt: '.				i printOn: aStream.				aStream nextPutAll: ' put: '.				ivar := self instVarAt: i.				ivar storeOn: aStream]			separatedBy: [aStream nextPutAll: '; '].		yourself ifTrue: [aStream nextPutAll: '; yourself'].		aStream nextPut: $)]
+	| class yourself |
+	Recursion checkOn: self while: [
+		class := self class.
+		aStream
+			nextPutAll: '((';
+			nextPutAll: class name;
+			nextPutAll: ' basicNew'.
+		class _instancesAreArrayed ifTrue: [
+			aStream nextPut: $:.
+			self basicSize printOn: aStream].
+		aStream nextPut: $).
+		yourself := false.
+		(1 to: class instSize + self basicSize)
+			do: [:i | | ivar |
+				yourself := true.
+				aStream nextPutAll: ' instVarAt: '.
+				i printOn: aStream.
+				aStream nextPutAll: ' put: '.
+				ivar := self instVarAt: i.
+				ivar storeOn: aStream]
+			separatedBy: [aStream nextPutAll: '; '].
+		yourself ifTrue: [aStream nextPutAll: '; yourself'].
+		aStream nextPut: $)]
 ]
 
 { #category : #converting }
 Object >> storeString [
-	| stream |	stream := '' writeStream.	self storeOn: stream.	^stream contents
+	| stream |
+	stream := '' writeStream.
+	self storeOn: stream.
+	^stream contents
 ]
 
 { #category : #errors }
@@ -841,7 +1107,10 @@ Object >> triggerEvent: aSymbol with: anObject [
 
 { #category : #'event handling' }
 Object >> triggerEvent: aSymbol with: anObject defaultHandler: aBlock [
-	^self		triggerEvent: aSymbol		withArguments: {anObject}		defaultHandler: aBlock
+	^self
+		triggerEvent: aSymbol
+		withArguments: {anObject}
+		defaultHandler: aBlock
 ]
 
 { #category : #'event handling' }
@@ -850,8 +1119,14 @@ Object >> triggerEvent: aSymbol with: anObject with: anotherObject [
 ]
 
 { #category : #'event handling' }
-Object >> triggerEvent: aSymbolwith: arg1with: arg2defaultHandler: aBlock [
-	^self		triggerEvent: aSymbol		withArguments: {arg1. arg2}		defaultHandler: aBlock
+Object >> triggerEvent: aSymbol
+with: arg1
+with: arg2
+defaultHandler: aBlock [
+	^self
+		triggerEvent: aSymbol
+		withArguments: {arg1. arg2}
+		defaultHandler: aBlock
 ]
 
 { #category : #'event handling' }
@@ -861,7 +1136,9 @@ Object >> triggerEvent: aSymbol withArguments: aCollection [
 
 { #category : #'event handling' }
 Object >> triggerEvent: aSymbol withArguments: aCollection defaultHandler: aBlock [
-	| action |	action := self eventAt: aSymbol ifAbsent: [^aBlock value].	^action evaluateWithArguments: aCollection
+	| action |
+	action := self eventAt: aSymbol ifAbsent: [^aBlock value].
+	^action evaluateWithArguments: aCollection
 ]
 
 { #category : #'event handling' }
@@ -881,16 +1158,38 @@ Object >> when: aSymbol do: aBlock [
 
 { #category : #'event handling' }
 Object >> when: aSymbol evaluate: action [
-	| actions |	(self hasRegisteredEvent: aSymbol) ifFalse: [self		unregisteredEvent: aSymbol].	actions := self actionsForEvent: aSymbol.	(actions includes: action) ifTrue: [^self].	actions := actions copyWith: action.	self onEvent: aSymbol do: actions
+	| actions |
+	(self hasRegisteredEvent: aSymbol) ifFalse: [self
+		unregisteredEvent: aSymbol].
+	actions := self actionsForEvent: aSymbol.
+	(actions includes: action) ifTrue: [^self].
+	actions := actions copyWith: action.
+	self onEvent: aSymbol do: actions
 ]
 
 { #category : #'event handling' }
 Object >> when: event send: selector to: receiver [
-	| args msg |	args := Array new: selector arity.	msg := EventHandlerMessage		receiver: receiver		selector: selector asSymbol		arguments: args.	self when: event evaluate: msg
+	| args msg |
+	args := Array new: selector arity.
+	msg := EventHandlerMessage
+		receiver: receiver
+		selector: selector asSymbol
+		arguments: args.
+	self when: event evaluate: msg
 ]
 
 { #category : #'event handling' }
-Object >> when: eventsend: selectorto: receiverwith: argument [
-	| arguments msg |	arguments := Array new: selector arity.	arguments at: arguments size put: argument.	msg := EventHandlerMessage		receiver: receiver		selector: selector		arguments: arguments.	self when: event evaluate: msg
+Object >> when: event
+send: selector
+to: receiver
+with: argument [
+	| arguments msg |
+	arguments := Array new: selector arity.
+	arguments at: arguments size put: argument.
+	msg := EventHandlerMessage
+		receiver: receiver
+		selector: selector
+		arguments: arguments.
+	self when: event evaluate: msg
 ]
 

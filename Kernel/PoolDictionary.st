@@ -14,7 +14,9 @@ PoolDictionary class >> newConstantPool [
 
 { #category : #adding }
 PoolDictionary >> add: anAssociation [
-	anAssociation key isString		ifFalse: [self error: 'Pools are keyed with Strings'].	^super add: anAssociation
+	anAssociation key isString
+		ifFalse: [self error: 'Pools are keyed with Strings'].
+	^super add: anAssociation
 ]
 
 { #category : #accessing }
@@ -44,7 +46,8 @@ PoolDictionary >> includesKey: key [
 
 { #category : #initialization }
 PoolDictionary >> initialize: anInteger [
-	super initialize: anInteger.	constant := false
+	super initialize: anInteger.
+	constant := false
 ]
 
 { #category : #testing }
@@ -59,6 +62,7 @@ PoolDictionary >> name [
 
 { #category : #removing }
 PoolDictionary >> removeKey: key ifAbsent: aBlock [
-	super removeKey: key asString reduced ifAbsent: aBlock.	^key
+	super removeKey: key asString reduced ifAbsent: aBlock.
+	^key
 ]
 

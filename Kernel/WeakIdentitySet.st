@@ -9,12 +9,22 @@ Class {
 
 { #category : #adding }
 WeakIdentitySet >> add: element [
-	| ephemeron |	element == nil ifTrue: [^element].	[		ephemeron := Ephemeron new registry: self.		ephemeron key: element value: nil.		(table atKey: element put: ephemeron) == nil ifTrue: [self incrementTally]] evaluateAtomically.	^element
+	| ephemeron |
+	element == nil ifTrue: [^element].
+	[
+		ephemeron := Ephemeron new registry: self.
+		ephemeron key: element value: nil.
+		(table atKey: element put: ephemeron) == nil ifTrue: [self incrementTally]] evaluateAtomically.
+	^element
 ]
 
 { #category : #private }
 WeakIdentitySet >> basicAdd: element [
-	element isNil ifTrue: [^self].	tally := tally + 1.	self ASSERT: element class == Ephemeron.	table basicAtKey: element key put: element.	^element
+	element isNil ifTrue: [^self].
+	tally := tally + 1.
+	self ASSERT: element class == Ephemeron.
+	table basicAtKey: element key put: element.
+	^element
 ]
 
 { #category : #enumerating }
@@ -54,7 +64,9 @@ WeakIdentitySet >> remove: anObject ifAbsent: aBlock [
 
 { #category : #private }
 WeakIdentitySet >> rescue: anEphemeron [
-	self remove: anEphemeron key ifAbsent: nil.	finalizer isNil ifTrue: [^self].	finalizer evaluateWith: anEphemeron key
+	self remove: anEphemeron key ifAbsent: nil.
+	finalizer isNil ifTrue: [^self].
+	finalizer evaluateWith: anEphemeron key
 ]
 
 { #category : #testing }

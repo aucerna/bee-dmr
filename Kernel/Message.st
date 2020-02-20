@@ -10,7 +10,9 @@ Class {
 
 { #category : #'instance creation' }
 Message class >> receiver: anObject selector: aSymbol [
-	| arguments |	arguments := Array new: aSymbol arity.	^self receiver: anObject selector: aSymbol arguments: arguments
+	| arguments |
+	arguments := Array new: aSymbol arity.
+	^self receiver: anObject selector: aSymbol arguments: arguments
 ]
 
 { #category : #'instance creation' }
@@ -40,7 +42,10 @@ Message class >> selector: aSymbol arguments: anArray [
 
 { #category : #comparing }
 Message >> = aMessage [
-	self == aMessage ifTrue: [^true].	self class == aMessage class ifFalse: [^false].	self selector == aMessage selector ifFalse: [^false].	^self arguments = aMessage arguments
+	self == aMessage ifTrue: [^true].
+	self class == aMessage class ifFalse: [^false].
+	self selector == aMessage selector ifFalse: [^false].
+	^self arguments = aMessage arguments
 ]
 
 { #category : #accessing }
@@ -65,12 +70,24 @@ Message >> arguments: anArray [
 
 { #category : #accessing }
 Message >> arity [
-	^selector isNil		ifTrue: [arguments size]		ifFalse: [selector arity]
+	^selector isNil
+		ifTrue: [arguments size]
+		ifFalse: [selector arity]
 ]
 
 { #category : #private }
 Message >> buildArguments: aCollection [
-	| predefined args |	predefined := self arguments.	aCollection size = predefined size ifTrue: [^aCollection].	args := predefined isNil		ifTrue: [Array new: selector arity]		ifFalse: [predefined copy].	^args		replaceFrom: 1		to: (aCollection size min: args size)		with: aCollection		startingAt: 1
+	| predefined args |
+	predefined := self arguments.
+	aCollection size = predefined size ifTrue: [^aCollection].
+	args := predefined isNil
+		ifTrue: [Array new: selector arity]
+		ifFalse: [predefined copy].
+	^args
+		replaceFrom: 1
+		to: (aCollection size min: args size)
+		with: aCollection
+		startingAt: 1
 ]
 
 { #category : #comparing }
@@ -90,7 +107,11 @@ Message >> performOn: anObject [
 
 { #category : #printing }
 Message >> printOn: aStream [
-	aStream		nextPutAll: self class name;		nextPut: $(;		nextPutAll: selector printString;		nextPut: $)
+	aStream
+		nextPutAll: self class name;
+		nextPut: $(;
+		nextPutAll: selector printString;
+		nextPut: $)
 ]
 
 { #category : #accessing }
