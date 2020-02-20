@@ -1,9 +1,9 @@
 Package { #name : #Tests,
 	#classes : [
-		'ISAOperandTest',
-		'InstructionEncoderTest',
 		'AssemblerParserTest',
-		'InstructionDecoderTest'
+		'InstructionDecoderTest',
+		'InstructionEncoderTest',
+		'ISAOperandTest'
 	]
 }
 

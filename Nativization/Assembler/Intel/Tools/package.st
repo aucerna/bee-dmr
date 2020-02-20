@@ -1,14 +1,14 @@
 Package { #name : #Tools,
 	#classes : [
-		'SIB',
-		'ISASibReader',
-		'ISAOpcodeReader',
 		'ISAInstructionPartReader',
-		'ISAPrefixReader',
+		'ISAInstructionReader',
 		'ISAModRMReader',
+		'ISAOpcodeReader',
+		'ISAPrefixReader',
+		'ISASibReader',
 		'ModRM',
 		'OctalStructure',
-		'ISAInstructionReader'
+		'SIB'
 	]
 }
 

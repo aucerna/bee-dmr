@@ -1,24 +1,24 @@
 Package { #name : #OCompiler,
 	#classes : [
-		'OptimizingCSSATransformer',
+		'OptimizingBlockInliner',
+		'OptimizingBraunAllocator',
 		'OptimizingBraunAssigner',
+		'OptimizingCFGSimplifier',
+		'OptimizingCSSATransformer',
 		'OptimizingCodeEmitter',
-		'OptimizingMethodInliner',
-		'OptimizingNativizer',
 		'OptimizingInstructionFragmenter',
 		'OptimizingInstructionSelector',
+		'OptimizingLivenessAnalysis',
+		'OptimizingMethodInliner',
+		'OptimizingNativizer',
 		'OptimizingPhiSimplification',
 		'OptimizingRegisterAllocator',
-		'OptimizingVariableBinder',
-		'OptimizingCFGSimplifier',
 		'OptimizingSSAReconstructor',
-		'OptimizingVisitor',
-		'OptimizingLivenessAnalysis',
-		'OptimizingBraunAllocator',
-		'OptimizingValueNumbering',
-		'OptimizingBlockInliner',
+		'OptimizingTwoAddressEnforcer',
 		'OptimizingUsesVerifier',
-		'OptimizingTwoAddressEnforcer'
+		'OptimizingValueNumbering',
+		'OptimizingVariableBinder',
+		'OptimizingVisitor'
 	]
 }
 
