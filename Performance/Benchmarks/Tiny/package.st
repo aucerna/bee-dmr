@@ -1,0 +1,5 @@
+Package { #name : #Tiny,
+	#classes : [
+	]
+}
+
