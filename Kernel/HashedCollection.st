@@ -2,11 +2,11 @@ Class {
 	#name : #HashedCollection,
 	#superclass : #Collection,
 	#instVars : [
-		'#tally',
-		'#table'
+		'tally',
+		'table'
 	],
 	#classVars : [
-		'#Policies'
+		'Policies'
 	],
 	#category : #Kernel
 }

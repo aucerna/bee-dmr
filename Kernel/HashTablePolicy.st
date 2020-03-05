@@ -2,13 +2,13 @@ Class {
 	#name : #HashTablePolicy,
 	#superclass : #Object,
 	#instVars : [
-		'#associationClass',
-		'#bucketClass',
-		'#maxSlots',
-		'#weak',
-		'#hasher',
-		'#comparison',
-		'#storesAssociations'
+		'associationClass',
+		'bucketClass',
+		'maxSlots',
+		'weak',
+		'hasher',
+		'comparison',
+		'storesAssociations'
 	],
 	#classVars : [
 		'#EmptySlot'

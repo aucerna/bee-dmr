@@ -2,11 +2,11 @@ Class {
 	#name : #GlobalDispatchCache,
 	#superclass : #Object,
 	#instVars : [
-		'#contents'
+		'contents'
 	],
 	#classVars : [
-		'#Current',
-		'#GlobalLookupCount'
+		'Current',
+		'GlobalLookupCount'
 	],
 	#category : #Kernel
 }

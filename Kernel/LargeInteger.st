@@ -3,9 +3,9 @@ Class {
 	#superclass : #Integer,
 	#type : #bytes,
 	#classVars : [
-		'#Base',
-		'#Bits',
-		'#DigitLength'
+		'Base',
+		'Bits',
+		'DigitLength'
 	],
 	#category : #Kernel
 }

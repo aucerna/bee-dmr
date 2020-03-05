@@ -2,8 +2,8 @@ Class {
 	#name : #BufferArray,
 	#superclass : #MemoryBuffer,
 	#instVars : [
-		'#count',
-		'#type'
+		'count',
+		'type'
 	],
 	#category : #Kernel
 }

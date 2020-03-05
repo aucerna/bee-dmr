@@ -2,7 +2,7 @@ Class {
 	#name : #Bag,
 	#superclass : #Collection,
 	#instVars : [
-		'#contents'
+		'contents'
 	],
 	#category : #Kernel
 }

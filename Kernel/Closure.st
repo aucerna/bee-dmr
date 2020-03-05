@@ -3,11 +3,11 @@ Class {
 	#superclass : #Object,
 	#type : #variable,
 	#instVars : [
-		'#block',
-		'#homeFrame'
+		'block',
+		'homeFrame'
 	],
 	#classVars : [
-		'#Indexes'
+		'Indexes'
 	],
 	#category : #Kernel
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #ZeroDivide,
 	#superclass : #ArithmeticError,
 	#instVars : [
-		'#dividend'
+		'dividend'
 	],
 	#category : #Kernel
 }

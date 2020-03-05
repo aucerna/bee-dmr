@@ -2,11 +2,11 @@ Class {
 	#name : #Locale,
 	#superclass : #Object,
 	#instVars : [
-		'#collator',
-		'#currency',
-		'#date',
-		'#number',
-		'#time'
+		'collator',
+		'currency',
+		'date',
+		'number',
+		'time'
 	],
 	#category : #Kernel
 }

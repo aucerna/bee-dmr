@@ -2,8 +2,8 @@ Class {
 	#name : #ArithmeticError,
 	#superclass : #Error,
 	#instVars : [
-		'#operation',
-		'#type'
+		'operation',
+		'type'
 	],
 	#category : #Kernel
 }

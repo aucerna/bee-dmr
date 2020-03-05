@@ -3,15 +3,15 @@ Class {
 	#superclass : #Array,
 	#type : #variable,
 	#instVars : [
-		'#bytecodes',
-		'#nativeCode',
-		'#class',
-		'#selector',
-		'#source',
-		'#format'
+		'bytecodes',
+		'nativeCode',
+		'class',
+		'selector',
+		'source',
+		'format'
 	],
 	#classVars : [
-		'#Flags'
+		'Flags'
 	],
 	#category : #Kernel
 }

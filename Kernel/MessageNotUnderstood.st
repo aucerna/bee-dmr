@@ -2,8 +2,8 @@ Class {
 	#name : #MessageNotUnderstood,
 	#superclass : #Error,
 	#instVars : [
-		'#message',
-		'#receiver'
+		'message',
+		'receiver'
 	],
 	#category : #Kernel
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #Metaclass,
 	#superclass : #Species,
 	#instVars : [
-		'#class'
+		'class'
 	],
 	#category : #Kernel
 }

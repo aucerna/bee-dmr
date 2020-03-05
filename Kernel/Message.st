@@ -2,8 +2,8 @@ Class {
 	#name : #Message,
 	#superclass : #Object,
 	#instVars : [
-		'#selector',
-		'#arguments'
+		'selector',
+		'arguments'
 	],
 	#category : #Kernel
 }

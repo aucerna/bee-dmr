@@ -2,12 +2,12 @@ Class {
 	#name : #ClassOrganizer,
 	#superclass : #Object,
 	#instVars : [
-		'#comment',
-		'#categories',
-		'#selectors',
-		'#author',
-		'#timestamp',
-		'#prev'
+		'comment',
+		'categories',
+		'selectors',
+		'author',
+		'timestamp',
+		'prev'
 	],
 	#category : #Kernel
 }

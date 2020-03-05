@@ -2,9 +2,9 @@ Class {
 	#name : #CallbackStackLink,
 	#superclass : #Object,
 	#instVars : [
-		'#base',
-		'#top',
-		'#next'
+		'base',
+		'top',
+		'next'
 	],
 	#category : #Kernel
 }

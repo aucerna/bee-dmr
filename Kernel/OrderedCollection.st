@@ -2,9 +2,9 @@ Class {
 	#name : #OrderedCollection,
 	#superclass : #SequenceableCollection,
 	#instVars : [
-		'#start',
-		'#end',
-		'#contents'
+		'start',
+		'end',
+		'contents'
 	],
 	#category : #Kernel
 }

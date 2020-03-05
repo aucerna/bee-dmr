@@ -2,11 +2,11 @@ Class {
 	#name : #ExceptionHandler,
 	#superclass : #Object,
 	#instVars : [
-		'#filter',
-		'#previous',
-		'#handlerBlock',
-		'#protectedBlock',
-		'#return'
+		'filter',
+		'previous',
+		'handlerBlock',
+		'protectedBlock',
+		'return'
 	],
 	#category : #Kernel
 }

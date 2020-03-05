@@ -2,13 +2,13 @@ Class {
 	#name : #MatchAlgorithm,
 	#superclass : #Object,
 	#instVars : [
-		'#string',
-		'#pattern',
-		'#start',
-		'#stop',
-		'#tokens',
-		'#failure',
-		'#ranges'
+		'string',
+		'pattern',
+		'start',
+		'stop',
+		'tokens',
+		'failure',
+		'ranges'
 	],
 	#category : #Kernel
 }

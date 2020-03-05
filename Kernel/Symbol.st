@@ -3,7 +3,7 @@ Class {
 	#superclass : #CharacterArray,
 	#type : #bytes,
 	#classVars : [
-		'#SymbolTable'
+		'SymbolTable'
 	],
 	#category : #Kernel
 }

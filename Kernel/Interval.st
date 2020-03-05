@@ -2,9 +2,9 @@ Class {
 	#name : #Interval,
 	#superclass : #ArrayedCollection,
 	#instVars : [
-		'#start',
-		'#end',
-		'#step'
+		'start',
+		'end',
+		'step'
 	],
 	#category : #Kernel
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #MatchToken,
 	#superclass : #Object,
 	#instVars : [
-		'#string',
-		'#start',
-		'#stop'
+		'string',
+		'start',
+		'stop'
 	],
 	#category : #Kernel
 }

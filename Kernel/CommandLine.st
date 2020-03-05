@@ -2,11 +2,11 @@ Class {
 	#name : #CommandLine,
 	#superclass : #Object,
 	#instVars : [
-		'#input',
-		'#rules',
-		'#tokens',
-		'#command',
-		'#options'
+		'input',
+		'rules',
+		'tokens',
+		'command',
+		'options'
 	],
 	#category : #Kernel
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #ByteArraySegment,
 	#superclass : #ArrayedCollection,
 	#instVars : [
-		'#contents',
-		'#offset',
-		'#size'
+		'contents',
+		'offset',
+		'size'
 	],
 	#category : #Kernel
 }

@@ -2,10 +2,10 @@ Class {
 	#name : #CriticalArray,
 	#superclass : #SequenceableCollection,
 	#instVars : [
-		'#size',
-		'#contents',
-		'#space',
-		'#writeBarrier'
+		'size',
+		'contents',
+		'space',
+		'writeBarrier'
 	],
 	#category : #Kernel
 }

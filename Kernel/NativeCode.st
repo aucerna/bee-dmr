@@ -2,10 +2,10 @@ Class {
 	#name : #NativeCode,
 	#superclass : #Object,
 	#instVars : [
-		'#code',
-		'#references',
-		'#entryPoints',
-		'#fresh'
+		'code',
+		'references',
+		'entryPoints',
+		'fresh'
 	],
 	#category : #Kernel
 }

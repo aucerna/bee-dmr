@@ -2,8 +2,8 @@ Class {
 	#name : #Semaphore,
 	#superclass : #Object,
 	#instVars : [
-		'#signals',
-		'#waiting'
+		'signals',
+		'waiting'
 	],
 	#category : #Kernel
 }

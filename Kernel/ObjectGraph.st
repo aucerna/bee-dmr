@@ -2,7 +2,7 @@ Class {
 	#name : #ObjectGraph,
 	#superclass : #Object,
 	#instVars : [
-		'#stack'
+		'stack'
 	],
 	#category : #Kernel
 }

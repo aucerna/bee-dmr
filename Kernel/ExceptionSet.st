@@ -2,7 +2,7 @@ Class {
 	#name : #ExceptionSet,
 	#superclass : #Object,
 	#instVars : [
-		'#exceptions'
+		'exceptions'
 	],
 	#category : #Kernel
 }

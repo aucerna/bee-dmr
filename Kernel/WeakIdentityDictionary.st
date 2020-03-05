@@ -2,7 +2,7 @@ Class {
 	#name : #WeakIdentityDictionary,
 	#superclass : #Dictionary,
 	#instVars : [
-		'#critical'
+		'critical'
 	],
 	#category : #Kernel
 }

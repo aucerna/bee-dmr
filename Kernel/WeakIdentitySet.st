@@ -2,7 +2,7 @@ Class {
 	#name : #WeakIdentitySet,
 	#superclass : #IdentitySet,
 	#instVars : [
-		'#finalizer'
+		'finalizer'
 	],
 	#category : #Kernel
 }

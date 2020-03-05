@@ -3,11 +3,11 @@ Class {
 	#superclass : #Array,
 	#type : #variable,
 	#instVars : [
-		'#policy'
+		'policy'
 	],
 	#classVars : [
-		'#NilToken',
-		'#Sizes'
+		'NilToken',
+		'Sizes'
 	],
 	#category : #Kernel
 }

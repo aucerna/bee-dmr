@@ -2,22 +2,22 @@ Class {
 	#name : #SendSite,
 	#superclass : #Object,
 	#instVars : [
-		'#instructions',
-		'#selector',
-		'#cache',
-		'#tally',
-		'#format'
+		'instructions',
+		'selector',
+		'cache',
+		'tally',
+		'format'
 	],
 	#classVars : [
-		'#FormatFlags',
-		'#Instances',
-		'#LookupCount',
-		'#MICs',
-		'#MonomorphicStub',
-		'#NextMIC',
-		'#NextPIC',
-		'#PICs',
-		'#PolymorphicStub'
+		'FormatFlags',
+		'Instances',
+		'LookupCount',
+		'MICs',
+		'MonomorphicStub',
+		'NextMIC',
+		'NextPIC',
+		'PICs',
+		'PolymorphicStub'
 	],
 	#category : #Kernel
 }

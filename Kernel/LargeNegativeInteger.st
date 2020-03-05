@@ -3,7 +3,7 @@ Class {
 	#superclass : #LargeInteger,
 	#type : #bytes,
 	#classVars : [
-		'#LeftLimit'
+		'LeftLimit'
 	],
 	#category : #Kernel
 }

@@ -2,10 +2,10 @@ Class {
 	#name : #ObjectReference,
 	#superclass : #Object,
 	#instVars : [
-		'#source',
-		'#sourceOffset',
-		'#target',
-		'#absolute'
+		'source',
+		'sourceOffset',
+		'target',
+		'absolute'
 	],
 	#category : #Kernel
 }

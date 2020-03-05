@@ -2,8 +2,8 @@ Class {
 	#name : #StringPattern,
 	#superclass : #Object,
 	#instVars : [
-		'#stream',
-		'#tokens'
+		'stream',
+		'tokens'
 	],
 	#category : #Kernel
 }

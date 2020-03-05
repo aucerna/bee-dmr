@@ -2,8 +2,8 @@ Class {
 	#name : #ProtoObject,
 	#superclass : nil,
 	#classVars : [
-		'#ObjectBitsMasks',
-		'#ObjectFieldsOffset'
+		'ObjectBitsMasks',
+		'ObjectFieldsOffset'
 	],
 	#category : #Kernel
 }

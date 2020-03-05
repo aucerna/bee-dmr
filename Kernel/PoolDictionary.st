@@ -2,7 +2,7 @@ Class {
 	#name : #PoolDictionary,
 	#superclass : #Dictionary,
 	#instVars : [
-		'#constant'
+		'constant'
 	],
 	#category : #Kernel
 }

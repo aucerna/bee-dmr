@@ -2,7 +2,7 @@ Class {
 	#name : #CompositeCollection,
 	#superclass : #Collection,
 	#instVars : [
-		'#contents'
+		'contents'
 	],
 	#category : #Kernel
 }

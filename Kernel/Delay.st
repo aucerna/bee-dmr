@@ -2,9 +2,9 @@ Class {
 	#name : #Delay,
 	#superclass : #Object,
 	#instVars : [
-		'#milliseconds',
-		'#wait',
-		'#timer'
+		'milliseconds',
+		'wait',
+		'timer'
 	],
 	#category : #Kernel
 }

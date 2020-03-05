@@ -2,15 +2,15 @@ Class {
 	#name : #MemoryMeter,
 	#superclass : #Object,
 	#instVars : [
-		'#memory',
-		'#runs',
-		'#time',
-		'#maxPause',
-		'#youngFreed',
-		'#oldGrown',
-		'#grows',
-		'#shrinks',
-		'#rescued'
+		'memory',
+		'runs',
+		'time',
+		'maxPause',
+		'youngFreed',
+		'oldGrown',
+		'grows',
+		'shrinks',
+		'rescued'
 	],
 	#category : #Kernel
 }

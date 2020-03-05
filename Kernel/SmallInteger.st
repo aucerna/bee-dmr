@@ -2,8 +2,8 @@ Class {
 	#name : #SmallInteger,
 	#superclass : #Integer,
 	#classVars : [
-		'#Maximum',
-		'#Minimum'
+		'Maximum',
+		'Minimum'
 	],
 	#category : #Kernel
 }

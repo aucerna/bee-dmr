@@ -2,11 +2,11 @@ Class {
 	#name : #InternalWriteStream,
 	#superclass : #WriteStream,
 	#instVars : [
-		'#contents',
-		'#position',
-		'#limit',
-		'#eol',
-		'#size'
+		'contents',
+		'position',
+		'limit',
+		'eol',
+		'size'
 	],
 	#category : #Kernel
 }

@@ -2,8 +2,8 @@ Class {
 	#name : #Stretch,
 	#superclass : #Object,
 	#instVars : [
-		'#start',
-		'#end'
+		'start',
+		'end'
 	],
 	#category : #Kernel
 }

@@ -3,7 +3,7 @@ Class {
 	#superclass : #OpenHashTable,
 	#type : #variable,
 	#instVars : [
-		'#values'
+		'values'
 	],
 	#category : #Kernel
 }

@@ -2,13 +2,13 @@ Class {
 	#name : #GCSpace,
 	#superclass : #Object,
 	#instVars : [
-		'#base',
-		'#commitedLimit',
-		'#nextFree',
-		'#reservedLimit',
-		'#softLimit',
-		'#prev',
-		'#mutex'
+		'base',
+		'commitedLimit',
+		'nextFree',
+		'reservedLimit',
+		'softLimit',
+		'prev',
+		'mutex'
 	],
 	#category : #Kernel
 }

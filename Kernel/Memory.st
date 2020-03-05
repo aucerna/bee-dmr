@@ -2,21 +2,21 @@ Class {
 	#name : #Memory,
 	#superclass : #Object,
 	#instVars : [
-		'#spaces',
-		'#collectedSpaces',
-		'#collector',
-		'#pinnedSpace',
-		'#fromSpace',
-		'#toSpace',
-		'#oldSpace',
-		'#meter',
-		'#edenSpace',
-		'#youngBase',
-		'#youngLimit',
-		'#rememberedSet'
+		'spaces',
+		'collectedSpaces',
+		'collector',
+		'pinnedSpace',
+		'fromSpace',
+		'toSpace',
+		'oldSpace',
+		'meter',
+		'edenSpace',
+		'youngBase',
+		'youngLimit',
+		'rememberedSet'
 	],
 	#classVars : [
-		'#Current'
+		'Current'
 	],
 	#category : #Kernel
 }

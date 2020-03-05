@@ -2,14 +2,14 @@ Class {
 	#name : #Species,
 	#superclass : #Object,
 	#instVars : [
-		'#superclass',
-		'#instanceBehavior',
-		'#format',
-		'#organization',
-		'#instanceVariables'
+		'superclass',
+		'instanceBehavior',
+		'format',
+		'organization',
+		'instanceVariables'
 	],
 	#classVars : [
-		'#Flags'
+		'Flags'
 	],
 	#category : #Kernel
 }

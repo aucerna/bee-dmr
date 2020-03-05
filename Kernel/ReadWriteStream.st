@@ -2,7 +2,7 @@ Class {
 	#name : #ReadWriteStream,
 	#superclass : #InternalWriteStream,
 	#instVars : [
-		'#reader'
+		'reader'
 	],
 	#category : #Kernel
 }

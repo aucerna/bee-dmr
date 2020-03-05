@@ -2,8 +2,8 @@ Class {
 	#name : #Association,
 	#superclass : #Object,
 	#instVars : [
-		'#key',
-		'#value'
+		'key',
+		'value'
 	],
 	#category : #Kernel
 }

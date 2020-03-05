@@ -2,12 +2,12 @@ Class {
 	#name : #EdenCollector,
 	#superclass : #CopyingCollector,
 	#instVars : [
-		'#oldSpace',
-		'#edenSpace',
-		'#youngBase',
-		'#youngLimit',
-		'#rememberedSet',
-		'#rememberedNext'
+		'oldSpace',
+		'edenSpace',
+		'youngBase',
+		'youngLimit',
+		'rememberedSet',
+		'rememberedNext'
 	],
 	#category : #Kernel
 }

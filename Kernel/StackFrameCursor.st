@@ -2,8 +2,8 @@ Class {
 	#name : #StackFrameCursor,
 	#superclass : #Object,
 	#instVars : [
-		'#current',
-		'#previous'
+		'current',
+		'previous'
 	],
 	#category : #Kernel
 }

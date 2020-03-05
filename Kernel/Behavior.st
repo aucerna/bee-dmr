@@ -2,9 +2,9 @@ Class {
 	#name : #Behavior,
 	#superclass : #Object,
 	#instVars : [
-		'#class',
-		'#methods',
-		'#next'
+		'class',
+		'methods',
+		'next'
 	],
 	#category : #Kernel
 }

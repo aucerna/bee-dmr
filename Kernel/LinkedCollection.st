@@ -3,8 +3,8 @@ Class {
 	#superclass : #SequenceableCollection,
 	#type : #variable,
 	#instVars : [
-		'#next',
-		'#localSize'
+		'next',
+		'localSize'
 	],
 	#category : #Kernel
 }

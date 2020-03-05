@@ -2,19 +2,19 @@ Class {
 	#name : #CopyingCollector,
 	#superclass : #Object,
 	#instVars : [
-		'#fromSpace',
-		'#toSpace',
-		'#workSpace',
-		'#forwarders',
-		'#scan',
-		'#externals',
-		'#weakContainers',
-		'#uncheckedEphemerons',
-		'#unreachedEphemerons',
-		'#rescuedEphemerons',
-		'#tombstone',
-		'#memory',
-		'#stacks'
+		'fromSpace',
+		'toSpace',
+		'workSpace',
+		'forwarders',
+		'scan',
+		'externals',
+		'weakContainers',
+		'uncheckedEphemerons',
+		'unreachedEphemerons',
+		'rescuedEphemerons',
+		'tombstone',
+		'memory',
+		'stacks'
 	],
 	#category : #Kernel
 }

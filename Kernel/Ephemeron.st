@@ -2,9 +2,9 @@ Class {
 	#name : #Ephemeron,
 	#superclass : #Association,
 	#instVars : [
-		'#key',
-		'#value',
-		'#registry'
+		'key',
+		'value',
+		'registry'
 	],
 	#category : #Kernel
 }

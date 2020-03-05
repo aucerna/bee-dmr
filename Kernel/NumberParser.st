@@ -2,9 +2,9 @@ Class {
 	#name : #NumberParser,
 	#superclass : #Object,
 	#instVars : [
-		'#stream',
-		'#error',
-		'#return'
+		'stream',
+		'error',
+		'return'
 	],
 	#category : #Kernel
 }

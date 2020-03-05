@@ -2,7 +2,7 @@ Class {
 	#name : #Character,
 	#superclass : #Magnitude,
 	#instVars : [
-		'#value'
+		'value'
 	],
 	#category : #Kernel
 }

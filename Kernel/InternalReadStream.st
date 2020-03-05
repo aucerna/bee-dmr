@@ -2,10 +2,10 @@ Class {
 	#name : #InternalReadStream,
 	#superclass : #ReadStream,
 	#instVars : [
-		'#contents',
-		'#position',
-		'#limit',
-		'#eol'
+		'contents',
+		'position',
+		'limit',
+		'eol'
 	],
 	#category : #Kernel
 }

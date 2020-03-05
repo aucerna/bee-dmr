@@ -2,7 +2,7 @@ Class {
 	#name : #SortedCollection,
 	#superclass : #OrderedCollection,
 	#instVars : [
-		'#sortBlock'
+		'sortBlock'
 	],
 	#category : #Kernel
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #KeyNotFound,
 	#superclass : #Error,
 	#instVars : [
-		'#object'
+		'object'
 	],
 	#category : #Kernel
 }

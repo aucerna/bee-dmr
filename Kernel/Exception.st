@@ -2,11 +2,11 @@ Class {
 	#name : #Exception,
 	#superclass : #Object,
 	#instVars : [
-		'#description',
-		'#activeHandler',
-		'#signalContext',
-		'#resumeBlock',
-		'#resignaledException'
+		'description',
+		'activeHandler',
+		'signalContext',
+		'resumeBlock',
+		'resignaledException'
 	],
 	#category : #Kernel
 }

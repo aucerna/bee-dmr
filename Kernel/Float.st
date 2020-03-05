@@ -3,12 +3,12 @@ Class {
 	#superclass : #Number,
 	#type : #bytes,
 	#classVars : [
-		'#E',
-		'#Infinity',
-		'#MinusInfinity',
-		'#Pi',
-		'#RadiansPerDegree',
-		'#Status'
+		'E',
+		'Infinity',
+		'MinusInfinity',
+		'Pi',
+		'RadiansPerDegree',
+		'Status'
 	],
 	#category : #Kernel
 }
