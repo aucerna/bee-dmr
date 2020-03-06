@@ -2,9 +2,9 @@ Class {
 	#name : #AWFYJsonObject,
 	#superclass : #AWFYJsonValue,
 	#instVars : [
-		'#names',
-		'#values',
-		'#table'
+		'names',
+		'values',
+		'table'
 	],
 	#category : #AWFY
 }

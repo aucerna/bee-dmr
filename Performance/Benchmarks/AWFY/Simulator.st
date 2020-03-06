@@ -2,7 +2,7 @@ Class {
 	#name : #Simulator,
 	#superclass : #Object,
 	#instVars : [
-		'#aircrafts'
+		'aircrafts'
 	],
 	#category : #AWFY
 }

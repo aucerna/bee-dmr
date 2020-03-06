@@ -3,7 +3,7 @@ Class {
 	#superclass : #CompiledMethod,
 	#type : #variable,
 	#instVars : [
-		'#asm'
+		'asm'
 	],
 	#category : #Parser
 }

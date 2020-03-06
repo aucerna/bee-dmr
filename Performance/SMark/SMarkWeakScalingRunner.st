@@ -2,10 +2,10 @@ Class {
 	#name : #SMarkWeakScalingRunner,
 	#superclass : #SMarkRunner,
 	#instVars : [
-		'#numInnerIterations',
-		'#runningProcesses',
-		'#completionSignal',
-		'#runningProcessesMtx'
+		'numInnerIterations',
+		'runningProcesses',
+		'completionSignal',
+		'runningProcessesMtx'
 	],
 	#category : #SMark
 }

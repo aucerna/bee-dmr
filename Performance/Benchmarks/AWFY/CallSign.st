@@ -2,7 +2,7 @@ Class {
 	#name : #CallSign,
 	#superclass : #Object,
 	#instVars : [
-		'#value'
+		'value'
 	],
 	#category : #AWFY
 }

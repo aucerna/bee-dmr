@@ -2,9 +2,9 @@ Class {
 	#name : #ISAPrefixReader,
 	#superclass : #ISAInstructionPartReader,
 	#instVars : [
-		'#legacy',
-		'#rex',
-		'#vex'
+		'legacy',
+		'rex',
+		'vex'
 	],
 	#category : #Tools
 }

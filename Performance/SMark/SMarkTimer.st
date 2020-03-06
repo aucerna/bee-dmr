@@ -2,9 +2,9 @@ Class {
 	#name : #SMarkTimer,
 	#superclass : #Object,
 	#instVars : [
-		'#startTime',
-		'#elapsedTime',
-		'#name'
+		'startTime',
+		'elapsedTime',
+		'name'
 	],
 	#category : #SMark
 }
@@ -24,7 +24,19 @@ SMarkTimer class >> new: aName [
 
 { #category : #timing }
 SMarkTimer >> currentMillis [
-	^Time currentMicroseconds / 1000
+	"
+	^ Time millisecondClockValue.
+	"
+	^self currentMillisHD
+]
+
+{ #category : #timing }
+SMarkTimer >> currentMillisHD [
+	| frequency t0 |
+	frequency := Time performanceFrequency asFloat.
+	t0 := LARGE_INTEGER external.
+	KernelLibrary QueryPerformanceCounter: t0 asParameter.
+	^t0 asUnsignedInteger * 1000 / frequency
 ]
 
 { #category : #initialization }

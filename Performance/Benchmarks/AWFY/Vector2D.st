@@ -2,8 +2,8 @@ Class {
 	#name : #Vector2D,
 	#superclass : #Object,
 	#instVars : [
-		'#x',
-		'#y'
+		'x',
+		'y'
 	],
 	#category : #AWFY
 }

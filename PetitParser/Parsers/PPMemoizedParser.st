@@ -2,8 +2,8 @@ Class {
 	#name : #PPMemoizedParser,
 	#superclass : #PPDelegateParser,
 	#instVars : [
-		'#stream',
-		'#buffer'
+		'stream',
+		'buffer'
 	],
 	#category : #Parsers
 }

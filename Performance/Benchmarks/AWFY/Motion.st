@@ -2,9 +2,9 @@ Class {
 	#name : #Motion,
 	#superclass : #Object,
 	#instVars : [
-		'#callsign',
-		'#posOne',
-		'#posTwo'
+		'callsign',
+		'posOne',
+		'posTwo'
 	],
 	#category : #AWFY
 }

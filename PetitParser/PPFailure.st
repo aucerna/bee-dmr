@@ -2,8 +2,8 @@ Class {
 	#name : #PPFailure,
 	#superclass : #Object,
 	#instVars : [
-		'#message',
-		'#position'
+		'message',
+		'position'
 	],
 	#category : #PetitParser
 }

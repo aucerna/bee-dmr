@@ -2,10 +2,10 @@ Class {
 	#name : #CArgumentField,
 	#superclass : #Object,
 	#instVars : [
-		'#modes',
-		'#type',
-		'#name',
-		'#index'
+		'modes',
+		'type',
+		'name',
+		'index'
 	],
 	#category : #C
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #PPTrimmingParser,
 	#superclass : #PPDelegateParser,
 	#instVars : [
-		'#trimmer'
+		'trimmer'
 	],
 	#category : #Parsers
 }

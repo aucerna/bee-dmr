@@ -2,8 +2,8 @@ Class {
 	#name : #BGPiDigits,
 	#superclass : #Object,
 	#instVars : [
-		'#spigotFactory',
-		'#arrayFactory'
+		'spigotFactory',
+		'arrayFactory'
 	],
 	#category : #Game
 }

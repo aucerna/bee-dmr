@@ -2,9 +2,9 @@ Class {
 	#name : #OInstruction,
 	#superclass : #OValue,
 	#instVars : [
-		'#prev',
-		'#next',
-		'#firstUse'
+		'prev',
+		'next',
+		'firstUse'
 	],
 	#category : #IR
 }

@@ -2,14 +2,14 @@ Class {
 	#name : #SMarkHighLevel,
 	#superclass : #SMarkSuite,
 	#instVars : [
-		'#cd',
-		'#deltaBlue',
-		'#havlak',
-		'#json',
-		'#richards'
+		'cd',
+		'deltaBlue',
+		'havlak',
+		'json',
+		'richards'
 	],
 	#classVars : [
-		'#defaultSizes'
+		'defaultSizes'
 	],
 	#category : #Suites
 }

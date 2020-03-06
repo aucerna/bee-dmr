@@ -2,11 +2,11 @@ Class {
 	#name : #RichPacket,
 	#superclass : #RichObject,
 	#instVars : [
-		'#data',
-		'#datum',
-		'#identity',
-		'#kind',
-		'#link'
+		'data',
+		'datum',
+		'identity',
+		'kind',
+		'link'
 	],
 	#category : #SMRichards
 }

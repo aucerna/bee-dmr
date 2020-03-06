@@ -2,13 +2,13 @@ Class {
 	#name : #ISAOperandType,
 	#superclass : #Object,
 	#instVars : [
-		'#type',
-		'#length',
-		'#memoryLength',
-		'#flags'
+		'type',
+		'length',
+		'memoryLength',
+		'flags'
 	],
 	#classVars : [
-		'#Types'
+		'Types'
 	],
 	#category : #Intel
 }

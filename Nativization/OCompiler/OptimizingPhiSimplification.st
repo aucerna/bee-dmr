@@ -2,7 +2,7 @@ Class {
 	#name : #OptimizingPhiSimplification,
 	#superclass : #Object,
 	#instVars : [
-		'#marks'
+		'marks'
 	],
 	#category : #OCompiler
 }

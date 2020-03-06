@@ -2,10 +2,10 @@ Class {
 	#name : #OTiling,
 	#superclass : #Object,
 	#instVars : [
-		'#action',
-		'#cost',
-		'#used',
-		'#instruction'
+		'action',
+		'cost',
+		'used',
+		'instruction'
 	],
 	#category : #IR
 }

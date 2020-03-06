@@ -2,7 +2,7 @@ Class {
 	#name : #PPParser,
 	#superclass : #Object,
 	#instVars : [
-		'#properties'
+		'properties'
 	],
 	#category : #Parsers
 }

@@ -2,8 +2,8 @@ Class {
 	#name : #PPCharSetPredicate,
 	#superclass : #Object,
 	#instVars : [
-		'#block',
-		'#classification'
+		'block',
+		'classification'
 	],
 	#category : #Parsers
 }

@@ -2,11 +2,11 @@ Class {
 	#name : #BGThread,
 	#superclass : #Object,
 	#instVars : [
-		'#name',
-		'#nextThread',
-		'#token',
-		'#semaphore',
-		'#done'
+		'name',
+		'nextThread',
+		'token',
+		'semaphore',
+		'done'
 	],
 	#category : #Game
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #PPMemento,
 	#superclass : #Object,
 	#instVars : [
-		'#result',
-		'#count',
-		'#position'
+		'result',
+		'count',
+		'position'
 	],
 	#category : #PetitParser
 }

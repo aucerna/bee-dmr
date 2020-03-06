@@ -408,6 +408,54 @@ TypedefParserTest >> test70ParseManyStatements [
 ]
 
 { #category : #asserting }
+TypedefParserTest >> testAllDefs [
+	| exceptions count |
+	exceptions := #(#CONFIG #VARIANT #VARIANTARG #VENDORCODE #KNOWNFOLDERID #IID #CLSID #FOLDERTYPEID).
+	count := 0.
+	WindowsStructure allSubclasses
+		select: [:c | | def |
+			(exceptions includes: c symbol) not and: [
+				def := c class >> #def.
+				def size >= 1
+					and: [def
+						anySatisfy: [:s | s isString and: [s trimBlanks beginsWith: 'typedef']]]]]
+		thenDo: [:c | 
+			c typedef.
+			count := count + 1]
+]
+
+{ #category : #asserting }
+TypedefParserTest >> testAllResolved [
+	| exceptions |
+	exceptions := {BitmapHeaderStructure. CONFIG. VARIANT. VARIANTARG.
+		VENDORCODE. KNOWNFOLDERID. IID. CLSID. FOLDERTYPEID. FLEX_VERSION.
+		LM_BORROW_STAT. LM_VENDORCODE_PUBKEYINFO}.
+	WindowsStructure allSubclasses
+		select: [:c | (exceptions includes: c) not andNot: [(c class >> #def) isNil]]
+		thenDo: [:c | self
+			deny: (c typedef asText asString includesString: 'UNRESOLVED')]
+]
+
+{ #category : #asserting }
+TypedefParserTest >> testDynamicMultiplier [
+	| exceptions wrong |
+	exceptions := #(#CONFIG #VENDORCODE #VARIANT #VARIANTARG #DATE_STRUCT #LARGE_INTEGER).
+	wrong := OrderedCollection new.
+	WindowsStructure allSubclasses
+		select: [:c | | def |
+			(exceptions includes: c symbol) not and: [
+				def := c class >> #def.
+				def size = 1 and: [def anyone trimBlanks beginsWith: 'typedef']]]
+		thenDo: [:c | | typedef |
+			typedef := c typedef.
+			typedef refersToStruct ifTrue: [
+				typedef allFieldNamesDo: [:f :fullname | | getter setter |
+					getter := f getterSourceNamed: fullname.
+					setter := f setterSourceNamed: fullname]]].
+	self assert: wrong isEmpty
+]
+
+{ #category : #asserting }
 TypedefParserTest >> testEnum [
 	| statements enum |
 	statements := self parseStatements32: '
@@ -431,6 +479,27 @@ TypedefParserTest >> testNonStruct [
 			FUNCDESC *lpfuncdesc;
 		} BINDPTR;'.
 	self deny: struct isPetitFailure
+]
+
+{ #category : #asserting }
+TypedefParserTest >> testOffsets [
+	| exceptions wrong |
+	exceptions := #(#CONFIG #VENDORCODE #VARIANT #VARIANTARG #DATE_STRUCT #SOCKADDR CERT_NAME_BLOB CRYPT_INTEGER_BLOB CRYPT_OBJID_BLOB MENUBARINFO).
+	wrong := OrderedCollection new.
+	WindowsStructure allSubclasses
+		select: [:c | | def |
+			(exceptions includes: c symbol) not and: [
+				def := c class >> #def.
+				def size = 1 and: [def anyone trimBlanks beginsWith: 'typedef']]]
+		thenDo: [:c | | new current |
+			new := PoolDictionary new.
+			c typedef writeOffsetsOn: new.
+			new = c offsets ifFalse: [
+				wrong add: c.
+				new := new associations sortBy: #value.
+				current := c offsets associations sortBy: #value.
+				current halt]].
+	self assert: wrong isEmpty
 ]
 
 { #category : #asserting }

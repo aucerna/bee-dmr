@@ -2,9 +2,9 @@ Class {
 	#name : #PPXmlElement,
 	#superclass : #PPXmlParent,
 	#instVars : [
-		'#name',
-		'#attributes',
-		'#stretch'
+		'name',
+		'attributes',
+		'stretch'
 	],
 	#category : #Nodes
 }

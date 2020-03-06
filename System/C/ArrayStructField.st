@@ -2,9 +2,9 @@ Class {
 	#name : #ArrayStructField,
 	#superclass : #CStructField,
 	#instVars : [
-		'#lengthDef',
-		'#lengthExpr',
-		'#lengthValue'
+		'lengthDef',
+		'lengthExpr',
+		'lengthValue'
 	],
 	#category : #C
 }

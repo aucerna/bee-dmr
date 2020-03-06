@@ -2,9 +2,9 @@ Class {
 	#name : #BGKNucleotide,
 	#superclass : #Object,
 	#instVars : [
-		'#dictFactory',
-		'#sortCollectionFactory',
-		'#assocFact'
+		'dictFactory',
+		'sortCollectionFactory',
+		'assocFact'
 	],
 	#category : #Game
 }

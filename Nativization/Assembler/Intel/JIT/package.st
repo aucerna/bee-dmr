@@ -2,8 +2,8 @@ Package { #name : #JIT,
 	#classes : [
 		'Assembler64',
 		'JITAssembler64',
-		'RelocationFixup',
 		'RelocatableBuffer',
+		'RelocationFixup',
 		'TemplateAssembler64'
 	]
 }

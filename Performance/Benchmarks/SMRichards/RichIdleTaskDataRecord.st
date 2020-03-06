@@ -2,8 +2,8 @@ Class {
 	#name : #RichIdleTaskDataRecord,
 	#superclass : #RichObject,
 	#instVars : [
-		'#control',
-		'#count'
+		'control',
+		'count'
 	],
 	#category : #SMRichards
 }

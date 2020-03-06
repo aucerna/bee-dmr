@@ -2,9 +2,9 @@ Class {
 	#name : #OffsetDictionaryWriter,
 	#superclass : #Object,
 	#instVars : [
-		'#class',
-		'#documentation',
-		'#dictionary'
+		'class',
+		'documentation',
+		'dictionary'
 	],
 	#category : #C
 }

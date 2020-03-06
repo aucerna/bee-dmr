@@ -2,7 +2,7 @@ Class {
 	#name : #SegmentPrefix,
 	#superclass : #InstructionPrefix,
 	#instVars : [
-		'#value'
+		'value'
 	],
 	#category : #Intel
 }

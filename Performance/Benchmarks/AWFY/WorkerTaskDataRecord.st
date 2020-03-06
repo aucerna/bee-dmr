@@ -2,8 +2,8 @@ Class {
 	#name : #WorkerTaskDataRecord,
 	#superclass : #RBObject,
 	#instVars : [
-		'#destination',
-		'#count'
+		'destination',
+		'count'
 	],
 	#category : #AWFY
 }

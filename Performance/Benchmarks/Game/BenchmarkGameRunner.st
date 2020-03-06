@@ -2,7 +2,7 @@ Class {
 	#name : #BenchmarkGameRunner,
 	#superclass : #Object,
 	#instVars : [
-		'#arguments'
+		'arguments'
 	],
 	#category : #Game
 }
@@ -19,7 +19,16 @@ BenchmarkGameRunner >> arguments: anArray [
 
 { #category : #actions }
 BenchmarkGameRunner >> readInputFromStdin [
-	^Array with: OS stdIn upToEnd
+	| handle stdin buffer result |
+	handle := KernelLibrary GetStdHandleFor: -10.
+	stdin := FileHandle fromInteger: handle.
+	buffer := String new: 10000.
+	result := ''.
+	[| read |
+		read := stdin read: 9999 into: buffer.
+		read > 0]
+		whileTrue: [result := result , buffer trimNullEnd].
+	^Array with: result
 ]
 
 { #category : #actions }

@@ -2,8 +2,8 @@ Class {
 	#name : #CPointerType,
 	#superclass : #CType,
 	#instVars : [
-		'#baseType',
-		'#indirections'
+		'baseType',
+		'indirections'
 	],
 	#category : #C
 }

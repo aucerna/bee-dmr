@@ -2,10 +2,10 @@ Class {
 	#name : #DictEntry,
 	#superclass : #Object,
 	#instVars : [
-		'#hash',
-		'#key',
-		'#value',
-		'#next'
+		'hash',
+		'key',
+		'value',
+		'next'
 	],
 	#category : #AWFY
 }

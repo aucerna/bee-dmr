@@ -2,10 +2,10 @@ Class {
 	#name : #Ball,
 	#superclass : #Object,
 	#instVars : [
-		'#x',
-		'#y',
-		'#xVel',
-		'#yVel'
+		'x',
+		'y',
+		'xVel',
+		'yVel'
 	],
 	#category : #AWFY
 }

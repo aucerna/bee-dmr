@@ -2,7 +2,7 @@ Class {
 	#name : #OReadVariable,
 	#superclass : #OUseVariable,
 	#instVars : [
-		'#source'
+		'source'
 	],
 	#category : #IR
 }

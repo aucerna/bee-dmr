@@ -2,11 +2,11 @@ Class {
 	#name : #Packet,
 	#superclass : #RBObject,
 	#instVars : [
-		'#link',
-		'#identity',
-		'#kind',
-		'#datum',
-		'#data'
+		'link',
+		'identity',
+		'kind',
+		'datum',
+		'data'
 	],
 	#category : #AWFY
 }

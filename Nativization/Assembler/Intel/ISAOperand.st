@@ -2,7 +2,7 @@ Class {
 	#name : #ISAOperand,
 	#superclass : #Object,
 	#instVars : [
-		'#length'
+		'length'
 	],
 	#category : #Intel
 }

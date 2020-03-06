@@ -2,7 +2,7 @@ Class {
 	#name : #PPTerminalParserTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#characters'
+		'characters'
 	],
 	#category : #Tests
 }

@@ -2,8 +2,8 @@ Class {
 	#name : #SMarkAutosizeRunner,
 	#superclass : #SMarkRunner,
 	#instVars : [
-		'#targetTime',
-		'#innerLoopIterations'
+		'targetTime',
+		'innerLoopIterations'
 	],
 	#category : #SMark
 }

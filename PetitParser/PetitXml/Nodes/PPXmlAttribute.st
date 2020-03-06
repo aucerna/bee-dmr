@@ -2,8 +2,8 @@ Class {
 	#name : #PPXmlAttribute,
 	#superclass : #PPXmlNode,
 	#instVars : [
-		'#name',
-		'#value'
+		'name',
+		'value'
 	],
 	#category : #Nodes
 }

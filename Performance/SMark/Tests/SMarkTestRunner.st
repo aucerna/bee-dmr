@@ -2,13 +2,13 @@ Class {
 	#name : #SMarkTestRunner,
 	#superclass : #SMarkRunner,
 	#instVars : [
-		'#performedBenchmarks',
-		'#notifyRunnerWasExecuted',
-		'#setUpCount',
-		'#tearDownCount',
-		'#didTearDownBenchC',
-		'#didSetUpBenchB',
-		'#baseBenchmarkExecuted'
+		'performedBenchmarks',
+		'notifyRunnerWasExecuted',
+		'setUpCount',
+		'tearDownCount',
+		'didTearDownBenchC',
+		'didSetUpBenchB',
+		'baseBenchmarkExecuted'
 	],
 	#category : #Tests
 }

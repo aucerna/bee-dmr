@@ -2,8 +2,8 @@ Class {
 	#name : #BGChameleons,
 	#superclass : #Object,
 	#instVars : [
-		'#chameleonFactory',
-		'#meetingPlaceFactory'
+		'chameleonFactory',
+		'meetingPlaceFactory'
 	],
 	#category : #Game
 }

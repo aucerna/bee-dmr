@@ -2,9 +2,9 @@ Class {
 	#name : #OMessageSend,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#receiver',
-		'#selector',
-		'#arguments'
+		'receiver',
+		'selector',
+		'arguments'
 	],
 	#category : #IR
 }

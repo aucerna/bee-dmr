@@ -2,9 +2,9 @@ Class {
 	#name : #PPXmlName,
 	#superclass : #PPXmlNode,
 	#instVars : [
-		'#prefix',
-		'#local',
-		'#uri'
+		'prefix',
+		'local',
+		'uri'
 	],
 	#category : #Nodes
 }

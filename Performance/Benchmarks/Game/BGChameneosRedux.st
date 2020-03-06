@@ -2,12 +2,12 @@ Class {
 	#name : #BGChameneosRedux,
 	#superclass : #Object,
 	#instVars : [
-		'#lastSum',
-		'#colorFactory',
-		'#mallFactory',
-		'#arrayFactory',
-		'#collectionFactory',
-		'#creatureFactory'
+		'lastSum',
+		'colorFactory',
+		'mallFactory',
+		'arrayFactory',
+		'collectionFactory',
+		'creatureFactory'
 	],
 	#category : #Game
 }

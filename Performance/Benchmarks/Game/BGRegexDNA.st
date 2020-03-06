@@ -2,8 +2,8 @@ Class {
 	#name : #BGRegexDNA,
 	#superclass : #Object,
 	#instVars : [
-		'#dictFactory',
-		'#arrFact'
+		'dictFactory',
+		'arrFact'
 	],
 	#category : #Game
 }

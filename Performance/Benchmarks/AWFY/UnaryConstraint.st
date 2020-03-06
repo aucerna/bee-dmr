@@ -2,8 +2,8 @@ Class {
 	#name : #UnaryConstraint,
 	#superclass : #AbstractConstraint,
 	#instVars : [
-		'#output',
-		'#satisfied'
+		'output',
+		'satisfied'
 	],
 	#category : #AWFY
 }

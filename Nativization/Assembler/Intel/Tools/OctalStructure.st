@@ -2,7 +2,7 @@ Class {
 	#name : #OctalStructure,
 	#superclass : #Object,
 	#instVars : [
-		'#byte'
+		'byte'
 	],
 	#category : #Tools
 }

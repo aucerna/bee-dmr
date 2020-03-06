@@ -2,11 +2,11 @@ Class {
 	#name : #MemoryOperand,
 	#superclass : #ISAOperand,
 	#instVars : [
-		'#base',
-		'#index',
-		'#scale',
-		'#displacement',
-		'#segment'
+		'base',
+		'index',
+		'scale',
+		'displacement',
+		'segment'
 	],
 	#category : #Intel
 }

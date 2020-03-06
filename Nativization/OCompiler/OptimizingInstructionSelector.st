@@ -2,10 +2,10 @@ Class {
 	#name : #OptimizingInstructionSelector,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#tiles',
-		'#roots',
-		'#messages'
+		'firstBlock',
+		'tiles',
+		'roots',
+		'messages'
 	],
 	#category : #OCompiler
 }

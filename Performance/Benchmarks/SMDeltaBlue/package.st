@@ -7,8 +7,8 @@ Package { #name : #SMDeltaBlue,
 		'DBPlan',
 		'DBPlanner',
 		'DBScaleConstraint',
-		'DBStrength',
 		'DBStayConstraint',
+		'DBStrength',
 		'DBUnaryConstraint',
 		'DBVariable'
 	]

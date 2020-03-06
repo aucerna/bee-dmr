@@ -2,7 +2,7 @@ Class {
 	#name : #HashIndexTable,
 	#superclass : #Object,
 	#instVars : [
-		'#hashTable'
+		'hashTable'
 	],
 	#category : #AWFY
 }

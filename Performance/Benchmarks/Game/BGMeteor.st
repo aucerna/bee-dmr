@@ -2,7 +2,7 @@ Class {
 	#name : #BGMeteor,
 	#superclass : #Object,
 	#instVars : [
-		'#meteorBoardFactory'
+		'meteorBoardFactory'
 	],
 	#category : #Game
 }

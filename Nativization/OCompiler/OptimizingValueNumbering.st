@@ -2,11 +2,11 @@ Class {
 	#name : #OptimizingValueNumbering,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#currentBlock',
-		'#names',
-		'#hashes',
-		'#hashesOut'
+		'firstBlock',
+		'currentBlock',
+		'names',
+		'hashes',
+		'hashesOut'
 	],
 	#category : #OCompiler
 }

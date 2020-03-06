@@ -2,15 +2,15 @@ Class {
 	#name : #SMarkMediumLevel,
 	#superclass : #SMarkSuite,
 	#instVars : [
-		'#bounce',
-		'#list',
-		'#mandelbrot',
-		'#nbody',
-		'#permute',
-		'#queens',
-		'#sieve',
-		'#storage',
-		'#towers'
+		'bounce',
+		'list',
+		'mandelbrot',
+		'nbody',
+		'permute',
+		'queens',
+		'sieve',
+		'storage',
+		'towers'
 	],
 	#category : #Suites
 }

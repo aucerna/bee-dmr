@@ -2,10 +2,10 @@ Class {
 	#name : #Queens,
 	#superclass : #Benchmark,
 	#instVars : [
-		'#freeMaxs',
-		'#freeRows',
-		'#freeMins',
-		'#queenRows'
+		'freeMaxs',
+		'freeRows',
+		'freeMins',
+		'queenRows'
 	],
 	#category : #AWFY
 }

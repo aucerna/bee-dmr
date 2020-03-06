@@ -2,12 +2,12 @@ Class {
 	#name : #TaskControlBlock,
 	#superclass : #TaskState,
 	#instVars : [
-		'#link',
-		'#identity',
-		'#priority',
-		'#input',
-		'#function',
-		'#handle'
+		'link',
+		'identity',
+		'priority',
+		'input',
+		'function',
+		'handle'
 	],
 	#category : #AWFY
 }

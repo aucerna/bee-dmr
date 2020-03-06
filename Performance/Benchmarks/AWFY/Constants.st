@@ -2,8 +2,8 @@ Class {
 	#name : #Constants,
 	#superclass : #Object,
 	#classVars : [
-		'#horizontal',
-		'#vertical'
+		'horizontal',
+		'vertical'
 	],
 	#category : #AWFY
 }

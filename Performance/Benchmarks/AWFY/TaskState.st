@@ -2,9 +2,9 @@ Class {
 	#name : #TaskState,
 	#superclass : #RBObject,
 	#instVars : [
-		'#packetPending',
-		'#taskWaiting',
-		'#taskHolding'
+		'packetPending',
+		'taskWaiting',
+		'taskHolding'
 	],
 	#category : #AWFY
 }

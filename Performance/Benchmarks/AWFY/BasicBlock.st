@@ -2,9 +2,9 @@ Class {
 	#name : #BasicBlock,
 	#superclass : #Object,
 	#instVars : [
-		'#inEdges',
-		'#outEdges',
-		'#name'
+		'inEdges',
+		'outEdges',
+		'name'
 	],
 	#category : #AWFY
 }

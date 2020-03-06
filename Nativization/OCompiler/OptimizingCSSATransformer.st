@@ -2,8 +2,8 @@ Class {
 	#name : #OptimizingCSSATransformer,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#liveness'
+		'firstBlock',
+		'liveness'
 	],
 	#category : #OCompiler
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #SMarkBeeRunner,
 	#superclass : #SMarkRunner,
 	#instVars : [
-		'#warmingUp'
+		'warmingUp'
 	],
 	#category : #SMark
 }

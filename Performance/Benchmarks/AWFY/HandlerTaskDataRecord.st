@@ -2,8 +2,8 @@ Class {
 	#name : #HandlerTaskDataRecord,
 	#superclass : #RBObject,
 	#instVars : [
-		'#workIn',
-		'#deviceIn'
+		'workIn',
+		'deviceIn'
 	],
 	#category : #AWFY
 }

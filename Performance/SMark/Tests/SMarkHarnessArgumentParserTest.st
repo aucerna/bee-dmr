@@ -2,7 +2,7 @@ Class {
 	#name : #SMarkHarnessArgumentParserTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#parser'
+		'parser'
 	],
 	#category : #Tests
 }

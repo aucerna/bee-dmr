@@ -2,7 +2,7 @@ Class {
 	#name : #BGSpectralNorm,
 	#superclass : #Object,
 	#instVars : [
-		'#arrayFactory'
+		'arrayFactory'
 	],
 	#category : #Game
 }

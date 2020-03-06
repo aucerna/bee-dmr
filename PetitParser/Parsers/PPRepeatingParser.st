@@ -2,8 +2,8 @@ Class {
 	#name : #PPRepeatingParser,
 	#superclass : #PPDelegateParser,
 	#instVars : [
-		'#min',
-		'#max'
+		'min',
+		'max'
 	],
 	#category : #Parsers
 }

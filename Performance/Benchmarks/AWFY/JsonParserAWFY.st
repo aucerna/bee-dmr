@@ -2,14 +2,14 @@ Class {
 	#name : #JsonParserAWFY,
 	#superclass : #Object,
 	#instVars : [
-		'#input',
-		'#index',
-		'#line',
-		'#column',
-		'#current',
-		'#captureBuffer',
-		'#captureStart',
-		'#exceptionBlock'
+		'input',
+		'index',
+		'line',
+		'column',
+		'current',
+		'captureBuffer',
+		'captureStart',
+		'exceptionBlock'
 	],
 	#category : #AWFY
 }

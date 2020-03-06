@@ -2,9 +2,9 @@ Class {
 	#name : #LoopStructureGraph,
 	#superclass : #Object,
 	#instVars : [
-		'#root',
-		'#loops',
-		'#loopCounter'
+		'root',
+		'loops',
+		'loopCounter'
 	],
 	#category : #AWFY
 }

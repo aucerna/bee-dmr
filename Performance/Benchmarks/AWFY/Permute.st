@@ -2,8 +2,8 @@ Class {
 	#name : #Permute,
 	#superclass : #Benchmark,
 	#instVars : [
-		'#count',
-		'#v'
+		'count',
+		'v'
 	],
 	#category : #AWFY
 }

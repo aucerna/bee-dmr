@@ -2,7 +2,7 @@ Class {
 	#name : #DBPlanner,
 	#superclass : #Object,
 	#instVars : [
-		'#currentMark'
+		'currentMark'
 	],
 	#category : #SMDeltaBlue
 }

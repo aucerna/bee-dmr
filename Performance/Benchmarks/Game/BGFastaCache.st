@@ -2,10 +2,10 @@ Class {
 	#name : #BGFastaCache,
 	#superclass : #Object,
 	#instVars : [
-		'#cache'
+		'cache'
 	],
 	#classVars : [
-		'#Cache'
+		'Cache'
 	],
 	#category : #Game
 }

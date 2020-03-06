@@ -2,7 +2,7 @@ Class {
 	#name : #SMarkResultTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#result'
+		'result'
 	],
 	#category : #Tests
 }

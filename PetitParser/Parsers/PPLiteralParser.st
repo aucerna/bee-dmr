@@ -2,8 +2,8 @@ Class {
 	#name : #PPLiteralParser,
 	#superclass : #PPParser,
 	#instVars : [
-		'#literal',
-		'#message'
+		'literal',
+		'message'
 	],
 	#category : #Parsers
 }

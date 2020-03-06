@@ -2,10 +2,10 @@ Class {
 	#name : #VEXPrefix,
 	#superclass : #InstructionPrefix,
 	#instVars : [
-		'#signature'
+		'signature'
 	],
 	#classVars : [
-		'#Signatures'
+		'Signatures'
 	],
 	#category : #Intel
 }

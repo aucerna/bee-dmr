@@ -2,16 +2,16 @@ Class {
 	#name : #HavlakLoopFinder,
 	#superclass : #Object,
 	#instVars : [
-		'#cfg',
-		'#lsg',
-		'#nonBackPreds',
-		'#backPreds',
-		'#number',
-		'#maxSize',
-		'#header',
-		'#type',
-		'#last',
-		'#nodes'
+		'cfg',
+		'lsg',
+		'nonBackPreds',
+		'backPreds',
+		'number',
+		'maxSize',
+		'header',
+		'type',
+		'last',
+		'nodes'
 	],
 	#category : #AWFY
 }

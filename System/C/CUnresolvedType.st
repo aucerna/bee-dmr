@@ -2,7 +2,7 @@ Class {
 	#name : #CUnresolvedType,
 	#superclass : #CType,
 	#instVars : [
-		'#name'
+		'name'
 	],
 	#category : #C
 }

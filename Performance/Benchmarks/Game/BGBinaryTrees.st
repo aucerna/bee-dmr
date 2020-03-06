@@ -2,10 +2,10 @@ Class {
 	#name : #BGBinaryTrees,
 	#superclass : #Object,
 	#instVars : [
-		'#left',
-		'#right',
-		'#item',
-		'#btFactory'
+		'left',
+		'right',
+		'item',
+		'btFactory'
 	],
 	#category : #Game
 }

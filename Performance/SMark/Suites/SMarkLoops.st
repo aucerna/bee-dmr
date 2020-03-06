@@ -2,10 +2,10 @@ Class {
 	#name : #SMarkLoops,
 	#superclass : #SMarkSuite,
 	#instVars : [
-		'#someInstVar'
+		'someInstVar'
 	],
 	#classVars : [
-		'#ClassVarValue'
+		'ClassVarValue'
 	],
 	#category : #Suites
 }

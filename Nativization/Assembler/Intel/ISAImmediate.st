@@ -2,7 +2,7 @@ Class {
 	#name : #ISAImmediate,
 	#superclass : #ISAOperand,
 	#instVars : [
-		'#value'
+		'value'
 	],
 	#category : #Intel
 }

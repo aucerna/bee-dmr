@@ -2,10 +2,10 @@ Class {
 	#name : #ISAInstruction,
 	#superclass : #Object,
 	#instVars : [
-		'#prefix',
-		'#mnemonic',
-		'#operands',
-		'#template'
+		'prefix',
+		'mnemonic',
+		'operands',
+		'template'
 	],
 	#category : #Intel
 }

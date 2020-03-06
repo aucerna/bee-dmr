@@ -2,14 +2,14 @@ Class {
 	#name : #Scheduler,
 	#superclass : #RBObject,
 	#instVars : [
-		'#taskList',
-		'#currentTask',
-		'#currentTaskIdentity',
-		'#taskTable',
-		'#tracing',
-		'#layout',
-		'#queuePacketCount',
-		'#holdCount'
+		'taskList',
+		'currentTask',
+		'currentTaskIdentity',
+		'taskTable',
+		'tracing',
+		'layout',
+		'queuePacketCount',
+		'holdCount'
 	],
 	#category : #AWFY
 }

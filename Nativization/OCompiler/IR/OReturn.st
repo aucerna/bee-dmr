@@ -2,9 +2,9 @@ Class {
 	#name : #OReturn,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#source',
-		'#frame',
-		'#argumentsCount'
+		'source',
+		'frame',
+		'argumentsCount'
 	],
 	#category : #IR
 }

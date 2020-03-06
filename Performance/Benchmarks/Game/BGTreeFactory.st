@@ -2,7 +2,7 @@ Class {
 	#name : #BGTreeFactory,
 	#superclass : #Object,
 	#instVars : [
-		'#nodeCls'
+		'nodeCls'
 	],
 	#category : #Game
 }

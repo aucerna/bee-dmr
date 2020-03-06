@@ -2,11 +2,11 @@ Class {
 	#name : #OptimizingNativizer,
 	#superclass : #Object,
 	#instVars : [
-		'#method',
-		'#firstBlock',
-		'#messageLinker',
-		'#inlinedMethods',
-		'#abi'
+		'method',
+		'firstBlock',
+		'messageLinker',
+		'inlinedMethods',
+		'abi'
 	],
 	#category : #OCompiler
 }
@@ -68,7 +68,7 @@ OptimizingNativizer >> decompose [
 
 { #category : #private }
 OptimizingNativizer >> defaultInlinedMethods [
-	^NativizationEnvironment primitiveObjectMethods , ((OrderedCollection new
+	^BeeNativizationEnvironment primitiveObjectMethods , ((OrderedCollection new
 		add: Object >> #byteAtValid:;
 		add: Object >> #byteAtValid:put:;
 		add: ProtoObject >> #objectAtValid:;
@@ -166,7 +166,7 @@ OptimizingNativizer >> inlineMethods [
 OptimizingNativizer >> irFor: aCompiledMethod [
 	| visitor ir cm |
 	visitor := OptimizingVisitor new.
-	cm := (NativizationEnvironment isUndermethod: aCompiledMethod selector)
+	cm := (BeeNativizationEnvironment isUndermethod: aCompiledMethod selector)
 		ifTrue: [ProtoObject >> aCompiledMethod selector]
 		ifFalse: [aCompiledMethod].
 	ir := visitor visit: cm parseTree.

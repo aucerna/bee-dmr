@@ -2,9 +2,9 @@ Class {
 	#name : #ODominatorTree,
 	#superclass : #Object,
 	#instVars : [
-		'#block',
-		'#dominators',
-		'#dominated'
+		'block',
+		'dominators',
+		'dominated'
 	],
 	#category : #IR
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #TypedefParser,
 	#superclass : #TypedefGrammar,
 	#instVars : [
-		'#translationUnit'
+		'translationUnit'
 	],
 	#category : #C
 }

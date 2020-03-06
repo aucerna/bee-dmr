@@ -2,9 +2,9 @@ Class {
 	#name : #RichTaskState,
 	#superclass : #RichObject,
 	#instVars : [
-		'#packetPending',
-		'#taskHolding',
-		'#taskWaiting'
+		'packetPending',
+		'taskHolding',
+		'taskWaiting'
 	],
 	#category : #SMRichards
 }

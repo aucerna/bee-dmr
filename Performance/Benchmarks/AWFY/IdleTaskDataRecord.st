@@ -2,8 +2,8 @@ Class {
 	#name : #IdleTaskDataRecord,
 	#superclass : #RBObject,
 	#instVars : [
-		'#control',
-		'#count'
+		'control',
+		'count'
 	],
 	#category : #AWFY
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #BGFannkuchRedux,
 	#superclass : #Object,
 	#instVars : [
-		'#permGenFactory'
+		'permGenFactory'
 	],
 	#category : #Game
 }

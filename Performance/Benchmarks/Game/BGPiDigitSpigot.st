@@ -2,10 +2,10 @@ Class {
 	#name : #BGPiDigitSpigot,
 	#superclass : #Object,
 	#instVars : [
-		'#numer',
-		'#accum',
-		'#denom',
-		'#k'
+		'numer',
+		'accum',
+		'denom',
+		'k'
 	],
 	#category : #Game
 }

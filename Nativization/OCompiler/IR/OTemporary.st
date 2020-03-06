@@ -2,7 +2,7 @@ Class {
 	#name : #OTemporary,
 	#superclass : #OVariable,
 	#instVars : [
-		'#name'
+		'name'
 	],
 	#category : #IR
 }

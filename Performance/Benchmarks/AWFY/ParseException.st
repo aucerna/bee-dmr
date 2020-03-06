@@ -2,10 +2,10 @@ Class {
 	#name : #ParseException,
 	#superclass : #Object,
 	#instVars : [
-		'#offset',
-		'#line',
-		'#column',
-		'#msg'
+		'offset',
+		'line',
+		'column',
+		'msg'
 	],
 	#category : #AWFY
 }

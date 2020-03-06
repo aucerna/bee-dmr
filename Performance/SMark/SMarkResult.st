@@ -2,10 +2,10 @@ Class {
 	#name : #SMarkResult,
 	#superclass : #Object,
 	#instVars : [
-		'#time',
-		'#benchName',
-		'#suite',
-		'#criteria'
+		'time',
+		'benchName',
+		'suite',
+		'criteria'
 	],
 	#category : #SMark
 }

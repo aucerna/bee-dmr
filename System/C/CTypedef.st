@@ -2,12 +2,12 @@ Class {
 	#name : #CTypedef,
 	#superclass : #CType,
 	#instVars : [
-		'#baseType',
-		'#name',
-		'#extraNames'
+		'baseType',
+		'name',
+		'extraNames'
 	],
 	#classVars : [
-		'#Mapping'
+		'Mapping'
 	],
 	#category : #C
 }

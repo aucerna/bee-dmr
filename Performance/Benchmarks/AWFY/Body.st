@@ -2,16 +2,16 @@ Class {
 	#name : #Body,
 	#superclass : #Object,
 	#instVars : [
-		'#x',
-		'#y',
-		'#z',
-		'#vx',
-		'#vy',
-		'#vz',
-		'#mass'
+		'x',
+		'y',
+		'z',
+		'vx',
+		'vy',
+		'vz',
+		'mass'
 	],
 	#classVars : [
-		'#solarMass'
+		'solarMass'
 	],
 	#category : #AWFY
 }

@@ -2,15 +2,15 @@ Class {
 	#name : #AWFYJsonLiteral,
 	#superclass : #AWFYJsonValue,
 	#instVars : [
-		'#value',
-		'#isNull',
-		'#isTrue',
-		'#isFalse'
+		'value',
+		'isNull',
+		'isTrue',
+		'isFalse'
 	],
 	#classVars : [
-		'#FALSE',
-		'#NULL',
-		'#TRUE'
+		'FALSE',
+		'NULL',
+		'TRUE'
 	],
 	#category : #AWFY
 }

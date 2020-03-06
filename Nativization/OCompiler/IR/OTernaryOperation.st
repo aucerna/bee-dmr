@@ -2,9 +2,9 @@ Class {
 	#name : #OTernaryOperation,
 	#superclass : #OPrimitiveOperation,
 	#instVars : [
-		'#receiver',
-		'#left',
-		'#right'
+		'receiver',
+		'left',
+		'right'
 	],
 	#category : #IR
 }

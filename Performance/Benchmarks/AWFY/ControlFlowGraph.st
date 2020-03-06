@@ -2,9 +2,9 @@ Class {
 	#name : #ControlFlowGraph,
 	#superclass : #Object,
 	#instVars : [
-		'#basicBlockMap',
-		'#startNode',
-		'#edgeList'
+		'basicBlockMap',
+		'startNode',
+		'edgeList'
 	],
 	#category : #AWFY
 }

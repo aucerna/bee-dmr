@@ -2,9 +2,9 @@ Class {
 	#name : #BGPair,
 	#superclass : #Object,
 	#instVars : [
-		'#partner',
-		'#me',
-		'#sema'
+		'partner',
+		'me',
+		'sema'
 	],
 	#category : #Game
 }

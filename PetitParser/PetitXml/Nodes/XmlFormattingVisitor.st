@@ -2,8 +2,8 @@ Class {
 	#name : #XmlFormattingVisitor,
 	#superclass : #XmlNodeVisitor,
 	#instVars : [
-		'#stream',
-		'#indent'
+		'stream',
+		'indent'
 	],
 	#category : #Nodes
 }

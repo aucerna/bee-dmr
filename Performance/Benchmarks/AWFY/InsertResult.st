@@ -2,9 +2,9 @@ Class {
 	#name : #InsertResult,
 	#superclass : #Object,
 	#instVars : [
-		'#isNewEntry',
-		'#newNode',
-		'#oldValue'
+		'isNewEntry',
+		'newNode',
+		'oldValue'
 	],
 	#category : #AWFY
 }

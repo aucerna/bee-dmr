@@ -2,16 +2,16 @@ Class {
 	#name : #OptimizingCodeEmitter,
 	#superclass : #Object,
 	#instVars : [
-		'#allocation',
-		'#assembler',
-		'#abi',
-		'#jumpDestinations',
-		'#assemblers',
-		'#method',
-		'#firstBlock',
-		'#currentBlockIndex',
-		'#blocks',
-		'#messageLinker'
+		'allocation',
+		'assembler',
+		'abi',
+		'jumpDestinations',
+		'assemblers',
+		'method',
+		'firstBlock',
+		'currentBlockIndex',
+		'blocks',
+		'messageLinker'
 	],
 	#category : #OCompiler
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #DeviceTaskDataRecord,
 	#superclass : #RBObject,
 	#instVars : [
-		'#pending'
+		'pending'
 	],
 	#category : #AWFY
 }

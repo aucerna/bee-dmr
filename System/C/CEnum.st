@@ -2,8 +2,8 @@ Class {
 	#name : #CEnum,
 	#superclass : #CType,
 	#instVars : [
-		'#name',
-		'#enumerators'
+		'name',
+		'enumerators'
 	],
 	#category : #C
 }

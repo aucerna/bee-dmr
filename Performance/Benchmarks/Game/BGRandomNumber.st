@@ -2,14 +2,14 @@ Class {
 	#name : #BGRandomNumber,
 	#superclass : #Object,
 	#instVars : [
-		'#seed',
-		'#scale'
+		'seed',
+		'scale'
 	],
 	#classVars : [
-		'#FModulus',
-		'#Increment',
-		'#Modulus',
-		'#Multiplier'
+		'FModulus',
+		'Increment',
+		'Modulus',
+		'Multiplier'
 	],
 	#category : #Game
 }

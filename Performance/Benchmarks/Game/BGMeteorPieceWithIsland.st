@@ -2,8 +2,8 @@ Class {
 	#name : #BGMeteorPieceWithIsland,
 	#superclass : #BGMeteorPiece,
 	#instVars : [
-		'#islands',
-		'#aPieceCouldFitIntoIsland'
+		'islands',
+		'aPieceCouldFitIntoIsland'
 	],
 	#category : #Game
 }

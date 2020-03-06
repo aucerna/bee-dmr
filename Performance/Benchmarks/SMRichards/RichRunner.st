@@ -2,14 +2,14 @@ Class {
 	#name : #RichRunner,
 	#superclass : #Object,
 	#instVars : [
-		'#taskList',
-		'#currentTask',
-		'#currentTaskIdentity',
-		'#taskTable',
-		'#tracing',
-		'#layout',
-		'#queuePacketCount',
-		'#holdCount'
+		'taskList',
+		'currentTask',
+		'currentTaskIdentity',
+		'taskTable',
+		'tracing',
+		'layout',
+		'queuePacketCount',
+		'holdCount'
 	],
 	#category : #SMRichards
 }

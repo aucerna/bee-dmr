@@ -2,20 +2,26 @@ Class {
 	#name : #OperandEncoding,
 	#superclass : #Object,
 	#instVars : [
-		'#name',
-		'#selectors',
-		'#descriptions',
-		'#immediate',
-		'#modrm'
+		'name',
+		'selectors',
+		'descriptions',
+		'immediate',
+		'modrm'
 	],
 	#classVars : [
-		'#Encodings'
+		'Encodings'
 	],
 	#category : #Intel
 }
 
 { #category : #initialization }
 OperandEncoding class >> commentEncodingMethods [
+	"
+	StChangesetBrowser new
+		label: 'OperandEncoding comments';
+		setModel: (ChangesetBrowserModel on: OperandEncoding commentEncodingMethods);
+		openInWindow
+	"
 	| changes |
 	changes := OrderedCollection new.
 	Encodings collect: [:oe | | comment |

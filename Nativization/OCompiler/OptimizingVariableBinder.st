@@ -2,14 +2,14 @@ Class {
 	#name : #OptimizingVariableBinder,
 	#superclass : #Object,
 	#instVars : [
-		'#definitions',
-		'#currentBlock',
-		'#dominatorTree',
-		'#immediateDominators',
-		'#dominanceFrontiers',
-		'#pendingReads',
-		'#pendingPhis',
-		'#abi'
+		'definitions',
+		'currentBlock',
+		'dominatorTree',
+		'immediateDominators',
+		'dominanceFrontiers',
+		'pendingReads',
+		'pendingPhis',
+		'abi'
 	],
 	#category : #OCompiler
 }

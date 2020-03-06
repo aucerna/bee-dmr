@@ -2,8 +2,8 @@ Class {
 	#name : #OPhi,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#variables',
-		'#blocks'
+		'variables',
+		'blocks'
 	],
 	#category : #IR
 }

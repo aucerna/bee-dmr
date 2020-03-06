@@ -2,7 +2,7 @@ Class {
 	#name : #PPLiteralSequenceParser,
 	#superclass : #PPLiteralParser,
 	#instVars : [
-		'#size'
+		'size'
 	],
 	#category : #Parsers
 }

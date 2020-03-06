@@ -2,8 +2,8 @@ Class {
 	#name : #BGMeteorPiece,
 	#superclass : #Object,
 	#instVars : [
-		'#mask',
-		'#row'
+		'mask',
+		'row'
 	],
 	#category : #Game
 }

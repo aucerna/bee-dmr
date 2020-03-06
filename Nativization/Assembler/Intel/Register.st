@@ -2,10 +2,10 @@ Class {
 	#name : #Register,
 	#superclass : #ISAOperand,
 	#instVars : [
-		'#name',
-		'#index',
-		'#family',
-		'#flags'
+		'name',
+		'index',
+		'family',
+		'flags'
 	],
 	#category : #Intel
 }

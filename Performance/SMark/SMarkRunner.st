@@ -2,14 +2,14 @@ Class {
 	#name : #SMarkRunner,
 	#superclass : #Object,
 	#instVars : [
-		'#numIterations',
-		'#suite',
-		'#runner',
-		'#results',
-		'#currentBenchmark',
-		'#timers',
-		'#problemSize',
-		'#numProcesses'
+		'numIterations',
+		'suite',
+		'runner',
+		'results',
+		'currentBenchmark',
+		'timers',
+		'problemSize',
+		'numProcesses'
 	],
 	#category : #SMark
 }

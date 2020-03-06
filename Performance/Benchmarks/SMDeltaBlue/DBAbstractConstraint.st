@@ -2,7 +2,7 @@ Class {
 	#name : #DBAbstractConstraint,
 	#superclass : #Object,
 	#instVars : [
-		'#strength'
+		'strength'
 	],
 	#category : #SMDeltaBlue
 }

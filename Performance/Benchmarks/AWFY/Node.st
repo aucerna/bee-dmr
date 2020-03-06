@@ -2,12 +2,12 @@ Class {
 	#name : #Node,
 	#superclass : #Object,
 	#instVars : [
-		'#key',
-		'#value',
-		'#left',
-		'#right',
-		'#parent',
-		'#color'
+		'key',
+		'value',
+		'left',
+		'right',
+		'parent',
+		'color'
 	],
 	#category : #AWFY
 }

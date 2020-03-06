@@ -2,12 +2,12 @@ Class {
 	#name : #DBVariable,
 	#superclass : #Object,
 	#instVars : [
-		'#constraints',
-		'#determinedBy',
-		'#mark',
-		'#stay',
-		'#value',
-		'#walkStrength'
+		'constraints',
+		'determinedBy',
+		'mark',
+		'stay',
+		'value',
+		'walkStrength'
 	],
 	#category : #SMDeltaBlue
 }

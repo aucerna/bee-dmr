@@ -2,10 +2,10 @@ Class {
 	#name : #OptimizingVisitor,
 	#superclass : #ParseTreeVisitor,
 	#instVars : [
-		'#firstBlock',
-		'#currentBlock',
-		'#isReceiver',
-		'#argumentsCount'
+		'firstBlock',
+		'currentBlock',
+		'isReceiver',
+		'argumentsCount'
 	],
 	#category : #OCompiler
 }

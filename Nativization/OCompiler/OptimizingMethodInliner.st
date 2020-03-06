@@ -2,9 +2,9 @@ Class {
 	#name : #OptimizingMethodInliner,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#methods',
-		'#abi'
+		'firstBlock',
+		'methods',
+		'abi'
 	],
 	#category : #OCompiler
 }

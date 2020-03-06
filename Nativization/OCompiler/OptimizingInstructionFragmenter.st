@@ -2,10 +2,10 @@ Class {
 	#name : #OptimizingInstructionFragmenter,
 	#superclass : #Object,
 	#instVars : [
-		'#method',
-		'#messages',
-		'#firstBlock',
-		'#abi'
+		'method',
+		'messages',
+		'firstBlock',
+		'abi'
 	],
 	#category : #OCompiler
 }

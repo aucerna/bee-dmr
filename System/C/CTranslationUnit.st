@@ -2,13 +2,13 @@ Class {
 	#name : #CTranslationUnit,
 	#superclass : #Object,
 	#instVars : [
-		'#types',
-		'#unresolved',
-		'#wordSize'
+		'types',
+		'unresolved',
+		'wordSize'
 	],
 	#classVars : [
-		'#Windows32',
-		'#Windows64'
+		'Windows32',
+		'Windows64'
 	],
 	#category : #C
 }

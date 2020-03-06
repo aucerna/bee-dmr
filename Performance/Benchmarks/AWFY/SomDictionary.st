@@ -2,8 +2,8 @@ Class {
 	#name : #SomDictionary,
 	#superclass : #Object,
 	#instVars : [
-		'#buckets',
-		'#size_'
+		'buckets',
+		'size_'
 	],
 	#category : #AWFY
 }

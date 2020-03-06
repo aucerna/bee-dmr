@@ -2,7 +2,7 @@ Class {
 	#name : #PPActionParser,
 	#superclass : #PPDelegateParser,
 	#instVars : [
-		'#block'
+		'block'
 	],
 	#category : #Parsers
 }

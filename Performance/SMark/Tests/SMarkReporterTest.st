@@ -2,7 +2,7 @@ Class {
 	#name : #SMarkReporterTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#runner'
+		'runner'
 	],
 	#category : #Tests
 }

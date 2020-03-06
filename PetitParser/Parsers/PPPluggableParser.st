@@ -2,7 +2,7 @@ Class {
 	#name : #PPPluggableParser,
 	#superclass : #PPParser,
 	#instVars : [
-		'#block'
+		'block'
 	],
 	#category : #Parsers
 }

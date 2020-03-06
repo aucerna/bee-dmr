@@ -2,7 +2,7 @@ Class {
 	#name : #PPListParser,
 	#superclass : #PPParser,
 	#instVars : [
-		'#parsers'
+		'parsers'
 	],
 	#category : #Parsers
 }

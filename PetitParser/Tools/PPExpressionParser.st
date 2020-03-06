@@ -2,7 +2,7 @@ Class {
 	#name : #PPExpressionParser,
 	#superclass : #PPDelegateParser,
 	#instVars : [
-		'#operators'
+		'operators'
 	],
 	#category : #Tools
 }

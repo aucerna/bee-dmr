@@ -2,7 +2,7 @@ Class {
 	#name : #OVariable,
 	#superclass : #Object,
 	#instVars : [
-		'#binding'
+		'binding'
 	],
 	#category : #IR
 }

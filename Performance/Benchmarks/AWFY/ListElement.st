@@ -2,8 +2,8 @@ Class {
 	#name : #ListElement,
 	#superclass : #Object,
 	#instVars : [
-		'#val',
-		'#next'
+		'val',
+		'next'
 	],
 	#category : #AWFY
 }

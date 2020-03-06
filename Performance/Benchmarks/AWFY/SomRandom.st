@@ -2,7 +2,7 @@ Class {
 	#name : #SomRandom,
 	#superclass : #Object,
 	#instVars : [
-		'#seed'
+		'seed'
 	],
 	#category : #AWFY
 }

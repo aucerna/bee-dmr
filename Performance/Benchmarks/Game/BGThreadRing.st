@@ -2,7 +2,7 @@ Class {
 	#name : #BGThreadRing,
 	#superclass : #Object,
 	#instVars : [
-		'#threadFactory'
+		'threadFactory'
 	],
 	#category : #Game
 }

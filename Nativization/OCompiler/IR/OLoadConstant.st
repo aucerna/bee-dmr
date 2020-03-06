@@ -2,7 +2,7 @@ Class {
 	#name : #OLoadConstant,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#constant'
+		'constant'
 	],
 	#category : #IR
 }

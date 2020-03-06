@@ -2,10 +2,10 @@ Class {
 	#name : #InstructionPrefix,
 	#superclass : #Object,
 	#instVars : [
-		'#name'
+		'name'
 	],
 	#classVars : [
-		'#Prefixes'
+		'Prefixes'
 	],
 	#category : #Intel
 }

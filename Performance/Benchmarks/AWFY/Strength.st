@@ -2,23 +2,23 @@ Class {
 	#name : #Strength,
 	#superclass : #Object,
 	#instVars : [
-		'#symbolicValue',
-		'#arithmeticValue'
+		'symbolicValue',
+		'arithmeticValue'
 	],
 	#classVars : [
-		'#AbsoluteStrongest',
-		'#AbsoluteWeakest',
-		'#Required',
-		'#StrengthConstants',
-		'#StrengthTable',
-		'#SymAbsoluteStrongest',
-		'#SymAbsoluteWeakest',
-		'#SymDefault',
-		'#SymPreferred',
-		'#SymRequired',
-		'#SymStrongDefault',
-		'#SymStrongPreferred',
-		'#SymWeakDefault'
+		'AbsoluteStrongest',
+		'AbsoluteWeakest',
+		'Required',
+		'StrengthConstants',
+		'StrengthTable',
+		'SymAbsoluteStrongest',
+		'SymAbsoluteWeakest',
+		'SymDefault',
+		'SymPreferred',
+		'SymRequired',
+		'SymStrongDefault',
+		'SymStrongPreferred',
+		'SymWeakDefault'
 	],
 	#category : #AWFY
 }

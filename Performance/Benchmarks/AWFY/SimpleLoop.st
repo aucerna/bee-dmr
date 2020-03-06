@@ -2,15 +2,15 @@ Class {
 	#name : #SimpleLoop,
 	#superclass : #Object,
 	#instVars : [
-		'#counter',
-		'#depthLevel',
-		'#parent_',
-		'#isRoot_',
-		'#nestingLevel_',
-		'#header',
-		'#isReducible',
-		'#basicBlocks',
-		'#children'
+		'counter',
+		'depthLevel',
+		'parent_',
+		'isRoot_',
+		'nestingLevel_',
+		'header',
+		'isReducible',
+		'basicBlocks',
+		'children'
 	],
 	#category : #AWFY
 }

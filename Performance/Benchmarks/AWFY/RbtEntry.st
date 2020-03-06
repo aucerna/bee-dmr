@@ -2,8 +2,8 @@ Class {
 	#name : #RbtEntry,
 	#superclass : #Object,
 	#instVars : [
-		'#key',
-		'#value'
+		'key',
+		'value'
 	],
 	#category : #AWFY
 }

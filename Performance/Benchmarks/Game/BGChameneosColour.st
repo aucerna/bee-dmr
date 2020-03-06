@@ -2,7 +2,7 @@ Class {
 	#name : #BGChameneosColour,
 	#superclass : #Object,
 	#instVars : [
-		'#color'
+		'color'
 	],
 	#category : #Game
 }

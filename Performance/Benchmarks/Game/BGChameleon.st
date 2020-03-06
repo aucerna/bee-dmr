@@ -2,10 +2,10 @@ Class {
 	#name : #BGChameleon,
 	#superclass : #Object,
 	#instVars : [
-		'#meetings',
-		'#color',
-		'#semaphore',
-		'#waitingForPair'
+		'meetings',
+		'color',
+		'semaphore',
+		'waitingForPair'
 	],
 	#category : #Game
 }

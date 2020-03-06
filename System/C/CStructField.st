@@ -2,14 +2,14 @@ Class {
 	#name : #CStructField,
 	#superclass : #Object,
 	#instVars : [
-		'#type',
-		'#name',
-		'#alignment',
-		'#offset',
-		'#conflictive'
+		'type',
+		'name',
+		'alignment',
+		'offset',
+		'conflictive'
 	],
 	#classVars : [
-		'#Mapping'
+		'Mapping'
 	],
 	#category : #C
 }

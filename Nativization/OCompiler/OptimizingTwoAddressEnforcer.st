@@ -2,8 +2,8 @@ Class {
 	#name : #OptimizingTwoAddressEnforcer,
 	#superclass : #Object,
 	#instVars : [
-		'#allocation',
-		'#firstBlock'
+		'allocation',
+		'firstBlock'
 	],
 	#category : #OCompiler
 }

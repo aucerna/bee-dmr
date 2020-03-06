@@ -2,7 +2,7 @@ Class {
 	#name : #PPIdentifierTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#identifier'
+		'identifier'
 	],
 	#category : #Tests
 }

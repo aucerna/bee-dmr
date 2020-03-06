@@ -2,8 +2,8 @@ Class {
 	#name : #DBUnaryConstraint,
 	#superclass : #DBAbstractConstraint,
 	#instVars : [
-		'#output',
-		'#satisfied'
+		'output',
+		'satisfied'
 	],
 	#category : #SMDeltaBlue
 }

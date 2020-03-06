@@ -2,7 +2,7 @@ Class {
 	#name : #Planner,
 	#superclass : #Object,
 	#instVars : [
-		'#currentMark'
+		'currentMark'
 	],
 	#category : #AWFY
 }

@@ -2,13 +2,13 @@ Class {
 	#name : #SMarkTestAutosizeRunner,
 	#superclass : #SMarkAutosizeRunner,
 	#instVars : [
-		'#performedBenchmarks',
-		'#notifyRunnerWasExecuted',
-		'#setUpCount',
-		'#tearDownCount',
-		'#didTearDownBenchC',
-		'#didSetUpBenchB',
-		'#baseBenchmarkExecuted'
+		'performedBenchmarks',
+		'notifyRunnerWasExecuted',
+		'setUpCount',
+		'tearDownCount',
+		'didTearDownBenchC',
+		'didSetUpBenchB',
+		'baseBenchmarkExecuted'
 	],
 	#category : #Tests
 }

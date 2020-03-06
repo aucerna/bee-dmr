@@ -2,10 +2,10 @@ Class {
 	#name : #RelocationFixup,
 	#superclass : #Object,
 	#instVars : [
-		'#source',
-		'#target',
-		'#relative',
-		'#size'
+		'source',
+		'target',
+		'relative',
+		'size'
 	],
 	#category : #JIT
 }

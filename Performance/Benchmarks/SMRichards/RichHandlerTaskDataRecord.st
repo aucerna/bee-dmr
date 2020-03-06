@@ -2,8 +2,8 @@ Class {
 	#name : #RichHandlerTaskDataRecord,
 	#superclass : #RichObject,
 	#instVars : [
-		'#workIn',
-		'#deviceIn'
+		'workIn',
+		'deviceIn'
 	],
 	#category : #SMRichards
 }

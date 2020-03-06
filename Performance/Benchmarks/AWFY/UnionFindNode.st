@@ -2,10 +2,10 @@ Class {
 	#name : #UnionFindNode,
 	#superclass : #Object,
 	#instVars : [
-		'#parent_',
-		'#bb_',
-		'#dfsNumber_',
-		'#loop'
+		'parent_',
+		'bb_',
+		'dfsNumber_',
+		'loop'
 	],
 	#category : #AWFY
 }

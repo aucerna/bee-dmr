@@ -2,7 +2,7 @@ Class {
 	#name : #PPFailingParser,
 	#superclass : #PPParser,
 	#instVars : [
-		'#message'
+		'message'
 	],
 	#category : #Parsers
 }

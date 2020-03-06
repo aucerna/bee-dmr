@@ -2,9 +2,9 @@ Class {
 	#name : #Vector3D,
 	#superclass : #Object,
 	#instVars : [
-		'#x',
-		'#y',
-		'#z'
+		'x',
+		'y',
+		'z'
 	],
 	#category : #AWFY
 }

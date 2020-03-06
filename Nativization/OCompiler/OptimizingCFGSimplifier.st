@@ -2,7 +2,7 @@ Class {
 	#name : #OptimizingCFGSimplifier,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock'
+		'firstBlock'
 	],
 	#category : #OCompiler
 }

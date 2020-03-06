@@ -2,12 +2,12 @@ Class {
 	#name : #RichTaskControlBlock,
 	#superclass : #RichTaskState,
 	#instVars : [
-		'#link',
-		'#identity',
-		'#priority',
-		'#input',
-		'#function',
-		'#handle'
+		'link',
+		'identity',
+		'priority',
+		'input',
+		'function',
+		'handle'
 	],
 	#category : #SMRichards
 }

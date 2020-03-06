@@ -2,9 +2,9 @@ Class {
 	#name : #RelocatableBuffer,
 	#superclass : #Object,
 	#instVars : [
-		'#stream',
-		'#address',
-		'#fixups'
+		'stream',
+		'address',
+		'fixups'
 	],
 	#category : #JIT
 }

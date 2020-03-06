@@ -2,9 +2,9 @@ Class {
 	#name : #DBBinaryConstraint,
 	#superclass : #DBAbstractConstraint,
 	#instVars : [
-		'#direction',
-		'#v1',
-		'#v2'
+		'direction',
+		'v1',
+		'v2'
 	],
 	#category : #SMDeltaBlue
 }

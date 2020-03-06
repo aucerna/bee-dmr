@@ -2,10 +2,10 @@ Class {
 	#name : #BGMeetingPlace,
 	#superclass : #Object,
 	#instVars : [
-		'#mutex',
-		'#first',
-		'#total',
-		'#max'
+		'mutex',
+		'first',
+		'total',
+		'max'
 	],
 	#category : #Game
 }

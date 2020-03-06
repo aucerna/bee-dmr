@@ -2,8 +2,8 @@ Class {
 	#name : #Aircraft,
 	#superclass : #Object,
 	#instVars : [
-		'#callsign',
-		'#position'
+		'callsign',
+		'position'
 	],
 	#category : #AWFY
 }

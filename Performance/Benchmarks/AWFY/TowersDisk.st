@@ -2,8 +2,8 @@ Class {
 	#name : #TowersDisk,
 	#superclass : #Object,
 	#instVars : [
-		'#size',
-		'#next'
+		'size',
+		'next'
 	],
 	#category : #AWFY
 }

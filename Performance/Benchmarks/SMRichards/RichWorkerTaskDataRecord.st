@@ -2,8 +2,8 @@ Class {
 	#name : #RichWorkerTaskDataRecord,
 	#superclass : #RichObject,
 	#instVars : [
-		'#destination',
-		'#count'
+		'destination',
+		'count'
 	],
 	#category : #SMRichards
 }

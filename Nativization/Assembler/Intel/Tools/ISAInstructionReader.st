@@ -2,12 +2,12 @@ Class {
 	#name : #ISAInstructionReader,
 	#superclass : #Object,
 	#instVars : [
-		'#prefixes',
-		'#opcode',
-		'#modrm',
-		'#sib',
-		'#displacement',
-		'#immediate'
+		'prefixes',
+		'opcode',
+		'modrm',
+		'sib',
+		'displacement',
+		'immediate'
 	],
 	#category : #Tools
 }

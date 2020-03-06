@@ -7,18 +7,22 @@ Package { #name : #C,
 		'CEnum',
 		'CPointerType',
 		'CStatementList',
+		'CStruct',
+		'CStructField',
 		'CTranslationUnit',
+		'CType',
 		'CTypedef',
 		'CUnion',
 		'CUnresolvedType',
-		'CStruct',
-		'CStructField',
-		'CType',
+		'FFIDeclaration',
+		'FFIDeclarationTest',
+		'FFIDefinitionsBrowser',
+		'FFISendersModel',
 		'OffsetDictionaryWriter',
+		'SingleStructField',
 		'TypedefGrammar',
 		'TypedefParser',
-		'TypedefParserTest',
-		'SingleStructField'
+		'TypedefParserTest'
 	]
 }
 

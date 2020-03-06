@@ -2,9 +2,9 @@ Class {
 	#name : #TypedefGrammar,
 	#superclass : #PPCompositeParser,
 	#instVars : [
-		'#struct',
-		'#union',
-		'#blanks'
+		'struct',
+		'union',
+		'blanks'
 	],
 	#category : #C
 }

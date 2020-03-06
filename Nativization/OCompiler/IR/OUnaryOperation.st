@@ -2,7 +2,7 @@ Class {
 	#name : #OUnaryOperation,
 	#superclass : #OPrimitiveOperation,
 	#instVars : [
-		'#receiver'
+		'receiver'
 	],
 	#category : #IR
 }

@@ -2,8 +2,8 @@ Class {
 	#name : #BasicBlockEdge,
 	#superclass : #Object,
 	#instVars : [
-		'#from',
-		'#to'
+		'from',
+		'to'
 	],
 	#category : #AWFY
 }

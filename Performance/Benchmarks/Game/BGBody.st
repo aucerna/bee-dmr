@@ -2,13 +2,13 @@ Class {
 	#name : #BGBody,
 	#superclass : #Object,
 	#instVars : [
-		'#x',
-		'#y',
-		'#z',
-		'#vx',
-		'#vy',
-		'#vz',
-		'#mass'
+		'x',
+		'y',
+		'z',
+		'vx',
+		'vy',
+		'vz',
+		'mass'
 	],
 	#category : #Game
 }

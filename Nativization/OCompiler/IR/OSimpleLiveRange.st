@@ -2,11 +2,11 @@ Class {
 	#name : #OSimpleLiveRange,
 	#superclass : #OLiveRange,
 	#instVars : [
-		'#definition',
-		'#uses',
-		'#definitionBlock',
-		'#usesBlocks',
-		'#isSpilled'
+		'definition',
+		'uses',
+		'definitionBlock',
+		'usesBlocks',
+		'isSpilled'
 	],
 	#category : #IR
 }

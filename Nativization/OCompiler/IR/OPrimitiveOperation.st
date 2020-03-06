@@ -2,7 +2,7 @@ Class {
 	#name : #OPrimitiveOperation,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#name'
+		'name'
 	],
 	#category : #IR
 }

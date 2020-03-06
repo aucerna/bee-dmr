@@ -2,7 +2,7 @@ Class {
 	#name : #RedBlackTree,
 	#superclass : #Object,
 	#instVars : [
-		'#root'
+		'root'
 	],
 	#category : #AWFY
 }

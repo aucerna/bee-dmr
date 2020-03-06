@@ -2,7 +2,7 @@ Class {
 	#name : #PPTokenParser,
 	#superclass : #PPFlattenParser,
 	#instVars : [
-		'#tokenClass'
+		'tokenClass'
 	],
 	#category : #Parsers
 }

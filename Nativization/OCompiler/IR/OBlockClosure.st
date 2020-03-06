@@ -2,7 +2,7 @@ Class {
 	#name : #OBlockClosure,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#firstBlock'
+		'firstBlock'
 	],
 	#category : #IR
 }

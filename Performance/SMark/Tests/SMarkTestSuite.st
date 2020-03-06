@@ -2,10 +2,10 @@ Class {
 	#name : #SMarkTestSuite,
 	#superclass : #SMarkSuite,
 	#instVars : [
-		'#a',
-		'#b',
-		'#c',
-		'#d'
+		'a',
+		'b',
+		'c',
+		'd'
 	],
 	#category : #Tests
 }

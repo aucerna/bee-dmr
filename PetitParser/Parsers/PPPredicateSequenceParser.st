@@ -2,7 +2,7 @@ Class {
 	#name : #PPPredicateSequenceParser,
 	#superclass : #PPPredicateParser,
 	#instVars : [
-		'#size'
+		'size'
 	],
 	#category : #Parsers
 }

@@ -2,11 +2,11 @@ Class {
 	#name : #BGNBody,
 	#superclass : #Object,
 	#instVars : [
-		'#bodies',
-		'#afterCnt',
-		'#collectionFactory',
-		'#bodyFactory',
-		'#arrayFactory'
+		'bodies',
+		'afterCnt',
+		'collectionFactory',
+		'bodyFactory',
+		'arrayFactory'
 	],
 	#category : #Game
 }

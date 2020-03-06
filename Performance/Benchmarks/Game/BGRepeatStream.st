@@ -2,8 +2,8 @@ Class {
 	#name : #BGRepeatStream,
 	#superclass : #InternalReadStream,
 	#instVars : [
-		'#repeatPtr',
-		'#repeatLimit'
+		'repeatPtr',
+		'repeatLimit'
 	],
 	#category : #Game
 }

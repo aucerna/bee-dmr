@@ -1,11 +1,12 @@
 Package { #name : #OCompiler,
 	#classes : [
+		'BMMultilevelDictionary',
 		'OptimizingBlockInliner',
 		'OptimizingBraunAllocator',
 		'OptimizingBraunAssigner',
 		'OptimizingCFGSimplifier',
-		'OptimizingCSSATransformer',
 		'OptimizingCodeEmitter',
+		'OptimizingCSSATransformer',
 		'OptimizingInstructionFragmenter',
 		'OptimizingInstructionSelector',
 		'OptimizingLivenessAnalysis',

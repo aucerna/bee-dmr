@@ -2,9 +2,9 @@ Class {
 	#name : #Collision,
 	#superclass : #Object,
 	#instVars : [
-		'#aircraftA',
-		'#aircraftB',
-		'#position'
+		'aircraftA',
+		'aircraftB',
+		'position'
 	],
 	#category : #AWFY
 }

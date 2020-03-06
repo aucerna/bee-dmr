@@ -2,8 +2,8 @@ Class {
 	#name : #BGReverseComplement,
 	#superclass : #Object,
 	#instVars : [
-		'#assocFact',
-		'#arrayFact'
+		'assocFact',
+		'arrayFact'
 	],
 	#category : #Game
 }

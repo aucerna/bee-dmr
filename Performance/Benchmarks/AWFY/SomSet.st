@@ -2,7 +2,7 @@ Class {
 	#name : #SomSet,
 	#superclass : #Object,
 	#instVars : [
-		'#items'
+		'items'
 	],
 	#category : #AWFY
 }

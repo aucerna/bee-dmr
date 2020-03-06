@@ -2,9 +2,9 @@ Class {
 	#name : #BGTreeNode,
 	#superclass : #Object,
 	#instVars : [
-		'#left',
-		'#right',
-		'#item'
+		'left',
+		'right',
+		'item'
 	],
 	#category : #Game
 }

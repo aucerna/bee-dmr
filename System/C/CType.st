@@ -2,8 +2,8 @@ Class {
 	#name : #CType,
 	#superclass : #Object,
 	#instVars : [
-		'#translator',
-		'#binding'
+		'translator',
+		'binding'
 	],
 	#category : #C
 }

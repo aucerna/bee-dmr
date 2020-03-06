@@ -2,8 +2,8 @@ Class {
 	#name : #OBinaryOperation,
 	#superclass : #OPrimitiveOperation,
 	#instVars : [
-		'#left',
-		'#right'
+		'left',
+		'right'
 	],
 	#category : #IR
 }

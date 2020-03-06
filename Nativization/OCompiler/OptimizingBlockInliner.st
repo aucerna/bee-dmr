@@ -2,7 +2,7 @@ Class {
 	#name : #OptimizingBlockInliner,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock'
+		'firstBlock'
 	],
 	#category : #OCompiler
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #OJump,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#target'
+		'target'
 	],
 	#category : #IR
 }

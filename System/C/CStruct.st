@@ -2,11 +2,11 @@ Class {
 	#name : #CStruct,
 	#superclass : #CType,
 	#instVars : [
-		'#name',
-		'#fields',
-		'#size',
-		'#type',
-		'#alignment'
+		'name',
+		'fields',
+		'size',
+		'type',
+		'alignment'
 	],
 	#category : #C
 }

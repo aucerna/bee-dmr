@@ -2,7 +2,7 @@ Class {
 	#name : #SMarkSmopstone,
 	#superclass : #SMarkSuite,
 	#instVars : [
-		'#smopstone'
+		'smopstone'
 	],
 	#category : #Suites
 }

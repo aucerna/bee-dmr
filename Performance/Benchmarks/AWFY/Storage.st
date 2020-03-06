@@ -2,7 +2,7 @@ Class {
 	#name : #Storage,
 	#superclass : #Benchmark,
 	#instVars : [
-		'#count'
+		'count'
 	],
 	#category : #AWFY
 }

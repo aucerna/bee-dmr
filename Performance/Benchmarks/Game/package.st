@@ -1,5 +1,6 @@
 Package { #name : #Game,
 	#classes : [
+		'BenchmarkGameRunner',
 		'BGBinaryTrees',
 		'BGBitOps',
 		'BGBody',
@@ -22,8 +23,8 @@ Package { #name : #Game,
 		'BGNBody',
 		'BGPair',
 		'BGPermGeneratorRedux',
-		'BGPiDigitSpigot',
 		'BGPiDigits',
+		'BGPiDigitSpigot',
 		'BGRandomNumber',
 		'BGRandomStream',
 		'BGRegexDNA',
@@ -33,8 +34,7 @@ Package { #name : #Game,
 		'BGThread',
 		'BGThreadRing',
 		'BGTreeFactory',
-		'BGTreeNode',
-		'BenchmarkGameRunner'
+		'BGTreeNode'
 	]
 }
 

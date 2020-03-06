@@ -2,8 +2,8 @@ Class {
 	#name : #DBScaleConstraint,
 	#superclass : #DBBinaryConstraint,
 	#instVars : [
-		'#offset',
-		'#scale'
+		'offset',
+		'scale'
 	],
 	#category : #SMDeltaBlue
 }

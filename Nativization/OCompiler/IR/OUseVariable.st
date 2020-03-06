@@ -2,7 +2,7 @@ Class {
 	#name : #OUseVariable,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#binding'
+		'binding'
 	],
 	#category : #IR
 }

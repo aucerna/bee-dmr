@@ -2,8 +2,8 @@ Class {
 	#name : #LoopTesterApp,
 	#superclass : #Object,
 	#instVars : [
-		'#cfg',
-		'#lsg'
+		'cfg',
+		'lsg'
 	],
 	#category : #AWFY
 }

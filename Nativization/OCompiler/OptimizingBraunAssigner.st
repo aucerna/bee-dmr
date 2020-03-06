@@ -2,15 +2,15 @@ Class {
 	#name : #OptimizingBraunAssigner,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#liveness',
-		'#allocationEntry',
-		'#temporaries',
-		'#preferences',
-		'#occupied',
-		'#assignments',
-		'#clusters',
-		'#processed'
+		'firstBlock',
+		'liveness',
+		'allocationEntry',
+		'temporaries',
+		'preferences',
+		'occupied',
+		'assignments',
+		'clusters',
+		'processed'
 	],
 	#category : #OCompiler
 }

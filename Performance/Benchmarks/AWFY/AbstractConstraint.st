@@ -2,7 +2,7 @@ Class {
 	#name : #AbstractConstraint,
 	#superclass : #Object,
 	#instVars : [
-		'#strength'
+		'strength'
 	],
 	#category : #AWFY
 }

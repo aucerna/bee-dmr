@@ -2,8 +2,8 @@ Class {
 	#name : #ScaleConstraint,
 	#superclass : #BinaryConstraint,
 	#instVars : [
-		'#scale',
-		'#offset'
+		'scale',
+		'offset'
 	],
 	#category : #AWFY
 }

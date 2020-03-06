@@ -2,16 +2,16 @@ Class {
 	#name : #RichObject,
 	#superclass : #Object,
 	#classVars : [
-		'#DeviceA',
-		'#DeviceB',
-		'#DevicePacketKind',
-		'#HandlerA',
-		'#HandlerB',
-		'#Idler',
-		'#NoTask',
-		'#NoWork',
-		'#Worker',
-		'#WorkPacketKind'
+		'DeviceA',
+		'DeviceB',
+		'DevicePacketKind',
+		'HandlerA',
+		'HandlerB',
+		'Idler',
+		'NoTask',
+		'NoWork',
+		'Worker',
+		'WorkPacketKind'
 	],
 	#category : #SMRichards
 }

@@ -2,7 +2,7 @@ Class {
 	#name : #PPStream,
 	#superclass : #InternalReadStream,
 	#instVars : [
-		'#failure'
+		'failure'
 	],
 	#category : #PetitParser
 }

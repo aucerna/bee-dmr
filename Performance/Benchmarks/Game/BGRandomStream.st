@@ -2,10 +2,10 @@ Class {
 	#name : #BGRandomStream,
 	#superclass : #BGRepeatStream,
 	#instVars : [
-		'#random',
-		'#percentages',
-		'#randomNumFactory',
-		'#arrayFactory'
+		'random',
+		'percentages',
+		'randomNumFactory',
+		'arrayFactory'
 	],
 	#category : #Game
 }

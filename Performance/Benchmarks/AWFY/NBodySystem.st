@@ -2,7 +2,7 @@ Class {
 	#name : #NBodySystem,
 	#superclass : #Object,
 	#instVars : [
-		'#bodies'
+		'bodies'
 	],
 	#category : #AWFY
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #BinaryConstraint,
 	#superclass : #AbstractConstraint,
 	#instVars : [
-		'#v1',
-		'#v2',
-		'#direction'
+		'v1',
+		'v2',
+		'direction'
 	],
 	#category : #AWFY
 }

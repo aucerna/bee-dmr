@@ -2,7 +2,7 @@ Class {
 	#name : #ISAInstructionPartReader,
 	#superclass : #Object,
 	#instVars : [
-		'#contents'
+		'contents'
 	],
 	#category : #Tools
 }

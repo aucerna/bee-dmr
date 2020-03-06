@@ -2,7 +2,7 @@ Class {
 	#name : #Sym,
 	#superclass : #Object,
 	#instVars : [
-		'#hash'
+		'hash'
 	],
 	#category : #AWFY
 }

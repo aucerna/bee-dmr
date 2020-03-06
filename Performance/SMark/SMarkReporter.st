@@ -2,8 +2,8 @@ Class {
 	#name : #SMarkReporter,
 	#superclass : #Object,
 	#instVars : [
-		'#runner',
-		'#stream'
+		'runner',
+		'stream'
 	],
 	#category : #SMark
 }

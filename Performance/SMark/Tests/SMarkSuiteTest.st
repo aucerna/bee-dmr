@@ -2,8 +2,8 @@ Class {
 	#name : #SMarkSuiteTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'#didSetUpBenchB',
-		'#didTearDownBenchC'
+		'didSetUpBenchB',
+		'didTearDownBenchC'
 	],
 	#category : #Tests
 }

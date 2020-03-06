@@ -1,5 +1,6 @@
 Package { #name : #IR,
 	#classes : [
+		'BMNullaryOperation',
 		'OActivationContext',
 		'OBasicBlock',
 		'OBeginInstruction',

@@ -2,10 +2,10 @@ Class {
 	#name : #Assembly,
 	#superclass : #Object,
 	#instVars : [
-		'#labels',
-		'#instructions',
-		'#source',
-		'#parser'
+		'labels',
+		'instructions',
+		'source',
+		'parser'
 	],
 	#category : #Parser
 }

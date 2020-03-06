@@ -2,7 +2,7 @@ Class {
 	#name : #CStatementList,
 	#superclass : #Object,
 	#instVars : [
-		'#statements'
+		'statements'
 	],
 	#category : #C
 }

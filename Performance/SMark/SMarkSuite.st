@@ -2,8 +2,8 @@ Class {
 	#name : #SMarkSuite,
 	#superclass : #Object,
 	#instVars : [
-		'#runner',
-		'#selectedBenchmarks'
+		'runner',
+		'selectedBenchmarks'
 	],
 	#category : #SMark
 }

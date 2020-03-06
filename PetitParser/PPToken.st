@@ -2,9 +2,9 @@ Class {
 	#name : #PPToken,
 	#superclass : #Object,
 	#instVars : [
-		'#collection',
-		'#start',
-		'#stop'
+		'collection',
+		'start',
+		'stop'
 	],
 	#category : #PetitParser
 }

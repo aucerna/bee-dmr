@@ -2,17 +2,17 @@ Class {
 	#name : #OptimizingRegisterAllocator,
 	#superclass : #Object,
 	#instVars : [
-		'#abi',
-		'#liveRanges',
-		'#unifiedLiveRanges',
-		'#expirations',
-		'#allocation',
-		'#free',
-		'#used',
-		'#usedOut',
-		'#locals',
-		'#currentBlock',
-		'#firstBlock'
+		'abi',
+		'liveRanges',
+		'unifiedLiveRanges',
+		'expirations',
+		'allocation',
+		'free',
+		'used',
+		'usedOut',
+		'locals',
+		'currentBlock',
+		'firstBlock'
 	],
 	#category : #OCompiler
 }

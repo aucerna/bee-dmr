@@ -2,10 +2,10 @@ Class {
 	#name : #PPPredicateParser,
 	#superclass : #PPParser,
 	#instVars : [
-		'#predicate',
-		'#predicateMessage',
-		'#negated',
-		'#negatedMessage'
+		'predicate',
+		'predicateMessage',
+		'negated',
+		'negatedMessage'
 	],
 	#category : #Parsers
 }

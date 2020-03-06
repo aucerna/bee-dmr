@@ -2,12 +2,12 @@ Class {
 	#name : #Variable,
 	#superclass : #Object,
 	#instVars : [
-		'#value',
-		'#constraints',
-		'#determinedBy',
-		'#walkStrength',
-		'#stay',
-		'#mark'
+		'value',
+		'constraints',
+		'determinedBy',
+		'walkStrength',
+		'stay',
+		'mark'
 	],
 	#category : #AWFY
 }

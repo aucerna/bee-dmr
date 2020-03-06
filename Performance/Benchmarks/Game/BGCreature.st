@@ -2,10 +2,10 @@ Class {
 	#name : #BGCreature,
 	#superclass : #Object,
 	#instVars : [
-		'#creatureName',
-		'#colour',
-		'#selfMet',
-		'#creaturesMet'
+		'creatureName',
+		'colour',
+		'selfMet',
+		'creaturesMet'
 	],
 	#category : #Game
 }

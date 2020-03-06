@@ -2,8 +2,8 @@ Class {
 	#name : #LegacyPrefix,
 	#superclass : #InstructionPrefix,
 	#instVars : [
-		'#group',
-		'#value'
+		'group',
+		'value'
 	],
 	#category : #Intel
 }

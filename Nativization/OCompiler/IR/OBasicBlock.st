@@ -2,9 +2,9 @@ Class {
 	#name : #OBasicBlock,
 	#superclass : #Object,
 	#instVars : [
-		'#firstInstruction',
-		'#lastInstruction',
-		'#predecessors'
+		'firstInstruction',
+		'lastInstruction',
+		'predecessors'
 	],
 	#category : #IR
 }
@@ -779,11 +779,6 @@ OBasicBlock >> verifyAllPredecessorsSanity [
 			do: [:successor | self ASSERT: (successor predecessors includes: block)].
 		block predecessors
 			do: [:predecessor | self ASSERT: (predecessor successors includes: block)]]
-]
-
-{ #category : #unclassified }
-OBasicBlock >> verifyAllUses [
-	OptimizingUsesVerifier new verifyFrom: self
 ]
 
 { #category : #unclassified }

@@ -2,8 +2,8 @@ Class {
 	#name : #Towers,
 	#superclass : #Benchmark,
 	#instVars : [
-		'#piles',
-		'#movesdone'
+		'piles',
+		'movesdone'
 	],
 	#category : #AWFY
 }

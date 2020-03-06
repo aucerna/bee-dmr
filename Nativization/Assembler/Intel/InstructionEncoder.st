@@ -2,22 +2,22 @@ Class {
 	#name : #InstructionEncoder,
 	#superclass : #Object,
 	#instVars : [
-		'#instruction',
-		'#spec',
-		'#stream',
-		'#prefixes',
-		'#rex',
-		'#vex',
-		'#opcode',
-		'#modrm',
-		'#sib',
-		'#displacement',
-		'#immediate',
-		'#immediate2',
-		'#wordSize'
+		'instruction',
+		'spec',
+		'stream',
+		'prefixes',
+		'rex',
+		'vex',
+		'opcode',
+		'modrm',
+		'sib',
+		'displacement',
+		'immediate',
+		'immediate2',
+		'wordSize'
 	],
 	#classVars : [
-		'#Cache'
+		'Cache'
 	],
 	#category : #Intel
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #CBasicType,
 	#superclass : #CType,
 	#instVars : [
-		'#name',
-		'#size',
-		'#sizeExpression'
+		'name',
+		'size',
+		'sizeExpression'
 	],
 	#category : #C
 }

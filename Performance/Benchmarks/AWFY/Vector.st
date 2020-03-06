@@ -2,9 +2,9 @@ Class {
 	#name : #Vector,
 	#superclass : #Object,
 	#instVars : [
-		'#first',
-		'#last',
-		'#storage'
+		'first',
+		'last',
+		'storage'
 	],
 	#category : #AWFY
 }

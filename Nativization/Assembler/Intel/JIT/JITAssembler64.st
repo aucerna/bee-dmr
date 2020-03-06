@@ -2,7 +2,7 @@ Class {
 	#name : #JITAssembler64,
 	#superclass : #Assembler64,
 	#classVars : [
-		'#ExternalFunctions'
+		'ExternalFunctions'
 	],
 	#category : #JIT
 }

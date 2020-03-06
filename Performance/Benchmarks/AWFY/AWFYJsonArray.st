@@ -2,7 +2,7 @@ Class {
 	#name : #AWFYJsonArray,
 	#superclass : #AWFYJsonValue,
 	#instVars : [
-		'#values'
+		'values'
 	],
 	#category : #AWFY
 }

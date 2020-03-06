@@ -2,7 +2,7 @@ Class {
 	#name : #BitmapStructField,
 	#superclass : #CStructField,
 	#instVars : [
-		'#length'
+		'length'
 	],
 	#category : #C
 }

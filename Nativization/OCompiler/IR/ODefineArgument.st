@@ -2,7 +2,7 @@ Class {
 	#name : #ODefineArgument,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#name'
+		'name'
 	],
 	#category : #IR
 }

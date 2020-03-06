@@ -2,7 +2,7 @@ Class {
 	#name : #RichDeviceTaskDataRecord,
 	#superclass : #RichObject,
 	#instVars : [
-		'#pending'
+		'pending'
 	],
 	#category : #SMRichards
 }

@@ -2,15 +2,15 @@ Class {
 	#name : #DBStrength,
 	#superclass : #Object,
 	#instVars : [
-		'#symbolicValue',
-		'#arithmeticValue'
+		'symbolicValue',
+		'arithmeticValue'
 	],
 	#classVars : [
-		'#AbsoluteStrongest',
-		'#AbsoluteWeakest',
-		'#Required',
-		'#StrengthConstants',
-		'#StrengthTable'
+		'AbsoluteStrongest',
+		'AbsoluteWeakest',
+		'Required',
+		'StrengthConstants',
+		'StrengthTable'
 	],
 	#category : #SMDeltaBlue
 }

@@ -2,19 +2,19 @@ Class {
 	#name : #BGMall,
 	#superclass : #Object,
 	#instVars : [
-		'#guard',
-		'#maxRendezvous',
-		'#open',
-		'#process',
-		'#queue',
-		'#cache',
-		'#pairCache',
-		'#pairFactory',
-		'#sharedQueueFactory',
-		'#orderedCollectionFactory'
+		'guard',
+		'maxRendezvous',
+		'open',
+		'process',
+		'queue',
+		'cache',
+		'pairCache',
+		'pairFactory',
+		'sharedQueueFactory',
+		'orderedCollectionFactory'
 	],
 	#classVars : [
-		'#Units'
+		'Units'
 	],
 	#category : #Game
 }

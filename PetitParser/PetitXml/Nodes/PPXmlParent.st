@@ -2,7 +2,7 @@ Class {
 	#name : #PPXmlParent,
 	#superclass : #PPXmlNode,
 	#instVars : [
-		'#children'
+		'children'
 	],
 	#category : #Nodes
 }

@@ -2,13 +2,13 @@ Class {
 	#name : #OptimizingSSAReconstructor,
 	#superclass : #Object,
 	#instVars : [
-		'#firstBlock',
-		'#variable',
-		'#reloads',
-		'#idoms',
-		'#iteratedFrontiers',
-		'#insertedPhis',
-		'#blocks'
+		'firstBlock',
+		'variable',
+		'reloads',
+		'idoms',
+		'iteratedFrontiers',
+		'insertedPhis',
+		'blocks'
 	],
 	#category : #OCompiler
 }

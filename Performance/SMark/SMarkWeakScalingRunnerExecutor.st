@@ -2,10 +2,10 @@ Class {
 	#name : #SMarkWeakScalingRunnerExecutor,
 	#superclass : #Object,
 	#instVars : [
-		'#numInnerIterations',
-		'#benchmarkSelector',
-		'#suite',
-		'#runner'
+		'numInnerIterations',
+		'benchmarkSelector',
+		'suite',
+		'runner'
 	],
 	#category : #SMark
 }

@@ -2,9 +2,9 @@ Class {
 	#name : #OJumpConditional,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#variable',
-		'#target',
-		'#implicitTarget'
+		'variable',
+		'target',
+		'implicitTarget'
 	],
 	#category : #IR
 }

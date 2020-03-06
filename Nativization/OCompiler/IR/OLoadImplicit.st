@@ -2,8 +2,8 @@ Class {
 	#name : #OLoadImplicit,
 	#superclass : #OInstruction,
 	#instVars : [
-		'#name',
-		'#source'
+		'name',
+		'source'
 	],
 	#category : #IR
 }

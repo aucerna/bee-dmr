@@ -2,7 +2,7 @@ Class {
 	#name : #OComposedLiveRange,
 	#superclass : #OLiveRange,
 	#instVars : [
-		'#ranges'
+		'ranges'
 	],
 	#category : #IR
 }

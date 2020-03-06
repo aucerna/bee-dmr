@@ -2,9 +2,9 @@ Class {
 	#name : #BGPermGeneratorRedux,
 	#superclass : #Object,
 	#instVars : [
-		'#timesRotated',
-		'#perm',
-		'#atEnd'
+		'timesRotated',
+		'perm',
+		'atEnd'
 	],
 	#category : #Game
 }

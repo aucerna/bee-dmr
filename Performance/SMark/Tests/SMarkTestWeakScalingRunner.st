@@ -2,13 +2,13 @@ Class {
 	#name : #SMarkTestWeakScalingRunner,
 	#superclass : #SMarkWeakScalingRunner,
 	#instVars : [
-		'#setUpCount',
-		'#tearDownCount',
-		'#notifyRunnerWasExecuted',
-		'#performedBenchmarks',
-		'#baseBenchmarkExecuted',
-		'#didSetUpBenchB',
-		'#didTearDownBenchC'
+		'setUpCount',
+		'tearDownCount',
+		'notifyRunnerWasExecuted',
+		'performedBenchmarks',
+		'baseBenchmarkExecuted',
+		'didSetUpBenchB',
+		'didTearDownBenchC'
 	],
 	#category : #Tests
 }

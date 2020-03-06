@@ -2,7 +2,7 @@ Class {
 	#name : #CollisionDetector,
 	#superclass : #Object,
 	#instVars : [
-		'#state'
+		'state'
 	],
 	#category : #AWFY
 }

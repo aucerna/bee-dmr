@@ -2,14 +2,14 @@ Class {
 	#name : #BGFasta,
 	#superclass : #Object,
 	#instVars : [
-		'#lineLength',
-		'#n',
-		'#out',
-		'#r',
-		'#repeatStreamFact',
-		'#randomStreamFact',
-		'#randomNumberFactory',
-		'#arrayFactory'
+		'lineLength',
+		'n',
+		'out',
+		'r',
+		'repeatStreamFact',
+		'randomStreamFact',
+		'randomNumberFactory',
+		'arrayFactory'
 	],
 	#category : #Game
 }

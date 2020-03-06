@@ -2,9 +2,9 @@ Class {
 	#name : #OOperand,
 	#superclass : #Object,
 	#instVars : [
-		'#instruction',
-		'#name',
-		'#nextUse'
+		'instruction',
+		'name',
+		'nextUse'
 	],
 	#category : #IR
 }

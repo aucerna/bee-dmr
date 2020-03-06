@@ -2,9 +2,9 @@ Class {
 	#name : #OActivationContext,
 	#superclass : #OLoadImplicit,
 	#instVars : [
-		'#hasFrame',
-		'#temporaries',
-		'#storesPreviousSelf'
+		'hasFrame',
+		'temporaries',
+		'storesPreviousSelf'
 	],
 	#category : #IR
 }

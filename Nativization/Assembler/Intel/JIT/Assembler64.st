@@ -2,21 +2,21 @@ Class {
 	#name : #Assembler64,
 	#superclass : #Object,
 	#instVars : [
-		'#instruction',
-		'#operands1',
-		'#operands2',
-		'#operands3',
-		'#pointer',
-		'#immediate',
-		'#encoder',
-		'#wordSize',
-		'#memory',
-		'#labels',
-		'#references',
-		'#lastPointer'
+		'instruction',
+		'operands1',
+		'operands2',
+		'operands3',
+		'pointer',
+		'immediate',
+		'encoder',
+		'wordSize',
+		'memory',
+		'labels',
+		'references',
+		'lastPointer'
 	],
 	#classVars : [
-		'#IndexedLabels'
+		'IndexedLabels'
 	],
 	#category : #JIT
 }
