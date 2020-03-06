@@ -3,7 +3,7 @@ Class {
 	#superclass : #Array,
 	#type : #variable,
 	#instVars : [
-		'bytecodes',
+		'astcodes',
 		'nativeCode',
 		'class',
 		'selector',
@@ -18,7 +18,7 @@ Class {
 
 { #category : #inspecting }
 CompiledMethod class >> aspects [
-	^#(#bytecodeString #disassembledText)
+	^#(#astcodeString #disassembledText)
 ]
 
 { #category : #initialization }
@@ -29,10 +29,10 @@ CompiledMethod class >> initializeFlags [
 		at: 'BlockCount' put: (7 thru: 17);
 		at: 'TempCount' put: (18 thru: 28);
 		at: 'TypeField' put: (29 thru: 31);
+		at: 'EnvCount' put: (32 thru: 42);
 		at: 'Debuggable' put: (1 bitShift: 28);
 		at: 'DMR' put: (1 bitShift: 29);
-		at: 'HasBlock'
-		put: ((1 bitShift: 30) negated bitAnd: 16r7FFFFFFF) negated
+		at: 'HasBlock' put: (1 bitShift: 30)
 ]
 
 { #category : #initialization }
@@ -43,11 +43,6 @@ CompiledMethod class >> maxArgCount [
 { #category : #initialization }
 CompiledMethod class >> maxBlockCount [
 	^(2 raisedTo: BlockCount length) - 1
-]
-
-{ #category : #initialization }
-CompiledMethod class >> maxBytecodeCount [
-	^10000
 ]
 
 { #category : #initialization }
@@ -65,7 +60,7 @@ CompiledMethod class >> new: anInteger [
 { #category : #comparing }
 CompiledMethod >> ~ aCompiledMethod [
 	self literals = aCompiledMethod literals ifFalse: [^false].
-	^bytecodes = aCompiledMethod bytecodes
+	^astcodes = aCompiledMethod astcodes
 ]
 
 { #category : #comparing }
@@ -126,13 +121,13 @@ CompiledMethod >> blocksDo: aBlock [
 ]
 
 { #category : #accessing }
-CompiledMethod >> bytecodes [
-	^bytecodes
+CompiledMethod >> astcodes [
+	^astcodes
 ]
 
 { #category : #accessing }
-CompiledMethod >> bytecodes: aByteArray [
-	bytecodes := aByteArray
+CompiledMethod >> astcodes: aByteArray [
+	astcodes := aByteArray
 ]
 
 { #category : #testing }
@@ -161,11 +156,13 @@ CompiledMethod >> dmrVersion [
 ]
 
 { #category : #accessing }
-CompiledMethod >> environmentSize [
-	"
-	should be stored in the flags
-	"
-	^bytecodes first = 0 ifTrue: [bytecodes second] ifFalse: [0]
+CompiledMethod >> environmentCount [
+	^format bitsAt: EnvCount
+]
+
+{ #category : #accessing }
+CompiledMethod >> environmentCount: anInteger [
+	format bitsAt: EnvCount put: anInteger
 ]
 
 { #category : #evaluation }
@@ -195,7 +192,7 @@ CompiledMethod >> hasBlocks [
 
 { #category : #services }
 CompiledMethod >> hasEnvironment [
-	^bytecodes notEmpty and: [bytecodes first = 0]
+	^self environmentCount > 0
 ]
 
 { #category : #comparing }
