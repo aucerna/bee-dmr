@@ -126,7 +126,6 @@ CharacterArray >> asFilename [
 { #category : #converting }
 CharacterArray >> asFloat [
 	^Float fromString: self
-
 ]
 
 { #category : #converting }
@@ -151,13 +150,11 @@ CharacterArray >> asLowercase [
 { #category : #converting }
 CharacterArray >> asNumber [
 	^Number fromString: self
-
 ]
 
 { #category : #converting }
 CharacterArray >> asString [
 	^self
-
 ]
 
 { #category : #converting }
@@ -295,7 +292,6 @@ CharacterArray >> doubleQuoted [
 	^(self first = $" and: [self last = $"])
 		ifTrue: [self]
 		ifFalse: [$" , self copyWith: $"]
-
 ]
 
 { #category : #private }
@@ -352,7 +348,6 @@ CharacterArray >> fileExtension [
 { #category : #filenames }
 CharacterArray >> fileName [
 	^self asFilename withoutExtension asString
-
 ]
 
 { #category : #services }
