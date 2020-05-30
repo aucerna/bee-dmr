@@ -22,9 +22,6 @@ CharacterArray class >> fromSubstrings: substrings separatedBy: separatorChar [
 { #category : #'named characters' }
 CharacterArray class >> lf [
 	^self with: Lf
-
-
-
 ]
 
 { #category : #operations }
@@ -36,7 +33,6 @@ CharacterArray >> / aString [
 	self isEmpty ifTrue: [^string].
 	tail := string isEmpty ifTrue: [''] ifFalse: ['/' , string].
 	^self last = $/ ifTrue: [self allButLast , tail] ifFalse: [self , tail]
-
 ]
 
 { #category : #operations }
@@ -49,7 +45,6 @@ CharacterArray >> \ aString [
 { #category : #comparing }
 CharacterArray >> < aString [
 	^(aString <= self) not
-
 ]
 
 { #category : #comparing }
@@ -62,7 +57,6 @@ CharacterArray >> << aString [
 		a < b ifTrue: [^true].
 		a > b ifTrue: [^false]].
 	^self size <= aString size
-
 ]
 
 { #category : #comparing }
@@ -84,7 +78,6 @@ CharacterArray >> <= aString [
 { #category : #comparing }
 CharacterArray >> > aString [
 	^(self <= aString) not
-
 ]
 
 { #category : #comparing }
@@ -263,7 +256,6 @@ CharacterArray >> capitalized [
 	c := self first.
 	c isUppercase ifTrue: [^self].
 	^self copy at: 1 put: c asUppercase; yourself
-
 ]
 
 { #category : #private }
@@ -355,7 +347,6 @@ CharacterArray >> externalCopy [
 { #category : #filenames }
 CharacterArray >> fileExtension [
 	^self asFilename extension
-
 ]
 
 { #category : #filenames }
@@ -370,7 +361,6 @@ CharacterArray >> fileNameOnly [
 	'c:\dir\filename.ext' fileNameOnly
 	"
 	^self asFilename fileNameOnly
-
 ]
 
 { #category : #comparing }
@@ -381,7 +371,6 @@ CharacterArray >> hash [
 		to: hash
 		do: [:i | hash := (hash hashMultiply: 16r19660D) bitXor: (self byteAt: i)].
 	^hash
-
 ]
 
 { #category : #inquiries }
@@ -389,13 +378,11 @@ CharacterArray >> includes: aCharacter [
 	aCharacter isCharacter ifFalse: [^false].
 	1 to: self size do: [:i | (self at: i) = aCharacter ifTrue: [^true]].
 	^false
-
 ]
 
 { #category : #testing }
 CharacterArray >> includesString: aString [
 	^aString isEmpty or: [(self indexOfString: aString) > 0]
-
 ]
 
 { #category : #parsing }
@@ -405,19 +392,16 @@ CharacterArray >> indexOfLastChar: aCharacter [
 		by: -1
 		do: [:index | (self at: index) = aCharacter ifTrue: [^index]].
 	^0
-
 ]
 
 { #category : #parsing }
 CharacterArray >> indexOfLastString: aString [
 	^self indexOfLastString: aString before: self size
-
 ]
 
 { #category : #parsing }
 CharacterArray >> indexOfLastString: aString before: anInteger [
 	^self indexOfLastString: aString from: 1 to: anInteger
-
 ]
 
 { #category : #parsing }
@@ -435,13 +419,11 @@ CharacterArray >> indexOfLastString: aString from: start to: stop [
 				base := base - 1.
 				1]].
 	^i > 1 ifTrue: [base - n] ifFalse: [0]
-
 ]
 
 { #category : #parsing }
 CharacterArray >> indexOfString: aString [
 	^self indexOfString: aString startingAt: 1
-
 ]
 
 { #category : #parsing }
@@ -459,13 +441,11 @@ CharacterArray >> indexOfString: aString from: start to: stop [
 				base := base + 1.
 				1]].
 	^i > 1 ifTrue: [base + 1] ifFalse: [0]
-
 ]
 
 { #category : #parsing }
 CharacterArray >> indexOfString: aString startingAt: anInteger [
 	^self indexOfString: aString from: anInteger to: self size
-
 ]
 
 { #category : #parsing }
@@ -482,19 +462,16 @@ CharacterArray >> isAnsiCompliant [
 		char := self at: i.
 		char isAnsiCompliant ifFalse: [^false]].
 	^true
-
 ]
 
 { #category : #testing }
 CharacterArray >> isString [
 	^true
-
 ]
 
 { #category : #testing }
 CharacterArray >> isUnicode [
 	^false
-
 ]
 
 { #category : #testing }
@@ -578,7 +555,6 @@ CharacterArray >> replaceAllChar: aCharacter with: aString [
 		next <= n ifTrue: [writer nextPutAll: aString].
 		index := next].
 	^writer contents
-
 ]
 
 { #category : #replacing }
@@ -590,7 +566,6 @@ CharacterArray >> replaceAllChar: aCharacter withChar: anotherCharacter [
 		do: [:i | (self at: i) = aCharacter
 			ifTrue: [copy at: i put: anotherCharacter]].
 	^copy
-
 ]
 
 { #category : #marshalling }
@@ -624,7 +599,6 @@ CharacterArray >> split: aString [
 { #category : #printing }
 CharacterArray >> storeOn: aStream [
 	self printOn: aStream
-
 ]
 
 { #category : #comparing }
@@ -733,7 +707,6 @@ CharacterArray >> trimTail: aString [
 	^(self endsWith: aString)
 		ifTrue: [self allButLast: aString size]
 		ifFalse: [self]
-
 ]
 
 { #category : #accessing }
@@ -770,7 +743,6 @@ CharacterArray >> upTo: aCharacter [
 	| index |
 	index := self findFirst: [:ch | ch = aCharacter] ifAbsent: [self size + 1].
 	^self copyFrom: 1 to: index - 1
-
 ]
 
 { #category : #private }
