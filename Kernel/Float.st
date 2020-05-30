@@ -213,7 +213,6 @@ Float class >> initialize [
 	self
 		initializeInfinity;
 		initializeMinusInfinity;
-		initializeStatus;
 		initializePi;
 		initializeE;
 		initializeRadiansPerDegree

@@ -159,8 +159,37 @@ Character class >> greaterThan [
 ]
 
 { #category : #initialization }
+Character class >> initializeCharacterConstants [
+	"
+	Character initializeCharacterConstants
+	"
+	CharacterConstants := PoolDictionary new
+		beConstantPool;
+		at: 'Esc' put: Character escape;
+		at: 'Cr' put: Character cr;
+		at: 'Tab' put: Character tab;
+		at: 'TimerTick' put: 253 asCharacter;
+		at: 'Lf' put: Character lf;
+		at: 'Space' put: Character space;
+		at: 'Ff' put: Character ff;
+		at: 'Bell' put: 7 asCharacter;
+		at: 'Del' put: 127 asCharacter;
+		at: 'Bs' put: Character backspace;
+		at: 'Emdash' put: Character emdash;
+		at: 'Endash' put: Character endash;
+		at: 'Emspace' put: Character emspace;
+		at: 'Enspace' put: Character enspace;
+		at: 'Qmspace' put: Character qmspace;
+		at: 'Bullet' put: Character bullet;
+		at: 'Lquote' put: Character lquote;
+		at: 'Rquote' put: Character rquote;
+		at: 'Ldblquote' put: Character ldblquote;
+		at: 'Rdblquote' put: Character rdblquote
+]
+
+{ #category : #initialization }
 Character class >> initializeCharacters [
-	ByteCharacters := (0 to: 255) collect: [:i | self new setValue: i]
+	ByteCharacters := (0 to: 255) collect: [:i | super new setValue: i]
 ]
 
 { #category : #'named characters' }

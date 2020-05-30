@@ -27,7 +27,7 @@ CompiledMethod class >> aspects [
 ]
 
 { #category : #initialization }
-CompiledMethod class >> initializeFlags [
+CompiledMethod class >> initializeFormatFlags [
 	Flags := PoolDictionary newConstantPool.
 	Flags
 		at: 'ArgCount' put: (1 thru: 6);

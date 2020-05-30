@@ -14,7 +14,7 @@ Class {
 }
 
 { #category : #initialization }
-LargeNegativeInteger class >> initialize [
+LargeNegativeInteger class >> initializeConstants [
 	LeftLimit := self basicNew: WordSize.
 	LeftLimit at: WordSize put: 16rC0
 ]

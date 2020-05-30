@@ -19,7 +19,7 @@ SmallInteger class >> canBeDeleted [
 ]
 
 { #category : #initialization }
-SmallInteger class >> initialize [
+SmallInteger class >> initializeConstants [
 	Maximum := (1 bitShift: WordSize * 8 - 2) - 1.
 	Minimum := Maximum negated - 1
 ]

@@ -13,7 +13,7 @@ Class {
 		'nativeCode'
 	],
 	#classVars : [
-		'#Formats'
+		'Flags'
 	],
 	#category : #Kernel
 }
@@ -37,22 +37,19 @@ CompiledBlock class >> fromArray: anArray [
 ]
 
 { #category : #initialization }
-CompiledBlock class >> initialize [
-	self initializeFormats; ensureFormatCorrectness
-]
-
-{ #category : #initialization }
-CompiledBlock class >> initializeFormats [
+CompiledBlock class >> initializeFormatFlags [
 	"
-	CompiledBlock initializeFormats 
-	"
-	Formats := PoolDictionary newConstantPool
-		at: 'Id' put: (1 thru: 11);
-		at: 'ArgCount' put: (12 thru: 22);
-		at: 'TempCount' put: (23 thru: 30);
-		yourself.
+	self initializeFormatFlags.
 	self compileAll.
 	self class compileAll
+	"
+	Flags := PoolDictionary newConstantPool
+		at: 'ArgCount' put: (1 thru: 8);
+		at: 'TempCount' put: (9 thru: 16);
+		at: 'Id' put: (17 thru: 24);
+		at: 'CapturesSelf' put: (1 bitShift: 25 - 1);
+		at: 'EnvCount' put: (26 thru: 31);
+		yourself.
 ]
 
 { #category : #initialization }

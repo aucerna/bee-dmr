@@ -20,7 +20,8 @@ Class {
 }
 
 { #category : #initialization }
-Species class >> initialize [
+Species class >> initializeFormatFlags [
+	Flags := PoolDictionary newConstantPool.
 	Flags
 		at: 'Variable' put: 16r2000;
 		at: 'Pointers' put: 16r4000

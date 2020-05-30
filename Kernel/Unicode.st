@@ -42,11 +42,6 @@ Unicode class >> decoderFor: aStream [
 ]
 
 { #category : #initialization }
-Unicode class >> initialize [
-	self withAllSubclasses do: #initializeCurrent
-]
-
-{ #category : #initialization }
 Unicode class >> initializeCurrent [
 	current := self == Unicode ifFalse: [self new]
 ]

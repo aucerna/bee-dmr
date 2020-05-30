@@ -92,10 +92,10 @@ SendSite class >> initializeFormatFlags [
 	SendSite initializeFormatFlags
 	"
 	FormatFlags := PoolDictionary newConstantPool
-		at: 'IsStaticSend' put: 0x1;
-		at: 'IsSuperSend' put: 0x2;
-		at: 'IsPolymorphic' put: 0x4;
-		at: 'HasBeenReset' put: 0x8;
+		at: 'IsStaticSend' put: 16r1;
+		at: 'IsSuperSend' put: 16r2;
+		at: 'IsPolymorphic' put: 16r4;
+		at: 'HasBeenReset' put: 16r8;
 		yourself
 ]
 

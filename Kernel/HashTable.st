@@ -18,13 +18,20 @@ Class {
 }
 
 { #category : #initialization }
-HashTable class >> initialize [
-	"
-	HashTable initialize.
-	"
-	super initialize.
-	NilToken := Object new.
-	self initializeSizes
+HashTable class >> initializeConstants [
+	NilToken := Object new
+]
+
+{ #category : #initialization }
+HashTable class >> initializeSizes [
+	| primes p |
+	Sizes := ByteArray new: 126.
+	primes := (Integer primesUpTo: 255) readStream.
+	p := primes next.
+	1 to: Sizes size do: [:i | | n |
+		n := i * 2 - 1.
+		p < n ifTrue: [p := primes next].
+		Sizes at: i put: p]
 ]
 
 { #category : #inquiries }
@@ -53,18 +60,6 @@ HashTable class >> goodPrimes [
 		285162679 301939921 318717121 335494331 352271573 369148753 385926017 402603193 419480419 436157621 453034849 469712051 486589307 503366497 520043707 
 		570475349 603929813 637584271 671138659 704693081 738247541 771801929 805356457 838910803 872365267 905919671 939574117 973128521 1006682977 1040137411 
 		1073741833)
-]
-
-{ #category : #initialization }
-HashTable class >> initializeSizes [
-	| primes p |
-	Sizes := ByteArray new: 126.
-	primes := (Integer primesUpTo: 255) readStream.
-	p := primes next.
-	1 to: Sizes size do: [:i | | n |
-		n := i * 2 - 1.
-		p < n ifTrue: [p := primes next].
-		Sizes at: i put: p]
 ]
 
 { #category : #'instance creation' }

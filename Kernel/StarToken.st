@@ -15,15 +15,6 @@ StarToken class >> current [
 ]
 
 { #category : #initialization }
-StarToken class >> initialize [
-	"
-	StarToken initialize
-	"
-	super initialize.
-	self initializeCurrent
-]
-
-{ #category : #initialization }
 StarToken class >> initializeCurrent [
 	current := self new
 ]
