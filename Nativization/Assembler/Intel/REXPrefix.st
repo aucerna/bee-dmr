@@ -39,7 +39,7 @@ REXPrefix class >> initialize [
 
 { #category : #initialization }
 REXPrefix class >> initializePrefixes [
-	#('REX' 'REX.W' 'REX.R') do: [:s | | rex |
+	#('REX' 'REX_W' 'REX_R') do: [:s | | rex |
 		rex := self new name: s.
 		Prefixes at: s put: rex].
 	super initializePrefixes
@@ -67,7 +67,7 @@ REXPrefix class >> print: byte on: aStream [
 
 { #category : #accessing }
 REXPrefix class >> r [
-	^REX.R
+	^REX_R
 ]
 
 { #category : #accessing }
@@ -77,7 +77,7 @@ REXPrefix class >> rex [
 
 { #category : #accessing }
 REXPrefix class >> w [
-	^REX.W
+	^REX_W
 ]
 
 { #category : #accessing }
@@ -97,8 +97,8 @@ REXPrefix >> matches: anInteger [
 
 { #category : #evaluating }
 REXPrefix >> value [
-	self == REX.W ifTrue: [^16r48].
-	self == REX.R ifTrue: [^16r44].
+	self == REX_W ifTrue: [^16r48].
+	self == REX_R ifTrue: [^16r44].
 	self == REX ifTrue: [^16r40].
 	self ASSERT: false.
 	^nil

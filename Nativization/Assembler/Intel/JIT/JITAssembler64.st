@@ -345,7 +345,7 @@ JITAssembler64 >> dropTopOfFPU [
 	"
 	fstp st(0)
 	"
-	self assembleBytes: #[0xDD 0xD8]
+	self assembleBytes: #[16rDD 16rD8]
 ]
 
 { #category : #'push/pop' }
@@ -358,7 +358,7 @@ JITAssembler64 >> dropTos: count [
 { #category : #loading }
 JITAssembler64 >> dummyPointer [
 	#dontOptimize.
-	^wordSize = 8 ifTrue: [0x1BADADD01BADADD0] ifFalse: [0x1BADADD0]
+	^wordSize = 8 ifTrue: [16r1BADADD01BADADD0] ifFalse: [16r1BADADD0]
 ]
 
 { #category : #integers }

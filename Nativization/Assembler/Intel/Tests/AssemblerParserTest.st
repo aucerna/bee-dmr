@@ -5,7 +5,7 @@
 
 Class {
 	#name : #AssemblerParserTest,
-	#superclass : #PPAbstractParseTest,
+	#superclass : #PPAbstractParserTest,
 	#category : #Tests
 }
 

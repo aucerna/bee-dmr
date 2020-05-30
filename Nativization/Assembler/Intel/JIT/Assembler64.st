@@ -484,8 +484,8 @@ Assembler64 >> leadingRzeroCount [
 	pos := self currentAddress.
 	self assemble: 'lzcnt' with: self regR with: self regR.
 	memory
-		writeByte: 0xF3 at: pos;
-		writeByte: 0x48 at: pos + 1
+		writeByte: 16rF3 at: pos;
+		writeByte: 16r48 at: pos + 1
 ]
 
 { #category : #storing }

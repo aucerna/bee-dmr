@@ -209,7 +209,7 @@ InstructionDecoderTest >> test_ADC_rax_mD [
 		mnemonic: 'ADC';
 		operands: (Array with: rax with: mem).
 	self
-		decodingOf: #[0x48 0x13 0x04 0x25 0xFF 0xFF 0xFF 0x7F]
+		decodingOf: #[16r48 16r13 16r04 16r25 16rFF 16rFF 16rFF 16r7F]
 		equals: instruction
 ]
 
@@ -382,7 +382,7 @@ InstructionDecoderTest >> test_FSTSW [
 	instruction := ISAInstruction new
 		mnemonic: 'fstsw';
 		operands: (Array with: 'word ptr [rdx]').
-	self decodingOf: #[0x9b 0xdd 0x3a] equals: instruction
+	self decodingOf: #[16r9b 16rdd 16r3a] equals: instruction
 ]
 
 { #category : #arithmetic }
@@ -411,7 +411,7 @@ InstructionDecoderTest >> test_LDMXCSR [
 	instruction := ISAInstruction new
 		mnemonic: 'ldmxcsr';
 		operands: (Array with: 'dword ptr [rdx]').
-	self decodingOf: #[0x0f 0xae 0x12] equals: instruction
+	self decodingOf: #[16r0f 16rae 16r12] equals: instruction
 ]
 
 { #category : #stack }
@@ -429,7 +429,7 @@ InstructionDecoderTest >> test_MOV_esi_mem [
 	instruction := ISAInstruction new
 		mnemonic: 'MOV';
 		operands: esi , 'dword ptr [esp + 0xc]'.
-	self decoding32Of: #[0x8b 0x74 0x24 0x0c] equals: instruction
+	self decoding32Of: #[16r8b 16r74 16r24 16r0c] equals: instruction
 ]
 
 { #category : #mov }
@@ -585,7 +585,7 @@ InstructionDecoderTest >> test_REPNZ_SCAS [
 	instruction := ISAInstruction new
 		mnemonic: 'repne_scas';
 		operands: (Array with: al).
-	self decoding32Of: #[0xf2 0xae] equals: instruction
+	self decoding32Of: #[16rf2 16rae] equals: instruction
 ]
 
 { #category : #calls }
@@ -673,7 +673,7 @@ InstructionDecoderTest >> test_STMXCSR [
 	instruction := ISAInstruction new
 		mnemonic: 'stmxcsr';
 		operands: (Array with: 'dword ptr [rdx]').
-	self decodingOf: #[0x0f 0xae 0x1a] equals: instruction
+	self decodingOf: #[16r0f 16rae 16r1a] equals: instruction
 ]
 
 { #category : #vex }
@@ -725,10 +725,10 @@ InstructionDecoderTest >> testMOVABS [
 	| instruction |
 	instruction := ISAInstruction new
 		mnemonic: 'mov';
-		operands: r11 , 0x972d70.
+		operands: r11 , 16r972d70.
 	instruction operands second length: 64.
 	self
-		decodingOf: #[0x49 0xBB 0x70 0x2D 0x97 0x00 0x00 0x00 0x00 0x00]
+		decodingOf: #[16r49 16rBB 16r70 16r2D 16r97 16r00 16r00 16r00 16r00 16r00]
 		equals: instruction
 ]
 
@@ -748,19 +748,19 @@ InstructionDecoderTest >> testMovECXMem32 [
 		mnemonic: 'mov';
 		operands: (Array with: ecx with: 'dword ptr[0x55870c]').
 	self
-		decoding32Of: #[0x8b 0x0c 0x25 0x0c 0x87 0x55 0x00]
+		decoding32Of: #[16r8b 16r0c 16r25 16r0c 16r87 16r55 16r00]
 		equals: instruction
 ]
 
 { #category : #other }
 InstructionDecoderTest >> testMOVR11Imm [
 	| imm instruction |
-	imm := ISAImmediate new value: 0x5FF740; length: 64.
+	imm := ISAImmediate new value: 16r5FF740; length: 64.
 	instruction := ISAInstruction new
 		mnemonic: 'mov';
 		operands: (Array with: r11 with: imm).
 	self
-		decodingOf: #[0x49 0xBB 0x40 0xF7 0x5F 0x00 0x00 0x00 0x00 0x00]
+		decodingOf: #[16r49 16rBB 16r40 16rF7 16r5F 16r00 16r00 16r00 16r00 16r00]
 		equals: instruction
 ]
 
@@ -778,7 +778,7 @@ InstructionDecoderTest >> testPush40 [
 	| instruction |
 	instruction := ISAInstruction new
 		mnemonic: 'pushq';
-		operands: (Array with: 0x40).
+		operands: (Array with: 16r40).
 	self decoding32Of: #[16r6A 16r40] equals: instruction
 ]
 

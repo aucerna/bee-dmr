@@ -205,7 +205,7 @@ InstructionEncoderTest >> test_ADC_rax_mD [
 		operands: (Array with: rax with: mem).
 	self
 		encodingOf: instruction
-		equals: #[0x48 0x13 0x04 0x25 0xFF 0xFF 0xFF 0x7F]
+		equals: #[16r48 16r13 16r04 16r25 16rFF 16rFF 16rFF 16r7F]
 ]
 
 { #category : #'adc - rr' }
@@ -394,7 +394,7 @@ InstructionEncoderTest >> test_FSTSW [
 	instruction := ISAInstruction new
 		mnemonic: 'fstsw';
 		operands: (Array with: 'word ptr [rdx]').
-	self encodingOf: instruction equals: #[0x9b 0xdd 0x3a]
+	self encodingOf: instruction equals: #[16r9b 16rdd 16r3a]
 ]
 
 { #category : #generated }
@@ -446,7 +446,7 @@ InstructionEncoderTest >> test_LDMXCSR [
 	instruction := ISAInstruction new
 		mnemonic: 'ldmxcsr';
 		operands: (Array with: 'dword ptr [rdx]').
-	self encodingOf: instruction equals: #[0x0f 0xae 0x12]
+	self encodingOf: instruction equals: #[16r0f 16rae 16r12]
 ]
 
 { #category : #generated }
@@ -887,7 +887,7 @@ InstructionEncoderTest >> test_STMXCSR [
 	instruction := ISAInstruction new
 		mnemonic: 'stmxcsr';
 		operands: (Array with: 'dword ptr [rdx]').
-	self encodingOf: instruction equals: #[0x0f 0xae 0x1a]
+	self encodingOf: instruction equals: #[16r0f 16rae 16r1a]
 ]
 
 { #category : #vex }
@@ -924,7 +924,7 @@ InstructionEncoderTest >> test_XCHG_057 [
 
 { #category : #other }
 InstructionEncoderTest >> testCMPXCHG [
-	self encodingOf: 'cmpxchg rbx, rcx' equals: #[0x48 0x0f 0xb1 0xcb]
+	self encodingOf: 'cmpxchg rbx, rcx' equals: #[16r48 16r0f 16rb1 16rcb]
 ]
 
 { #category : #other }
@@ -942,23 +942,23 @@ InstructionEncoderTest >> testMOVABS [
 	| instruction |
 	instruction := ISAInstruction new
 		mnemonic: 'mov';
-		operands: r11 , 0x972d70.
+		operands: r11 , 16r972d70.
 	instruction operands last length: 64.
 	self
 		encodingOf: instruction
-		equals: #[0x49 0xBB 0x70 0x2D 0x97 0x00 0x00 0x00 0x00 0x00]
+		equals: #[16r49 16rBB 16r70 16r2D 16r97 16r00 16r00 16r00 16r00 16r00]
 ]
 
 { #category : #other }
 InstructionEncoderTest >> testMOVR11Imm [
 	| imm instruction |
-	imm := ISAImmediate new value: 0x5FF740; length: 64.
+	imm := ISAImmediate new value: 16r5FF740; length: 64.
 	instruction := ISAInstruction new
 		mnemonic: 'mov';
 		operands: (Array with: r11 with: imm).
 	self
 		encodingOf: instruction
-		equals: #[0x49 0xBB 0x40 0xF7 0x5F 0x00 0x00 0x00 0x00 0x00]
+		equals: #[16r49 16rBB 16r40 16rF7 16r5F 16r00 16r00 16r00 16r00 16r00]
 ]
 
 { #category : #specs }
