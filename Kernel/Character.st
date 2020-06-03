@@ -9,6 +9,9 @@ Class {
 	#instVars : [
 		'value'
 	],
+	#pools : [
+		'CharacterConstants'
+	],
 	#category : #Kernel
 }
 
@@ -163,20 +166,21 @@ Character class >> initializeCharacterConstants [
 	"
 	Character initializeCharacterConstants
 	"
+	
 	CharacterConstants := PoolDictionary new
 		beConstantPool;
-		at: 'Esc' put: Character escape;
-		at: 'Cr' put: Character cr;
-		at: 'Tab' put: Character tab;
-		at: 'TimerTick' put: 253 asCharacter;
-		at: 'Lf' put: Character lf;
-		at: 'Space' put: Character space;
-		at: 'Ff' put: Character ff;
 		at: 'Bell' put: 7 asCharacter;
+		at: 'Bs' put: 8 asCharacter;
+		at: 'Tab' put: 9 asCharacter;
+		at: 'Lf' put: 10 asCharacter;
+		at: 'Ff' put: 12 asCharacter;
+		at: 'Cr' put: 13 asCharacter;
+		at: 'Esc' put: 27 asCharacter;
+		at: 'Space' put: 32 asCharacter;
 		at: 'Del' put: 127 asCharacter;
-		at: 'Bs' put: Character backspace;
-		at: 'Emdash' put: Character emdash;
-		at: 'Endash' put: Character endash;
+		at: 'TimerTick' put: 253 asCharacter;
+		at: 'Emdash' put: 8212 asCharacter;
+		at: 'Endash' put: 8211 asCharacter;
 		at: 'Emspace' put: Character emspace;
 		at: 'Enspace' put: Character enspace;
 		at: 'Qmspace' put: Character qmspace;
