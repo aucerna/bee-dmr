@@ -167,8 +167,8 @@ Character class >> initializeCharacterConstants [
 	Character initializeCharacterConstants
 	"
 	
-	CharacterConstants := PoolDictionary new
-		beConstantPool;
+	CharacterConstants := PoolDictionary new beConstantPool.
+	CharacterConstants
 		at: 'Bell' put: 7 asCharacter;
 		at: 'Bs' put: 8 asCharacter;
 		at: 'Tab' put: 9 asCharacter;
