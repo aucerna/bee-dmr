@@ -29,16 +29,6 @@ ByteArray >> asByteArray [
 ]
 
 { #category : #converting }
-ByteArray >> asExternalHandle [
-	^ExternalHandle fromBytes: self
-]
-
-{ #category : #converting }
-ByteArray >> asExternalInt32 [
-	^ExternalInt32 fromBytes: self
-]
-
-{ #category : #converting }
 ByteArray >> asParameter [
 	^self
 ]
@@ -70,11 +60,6 @@ ByteArray >> binaryReadStream [
 { #category : #printing }
 ByteArray >> canBePrintedAsLiteral [
 	^true
-]
-
-{ #category : #copying }
-ByteArray >> copyToGlobalMemory [
-	^GlobalMemory fromByteArray: self
 ]
 
 { #category : #copying }
@@ -147,60 +132,9 @@ ByteArray >> isValid [
 	^true
 ]
 
-{ #category : #marshalling }
-ByteArray >> largeAtOffset: offset [
-	| integer lo hi |
-	(self at: offset + 8) >= 16r80 ifTrue: [
-		integer := 0.
-		offset + 8
-			to: offset + 1
-			by: -1
-			do: [:i | integer := (integer bitShift: 8) + ((self at: i) bitXor: 16rFF)].
-		^(integer + 1) negated].
-	lo := self uLongAtOffset: 0.
-	hi := self uLongAtOffset: 4.
-	^(hi bitShift: 32) + lo
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveLongAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 3 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self longAtValidOffset: offset
-]
-
-{ #category : #marshalling }
-ByteArray >> longAtOffset: offset put: anInteger [
-	| ulong |
-	ulong := anInteger < 0
-		ifTrue: [16r100000000 + anInteger]
-		ifFalse: [anInteger].
-	self uLongAtOffset: offset put: ulong
-]
-
 { #category : #converting }
 ByteArray >> pointedMemory [
 	^ExternalMemory at: self
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveULargeAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 7 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveULargeAtOffset: offset [
-put: anInteger
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 7 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset put: anInteger
 ]
 
 { #category : #printing }
@@ -250,15 +184,6 @@ startingAt: position [
 { #category : #converting }
 ByteArray >> segmentFrom: index size: size [
 	^ByteArraySegment on: self from: index size: size
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveShortAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 2 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self shortAtValidOffset: offset
 ]
 
 { #category : #accessing }
@@ -347,61 +272,6 @@ ByteArray >> storeStringBase: base [
 ByteArray >> storeStringBase: base bytes: bytes [
 	^String
 		streamContents: [:strm | self storeOn: strm base: base bytes: bytes]
-]
-
-{ #category : #accessing }
-ByteArray >> uLargeAtOffset: offset [
-	| low hi |
-	low := self uLongAtOffset: offset.
-	hi := self uLongAtOffset: offset + 4.
-	^(hi bitShift: 32) + low
-]
-
-{ #category : #accessing }
-ByteArray >> uLargeAtOffset: offset put: integer [
-	| low hi |
-	integer sizeInBytes <= 8 ifFalse: [self error: 'integer too long'].
-	low := integer bitAnd: 16rFFFFFFFF.
-	hi := integer bitShift: -32.
-	self
-		uLongAtOffset: offset put: low;
-		uLongAtOffset: offset + 4 put: hi
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveULongAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 3 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveULongAtOffset: offset [
-put: anInteger
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 3 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset put: anInteger
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveUShortAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 1 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset
-]
-
-{ #category : #marshalling }
-ByteArray >> primitiveUShortAtOffset: offset [
-put: anInteger
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 1 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset put: anInteger
 ]
 
 { #category : #accessing }

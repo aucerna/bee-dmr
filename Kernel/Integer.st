@@ -112,11 +112,6 @@ Integer >> asExternalHandle [
 ]
 
 { #category : #converting }
-Integer >> asExternalInt32 [
-	^ExternalInt32 fromInteger: self
-]
-
-{ #category : #converting }
 Integer >> asExternalPointer [
 	^ExternalPointer fromInteger: self
 ]

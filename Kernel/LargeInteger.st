@@ -479,7 +479,7 @@ startingAt: position [
 ]
 
 { #category : #unclassified }
-LargeInteger >> primitiveShortAtOffset: [
+LargeInteger >> shortAtOffset: [
 offset
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 2 <= self _size])
@@ -503,8 +503,7 @@ LargeInteger >> sizeInBytes [
 ]
 
 { #category : #private }
-LargeInteger >> primitiveUShortAtOffset: [
-offset
+LargeInteger >> uShortAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
@@ -512,8 +511,7 @@ offset
 ]
 
 { #category : #private }
-LargeInteger >> primitiveUShortAtOffset: offset [
-put: anInteger
+LargeInteger >> uShortAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].

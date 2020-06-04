@@ -6,6 +6,9 @@
 Class {
 	#name : #Unicode,
 	#superclass : #Object,
+	#classInstVars : [
+		'current'
+	],
 	#category : #Kernel
 }
 

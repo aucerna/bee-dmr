@@ -6,6 +6,9 @@
 Class {
 	#name : #StarToken,
 	#superclass : #Object,
+	#classInstVars : [
+		'current'
+	],
 	#category : #Kernel
 }
 

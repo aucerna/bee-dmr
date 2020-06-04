@@ -552,11 +552,6 @@ Object >> isEmptyOrNil [
 ]
 
 { #category : #testing }
-Object >> isExternalHandle [
-	^false
-]
-
-{ #category : #testing }
 Object >> isExternalMemory [
 	^false
 ]

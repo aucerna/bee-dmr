@@ -279,11 +279,6 @@ CharacterArray >> codePage [
 ]
 
 { #category : #services }
-CharacterArray >> copyToGlobalMemory [
-	^GlobalMemory fromString: self
-]
-
-{ #category : #services }
 CharacterArray >> doubleQuoted [
 	"
 	'hello' doubleQuoted

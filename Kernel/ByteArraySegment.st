@@ -110,11 +110,6 @@ ByteArraySegment >> copyFrom: start to: end [
 ]
 
 { #category : #accessing }
-ByteArraySegment >> copyToGlobalMemory [
-	^GlobalMemory fromByteArray: self
-]
-
-{ #category : #accessing }
 ByteArraySegment >> endOffset [
 	^offset + size
 ]
