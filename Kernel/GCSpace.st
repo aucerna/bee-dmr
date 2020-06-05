@@ -188,12 +188,7 @@ GCSpace >> commitMoreMemory [
 { #category : #actions }
 GCSpace >> commitSized: size [
 	| result |
-	result := KernelLibrary
-		VirtualAlloc: base * 2
-		dwSize: size * 2
-		flAllocationType: MEM_COMMIT
-		flProtect: PAGE_EXECUTE_READWRITE.
-	result = 0 ifTrue: [self winError].
+	result := Smalltalk os alloc: base * 2 size: size * 2 commit: true protect: #rwx.
 	^result // 2
 ]
 
@@ -248,12 +243,7 @@ GCSpace >> dispenseReservedSpace [
 
 { #category : #accessing }
 GCSpace >> finalize [
-	| success |
-	success := KernelLibrary
-		VirtualFree: base
-		dwSize: 0
-		dwFreeType: MEM_RELEASE.
-	success ifFalse: [self winError]
+	Smalltalk os free: base.
 ]
 
 { #category : #accessing }
