@@ -59,13 +59,6 @@ Integer >> / aNumber [
 		ifFalse: [Fraction numerator: self // gcd denominator: aNumber // gcd]
 ]
 
-{ #category : #accessing }
-Integer >> : mm [
-	(mm between: 0 and: 59)
-		ifFalse: [self error: 'bad minutes argument ' , mm asString].
-	^Time hours: self minutes: mm seconds: 0
-]
-
 { #category : #bits }
 Integer >> << bits [
 	bits < 0 ifTrue: [self error: 'negative arg'].
@@ -104,16 +97,6 @@ Integer >> asByteArray [
 { #category : #converting }
 Integer >> asCharacter [
 	^Character value: self
-]
-
-{ #category : #converting }
-Integer >> asExternalHandle [
-	^ExternalHandle fromInteger: self
-]
-
-{ #category : #converting }
-Integer >> asExternalPointer [
-	^ExternalPointer fromInteger: self
 ]
 
 { #category : #converting }
