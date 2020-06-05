@@ -100,11 +100,11 @@ Locale >> indexOfMonth: aString [
 
 { #category : #initialization }
 Locale >> initialize [
-	collator := CharacterCollator new.
-	currency := CurrencyFormat default.
-	date := DateFormat default.
-	number := NumberFormat default.
-	time := TimeFormat default
+	collator := Smalltalk os characterCollator new.
+	currency := Smalltalk os currencyFormat default.
+	date := Smalltalk os dateFormat default.
+	number := Smalltalk os numberFormat default.
+	time := Smalltalk os timeFormat default
 ]
 
 { #category : #strings }
