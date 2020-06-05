@@ -30,11 +30,6 @@ UndefinedObject class >> new: anInteger [
 ]
 
 { #category : #converting }
-UndefinedObject >> asFilename [
-	^Filename new
-]
-
-{ #category : #converting }
 UndefinedObject >> asParameter [
 	^0
 ]
