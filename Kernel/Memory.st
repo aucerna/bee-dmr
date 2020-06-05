@@ -21,7 +21,8 @@ Class {
 		'rememberedSet'
 	],
 	#classVars : [
-		'Current'
+		'Current',
+		'CRITICAL'
 	],
 	#category : #Kernel
 }
@@ -35,7 +36,7 @@ Memory class >> allocateMemory: size near: address [
 
 { #category : #errors }
 Memory class >> allocateMemory: size near: address limit: limit [
-	^OS memory allocate: size near: address limit: limit.
+	^Smalltalk os allocate: size near: address limit: limit.
 ]
 
 { #category : #accessing }
@@ -50,7 +51,7 @@ Memory class >> current: current [
 
 { #category : #errors }
 Memory class >> nativeAllocate: size [
-	OS memory nativeAllocate: size
+	Smalltalk os nativeAllocate: size
 	
 ]
 
@@ -146,7 +147,7 @@ Memory >> allocateInOldSpace: size [
 
 { #category : #allocation }
 Memory >> allocateMemory: size [
-	^OS memory allocate: size
+	^Smalltalk os allocate: size
 ]
 
 { #category : #services }
@@ -348,7 +349,8 @@ Memory >> kernelSpace [
 
 { #category : #services }
 Memory >> make: anObject become: anotherObject [
-	vm := OS beeVM.
+	| vm |
+	vm := Smalltalk vm.
 	1 to: spaces size do: [:i | | space |
 		space := spaces at: i.
 		vm make: anObject become: anotherObject in: space with: self].
@@ -516,7 +518,7 @@ Memory >> rescueEphemerons [
 
 { #category : #private }
 Memory >> reserveMemory: size [
-	^OS memory reserve: size
+	^Smalltalk os reserve: size
 ]
 
 { #category : #private }
