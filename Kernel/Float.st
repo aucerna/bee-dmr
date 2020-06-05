@@ -205,17 +205,15 @@ Float class >> infinity [
 ]
 
 { #category : #initialization }
-Float class >> initialize [
+Float class >> initializeConstants [
 	"
-	Float initialize
+	Float initializeConstants
 	"
-	super initialize.
 	self
 		initializeInfinity;
 		initializeMinusInfinity;
 		initializePi;
-		initializeE;
-		initializeRadiansPerDegree
+		initializeE
 ]
 
 { #category : #initialization }
@@ -225,18 +223,12 @@ Float class >> initializeE [
 
 { #category : #initialization }
 Float class >> initializeInfinity [
-	Infinity := self new.
-	Infinity
-		at: 7 put: 240;
-		at: 8 put: 127
+	Infinity := self fromByteArray: #[00 00 00 00 00 00 0xF0 0x7F]
 ]
 
 { #category : #initialization }
 Float class >> initializeMinusInfinity [
-	MinusInfinity := self new.
-	MinusInfinity
-		at: 7 put: 240;
-		at: 8 put: 255
+	MinusInfinity := self fromByteArray: #[00 00 00 00 00 00 0xF0 0xFF]
 ]
 
 { #category : #initialization }
@@ -359,6 +351,11 @@ Float class >> plusInfinity [
 { #category : #accessing }
 Float class >> sizeInBytes [
 	^8
+]
+
+{ #category : #accessing }
+Float class >> startUp [
+	self initializeRadiansPerDegree
 ]
 
 { #category : #accessing }
@@ -529,7 +526,7 @@ Float >> abs [
 
 { #category : #trigonometry }
 Float >> arcTan [
-	^CLibraryDLL current atan: self
+	^Smalltalk os libc atan: self
 ]
 
 { #category : #converting }
@@ -599,7 +596,7 @@ Float >> coerce: aNumber [
 
 { #category : #trigonometry }
 Float >> cos [
-	^CLibraryDLL current cos: self
+	^Smalltalk os libc cos: self
 ]
 
 { #category : #trigonometry }
@@ -614,7 +611,7 @@ Float >> errorOn: aSymbol status: anInteger [
 
 { #category : #logarithms }
 Float >> exp [
-	^CLibraryDLL current exp: self
+	^Smalltalk os libc exp: self
 ]
 
 { #category : #accessing }
@@ -728,7 +725,7 @@ Float >> isSpecialValue [
 Float >> ln [
 	self > 0
 		ifFalse: [^self error: 'ln is not defined for ' , self printString].
-	^CLibraryDLL current log: self
+	^Smalltalk os libc log: self
 ]
 
 { #category : #accessing }
@@ -889,7 +886,7 @@ Float >> significand [
 
 { #category : #trigonometry }
 Float >> sin [
-	^CLibraryDLL current sin: self
+	^Smalltalk os libc sin: self
 ]
 
 { #category : #accessing }
@@ -917,7 +914,7 @@ Float >> storeOn: aStream [
 
 { #category : #trigonometry }
 Float >> tan [
-	^CLibraryDLL current tan: self
+	^Smalltalk os libc tan: self
 ]
 
 { #category : #arithmetic }
