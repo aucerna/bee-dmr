@@ -16,7 +16,8 @@ Class {
 		'registeredEvents',
 		'externals',
 		'eventDispatcher',
-		'nativizer'
+		'nativizer',
+		'session'
 	],
 	#classVars : [
 		'Implementors',
@@ -124,7 +125,7 @@ SmalltalkSystem >> bootstrapInitialize [
 	ExternalMemory initializeConstants.
 	Float initializeConstants.
 	HashTable initializeConstants; initializeSizes.
-	HashTablePolicy initializeConstants.
+	HashTablePolicy initializeEmptySlot.
 	HashedCollection initializePolicies.
 	LargeInteger initializeBase.
 	LargeNegativeInteger initializeConstants.
@@ -197,7 +198,7 @@ SmalltalkSystem >> eventTableFor: anObject [
 
 { #category : #'startup/shutdown' }
 SmalltalkSystem >> exit [
-	SmalltalkSession current exit
+	session exit
 ]
 
 { #category : #accessing }
@@ -515,7 +516,7 @@ SmalltalkSystem >> showBacktraceOf: aProcess label: aString [
 		arguments: false.
 	logger := self at: #Transcript ifAbsent: nil.
 	logger isNil
-		ifTrue: [SmalltalkSession current logError: writer contents]
+		ifTrue: [session logError: writer contents]
 		ifFalse: [logger nextPutAll: aString; cr; nextPutAll: writer contents].
 	aProcess isResumable ifTrue: [aProcess performDeferred: #resume]
 ]
