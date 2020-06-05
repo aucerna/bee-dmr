@@ -6,6 +6,9 @@
 Class {
 	#name : #Stream,
 	#superclass : #Object,
+	#pools : [
+		'CharacterConstants'
+	],
 	#category : #Kernel
 }
 
