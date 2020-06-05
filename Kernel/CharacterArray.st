@@ -6,6 +6,9 @@
 Class {
 	#name : #CharacterArray,
 	#superclass : #ArrayedCollection,
+	#pools : [
+		'CharacterConstants'
+	],
 	#category : #Kernel
 }
 
@@ -116,11 +119,6 @@ CharacterArray >> article [
 { #category : #converting }
 CharacterArray >> asDate [
 	^Date fromString: self
-]
-
-{ #category : #converting }
-CharacterArray >> asFilename [
-	^Filename fromString: self
 ]
 
 { #category : #converting }
