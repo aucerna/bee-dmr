@@ -42,9 +42,9 @@ LargeInteger class >> fromInteger: anInteger [
 		digit := integer wideDigitAt: i.
 		digit > 0 ifTrue: [size := i] ifFalse: [i := i - 1]].
 	large := LargePositiveInteger new: size * DigitLength.
-	1 to: size do: [:i | | digit |
-		digit := integer wideDigitAt: i.
-		large digitAt: i put: digit].
+	1 to: size do: [:j | | digit |
+		digit := integer wideDigitAt: j.
+		large digitAt: j put: digit].
 	^int >= 0 ifTrue: [large] ifFalse: [large negated]
 ]
 
