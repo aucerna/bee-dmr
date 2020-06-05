@@ -16,7 +16,7 @@ Class {
 		'storesAssociations'
 	],
 	#classVars : [
-		'#EmptySlot'
+		'EmptySlot'
 	],
 	#category : #Kernel
 }
@@ -27,8 +27,7 @@ HashTablePolicy class >> emptySlot [
 ]
 
 { #category : #initialization }
-HashTablePolicy class >> initialize [
-	super initialize.
+HashTablePolicy class >> initializeEmptySlot [
 	EmptySlot := Object new
 ]
 
