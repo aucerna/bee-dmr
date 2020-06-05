@@ -13,6 +13,9 @@ Class {
 		'command',
 		'options'
 	],
+	#pools : [
+		'CharacterConstants'
+	],
 	#category : #Kernel
 }
 
