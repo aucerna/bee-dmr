@@ -16,7 +16,7 @@ UTF8 class >> accepts: aByteArray [
 
 { #category : #private }
 UTF8 class >> decodeMemory: anExternalMemory length: anInteger [
-	^OS utf8ToWide: anExternalMemory length: anInteger
+	^Smalltalk os utf8ToWide: anExternalMemory length: anInteger
 ]
 
 { #category : #private }
@@ -24,7 +24,7 @@ UTF8 class >> encodeMemory: anExternalMemory length: anInteger [
 	"
 	UTF8 encodeMemory: '→' externalCopy length: 2
 	"
-	OS wideToUtf8: anExternalMemory length: anInteger
+	Smalltalk os wideToUtf8: anExternalMemory length: anInteger
 ]
 
 { #category : #accessing }

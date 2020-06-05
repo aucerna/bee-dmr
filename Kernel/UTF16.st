@@ -1,5 +1,5 @@
 "
-    Copyright (c) 2020 Aucerna. 
+    Copyright (c) 2020 Aucerna.
     See (MIT) license in root directory.
 "
 
@@ -46,45 +46,6 @@ UTF16 >> characterIndexOf: aString at: anInteger [
 	^super characterIndexOf: aString at: anInteger * 2
 ]
 
-{ #category : #private }
-UTF16 >> compareStringiW: aString1 with: aString2 [
-	| string1 string2 result |
-	string1 := self externalCopyOf: aString1.
-	string2 := self externalCopyOf: aString2.
-	result := KernelDLL current
-		lstrcmpiW: string1 asParameter
-		lpString2: string2 asParameter.
-	string1 free.
-	string2 free.
-	^result
-]
-
-{ #category : #services }
-UTF16 >> compose: aString [
-	| source chars utf destination composed |
-	source := self externalCopyOf: aString.
-	chars := KernelLibrary
-		FoldString: MAP_PRECOMPOSED
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: 0
-		cchDest: 0.
-	chars = 0 ifTrue: [^self winError].
-	utf := WideString new: chars.
-	destination := self externalCopyOf: utf.
-	chars := KernelLibrary
-		FoldString: MAP_PRECOMPOSED
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: destination asParameter
-		cchDest: utf size.
-	chars = 0 ifTrue: [^self winError].
-	composed := WideString fromMemory: destination.
-	source free.
-	destination free.
-	^composed
-]
-
 { #category : #'encoding / decoding' }
 UTF16 >> decodeFrom: aStream [
 	| b1 b2 hi b3 b4 lo |
@@ -101,31 +62,6 @@ UTF16 >> decodeFrom: aStream [
 	^hi + lo
 ]
 
-{ #category : #services }
-UTF16 >> decompose: aString [
-	| source chars utf destination decomposed |
-	source := self externalCopyOf: aString.
-	chars := KernelLibrary
-		FoldString: MAP_COMPOSITE
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: 0
-		cchDest: 0.
-	chars = 0 ifTrue: [^self winError].
-	utf := WideString new: chars.
-	destination := utf externalCopy.
-	KernelLibrary
-		FoldString: MAP_COMPOSITE
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: destination asParameter
-		cchDest: utf size.
-	chars = 0 ifTrue: [^self winError].
-	decomposed := WideString fromMemory: destination.
-	source free.
-	destination free.
-	^decomposed
-]
 
 { #category : #'encoding / decoding' }
 UTF16 >> encode: aCharacter on: aStream [
@@ -159,35 +95,6 @@ UTF16 >> encode: aCharacter on: aStream [
 ]
 
 { #category : #services }
-UTF16 >> foldDigitsOf: aString [
-	"
-	(Character value: 1632) asString foldDigits  = '0'
-	"
-	| source characters utf destination fold |
-	source := self externalCopyOf: aString.
-	characters := KernelLibrary
-		FoldString: MAP_FOLDDIGITS
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: 0
-		cchDest: 0.
-	characters = 0 ifTrue: [^self winError].
-	utf := WideString new: characters.
-	destination := utf externalCopy.
-	characters := KernelLibrary
-		FoldString: MAP_FOLDDIGITS
-		lpSrcStr: source asParameter
-		cchSrc: -1
-		lpDestStr: destination asParameter
-		cchDest: utf size.
-	characters = 0 ifTrue: [^self winError].
-	fold := WideString fromMemory: destination.
-	source free.
-	destination free.
-	^fold reduced
-]
-
-{ #category : #services }
 UTF16 >> indexesOf: aString from: start to: end [
 	| e stretch delta |
 	e := start - 1 max: end - 1.
@@ -198,23 +105,6 @@ UTF16 >> indexesOf: aString from: start to: end [
 		^start thru: end - 1 + (delta // 2)].
 	stretch := super indexesOf: aString from: start to: end.
 	^stretch + 1 // 2
-]
-
-{ #category : #services }
-UTF16 >> is: aString normalized: form [
-	| memory normalized |
-	memory := self externalCopyOf: aString.
-	normalized := NormalizDLL current
-		IsNormalizedString: form
-		lpString: memory asParameter
-		cwLength: aString size.
-	memory free.
-	^normalized
-]
-
-{ #category : #services }
-UTF16 >> isCNormal: aString [
-	^self is: aString normalized: CNORMALIZATION
 ]
 
 { #category : #services }
@@ -233,88 +123,13 @@ UTF16 >> isDBS: aString upTo: anInteger [
 ]
 
 { #category : #services }
-UTF16 >> isDNormal: aString [
-	^self is: aString normalized: DNORMALIZATION
-]
-
-{ #category : #services }
-UTF16 >> isKCNormal: aString [
-	^self is: aString normalized: KCNORMALIZATION
-]
-
-{ #category : #services }
-UTF16 >> isKDNormal: aString [
-	^self is: aString normalized: KDNORMALIZATION
-]
-
-{ #category : #services }
 UTF16 >> lengthOf: aString [
 	^(self encode: aString) size // 2
-]
-
-{ #category : #services }
-UTF16 >> lowercaseOf: aString [
-	| buffer lowercase |
-	buffer := self externalCopyOf: aString.
-	UserDLL current CharLowerW: buffer asParameter.
-	lowercase := WideString fromMemory: buffer.
-	buffer free.
-	^lowercase
 ]
 
 { #category : #private }
 UTF16 >> minBytesPerChar [
 	^2
-]
-
-{ #category : #services }
-UTF16 >> normalize: aString to: normalization [
-	| string dll chars memory uc |
-	string := self externalCopyOf: aString.
-	dll := NormalizDLL current.
-	chars := dll
-		Normalize: normalization
-		source: string asParameter
-		chars: aString size
-		dest: 0
-		chars: 0.
-	(chars <= 0 and: [self lastWinError != 0]) ifTrue: [^self].
-	memory := chars externalCharacters.
-	chars := dll
-		Normalize: normalization
-		source: string asParameter
-		chars: aString size
-		dest: memory asParameter
-		chars: chars.
-	(chars <= 0 and: [self lastWinError != 0]) ifTrue: [^self].
-	uc := WideString fromMemory: memory length: chars.
-	string free.
-	memory free.
-	^uc
-]
-
-{ #category : #services }
-UTF16 >> normalizeToC: aString [
-	"
-	Canonical composition. Transforms each decomposed grouping, consisting of a base
-	character plus combining characters into the canonical precomposed equivalent
-	"
-	^self normalize: aString to: CNORMALIZATION
-]
-
-{ #category : #services }
-UTF16 >> normalizeToD: aString [
-	^self normalize: aString to: DNORMALIZATION
-]
-
-{ #category : #services }
-UTF16 >> normalizeToKC: aString [
-	^self normalize: aString to: KCNORMALIZATION
-]
-
-{ #category : #services }
-UTF16 >> normalizeToKD: aString [
-	^self normalize: aString to: KDNORMALIZATION
 ]
 
 { #category : #services }
@@ -338,14 +153,3 @@ UTF16 >> sizeInBytesOf: aString [
 UTF16 >> sizeOfCharacter: aCharacter [
 	^aCharacter codePoint < 16r10000 ifTrue: [2] ifFalse: [4]
 ]
-
-{ #category : #services }
-UTF16 >> uppercaseOf: aString [
-	| buffer uppercase |
-	buffer := self externalCopyOf: aString.
-	UserLibrary CharUpperW: buffer asParameter.
-	uppercase := WideString fromMemory: buffer.
-	buffer free.
-	^uppercase
-]
-

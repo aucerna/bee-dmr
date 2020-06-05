@@ -54,21 +54,6 @@ String class >> fromMemory: anExternalMemory length: anInteger [
 ]
 
 { #category : #'instance creation' }
-String class >> fromModule: aString id: anInteger [
-	| handle buffer result |
-	handle := ExternalLibrary open: aString.
-	buffer := 256 externalBytes.
-	result := UserLibrary
-		LoadString: handle
-		uID: anInteger
-		lpBuffer: buffer asParameter
-		nBufferMax: 256.
-	result = 0 ifTrue: [self winNotification].
-	handle close.
-	^result > 0 ifTrue: [buffer makeString]
-]
-
-{ #category : #'instance creation' }
 String class >> fromUTF8: aByteArray [
 	^(aByteArray conform: [:byte | byte asInteger < 128])
 		ifTrue: [String fromBytes: aByteArray]
