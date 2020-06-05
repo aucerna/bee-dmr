@@ -45,7 +45,7 @@ MemoryMeter >> measure: aBlock [
 	eden := memory eden usedBytes.
 	from := memory from usedBytes.
 	old := memory old usedBytes.
-	milliseconds := (Time microsecondsToRun: aBlock) / 1000.0.
+	milliseconds := (Smalltalk os microsecondsToRun: aBlock) / 1000.0.
 	oldGrown := memory old usedBytes - old.
 	youngFreed := memory from usedBytes - from - eden.
 	runs := runs + 1.
