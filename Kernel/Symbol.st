@@ -131,6 +131,11 @@ Symbol >> basicHash [
 	^self hash
 ]
 
+{ #category : #accessing }
+Symbol >> basicSize [
+	^self _size - 1
+]
+
 { #category : #converting }
 Symbol >> capitalized [
 	^self asString capitalized
@@ -318,6 +323,11 @@ Symbol >> replaceFrom: start to: stop withObject: aCharacter [
 { #category : #copying }
 Symbol >> shallowCopy [
 	^self
+]
+
+{ #category : #accessing }
+Symbol >> size [
+	^self _size - 1
 ]
 
 { #category : #accessing }
