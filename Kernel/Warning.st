@@ -11,6 +11,6 @@ Class {
 
 { #category : #actions }
 Warning >> defaultAction [
-	SmalltalkSession current warnAbout: self description
+	Smalltalk session warnAbout: self description
 ]
 

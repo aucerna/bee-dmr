@@ -67,21 +67,6 @@ WideString class >> fromMemory: anExternalMemory length: anInteger [
 ]
 
 { #category : #'instance creation' }
-WideString class >> fromModule: aString id: anInteger [
-	| handle buffer result |
-	handle := ExternalLibrary open: aString.
-	buffer := 512 externalBytes.
-	result := UserLibrary
-		LoadStringW: handle
-		uID: anInteger
-		lpBuffer: buffer asParameter
-		nBufferMax: 256.
-	result = 0 ifTrue: [self winNotification].
-	handle close.
-	^result > 0 ifTrue: [buffer makeUnicode]
-]
-
-{ #category : #'instance creation' }
 WideString class >> fromMultiByte: aByteArray codePage: anInteger [
 	"
 	WideString fromMultiByte: #[16rFA] codePage: 1251
@@ -94,30 +79,6 @@ WideString class >> fromMultiByte: aByteArray codePage: anInteger [
 		size: aByteArray sizeInBytes.
 	bytes free.
 	^string
-]
-
-{ #category : #'instance creation' }
-WideString class >> fromMultiByteAddress: anExternalMemory codePage: anInteger size: length [
-	| characters buffer n utf16 |
-	characters := KernelLibrary
-		MultiByteToWideChar: anInteger
-		dwFlags: 0
-		lpMultiByteStr: anExternalMemory asParameter
-		cchMultiByte: length
-		lpWideCharStr: 0
-		cchWideChar: 0.
-	buffer := characters externalCharacters.
-	n := KernelLibrary
-		MultiByteToWideChar: anInteger
-		dwFlags: 0
-		lpMultiByteStr: anExternalMemory asParameter
-		cchMultiByte: length
-		lpWideCharStr: buffer asParameter
-		cchWideChar: characters.
-	characters = n ifFalse: [self error: 'Unicode translation failed'].
-	utf16 := self fromMemory: buffer length: n.
-	buffer free.
-	^utf16
 ]
 
 { #category : #'instance creation' }
