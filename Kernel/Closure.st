@@ -20,8 +20,8 @@ Class {
 { #category : #initialization }
 Closure class >> initializeIndexes [
 	Indexes := PoolDictionary newConstantPool
-		at: #ReceiverIndex put: 1;
-		at: #ParentEnvironmentIndex put: 2;
+		at: 'ReceiverIndex' put: 1;
+		at: 'ParentEnvironmentIndex' put: 2;
 		yourself
 ]
 
