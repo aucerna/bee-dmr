@@ -117,11 +117,6 @@ CharacterArray >> article [
 ]
 
 { #category : #converting }
-CharacterArray >> asDate [
-	^Date fromString: self
-]
-
-{ #category : #converting }
 CharacterArray >> asFloat [
 	^Float fromString: self
 ]
@@ -153,11 +148,6 @@ CharacterArray >> asNumber [
 { #category : #converting }
 CharacterArray >> asString [
 	^self
-]
-
-{ #category : #converting }
-CharacterArray >> asTime [
-	^Time fromString: self
 ]
 
 { #category : #converting }
