@@ -72,6 +72,8 @@ MethodDictionary >> flushCache [
 
 { #category : #private }
 MethodDictionary >> flushCache: aSymbol [
+	| class |
+	class := self isEmpty ifFalse: [self anyone classBinding].
 	GlobalDispatchCache current flush: aSymbol forSpecies: class.
 	SendSite flush: aSymbol
 ]
