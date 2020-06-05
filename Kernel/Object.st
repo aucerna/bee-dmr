@@ -799,14 +799,6 @@ Object >> postCopy [
 	
 ]
 
-{ #category : #unclassified }
-Object >> primitiveAt: i put: anObject [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
-	^self _isBytes
-		ifTrue: [self basicByteAt: i put: anObject]
-		ifFalse: [self basicObjectAt: i put: anObject]
-]
-
 { #category : #printing }
 Object >> printOn: aStream [
 	aStream nextPutAll: self class name withArticle

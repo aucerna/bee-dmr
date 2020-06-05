@@ -681,6 +681,14 @@ ProtoObject >> primitiveAt: i [
 		ifFalse: [self basicObjectAt: i]
 ]
 
+{ #category : #unclassified }
+ProtoObject >> primitiveAt: i put: anObject [
+	self _isSmallInteger ifTrue: [^self shouldNotImplement].
+	^self _isBytes
+		ifTrue: [self basicByteAt: i put: anObject]
+		ifFalse: [self basicObjectAt: i put: anObject]
+]
+
 { #category : #underprimitives }
 ProtoObject >> primitiveSize [
 	| size |
