@@ -7,7 +7,7 @@ Class {
 	#name : #Recursion,
 	#superclass : #Error,
 	#instVars : [
-		'#object'
+		'object'
 	],
 	#category : #Kernel
 }
