@@ -1,5 +1,6 @@
 "
     Copyright (c) 2020 Aucerna. 
+    Copyright (c) 2020 LabWare. 
     See (MIT) license in root directory.
 "
 
@@ -8,9 +9,9 @@ Class {
 	#superclass : #Object,
 	#type : #variable,
 	#instVars : [
-		'method',
 		'format',
-		'nativeCode'
+		'nativeCode',
+		'method'
 	],
 	#classVars : [
 		'Flags'
