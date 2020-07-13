@@ -6,6 +6,14 @@
 Class {
 	#name : #Thread,
 	#superclass : #Object,
+	#classVars : [
+		'tlsGlobalDispatchCacheIndex'
+	],
 	#category : #Kernel
 }
+
+{ #category : #accessing }
+Thread class >> currentGlobalLookup [
+	^tlsGlobalDispatchCacheIndex _getThreadValue
+]
 
