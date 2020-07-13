@@ -6,6 +6,16 @@
 Class {
 	#name : #Process,
 	#superclass : #Object,
+	#instVars : [
+		'hopping'
+	],
 	#category : #Kernel
 }
 
+{ #category : #private }
+Process >> wantsToStepInto [
+	| answer |
+	answer := hopping.
+	answer ifTrue: [hopping := false].
+	^answer
+]

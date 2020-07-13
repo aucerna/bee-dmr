@@ -210,7 +210,7 @@ ProtoObject >> _headerSizeInBytes [
 
 { #category : #underprimitives }
 ProtoObject >> _highHalf [
-	^self _oop bitShift: WordSize * 8 / -2
+	^self _oop bitShift: WordSize * 8 // -2
 ]
 
 { #category : #lookup }
@@ -264,11 +264,6 @@ ProtoObject >> _isSecondGeneration [
 { #category : #'header access' }
 ProtoObject >> _isSmall [
 	^(self _basicFlags bitAnd: IsSmall) = IsSmall
-]
-
-{ #category : #underprimitives }
-ProtoObject >> _isSmallInteger [
-	^false
 ]
 
 { #category : #'header access' }
