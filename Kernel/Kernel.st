@@ -7,13 +7,8 @@ Class {
 	#name : #Kernel,
 	#superclass : #Module,
 	#instVars : [
-		'entryPointCode',
-                'entryPointReceiver',
-		'nilObj',
-		'trueObj',
-		'falseObj',
-		'dlopenPtr',
-		'dlsymPtr'
+		'entrypointCode',
+		'entrypointReceiver'
 	],
 	#category : #Kernel
 }
