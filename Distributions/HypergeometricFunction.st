@@ -23,8 +23,7 @@ HypergeometricFunction class >> a: a b: b c: c [
 
 { #category : #bibliography }
 HypergeometricFunction class >> references [
-	ShellDLL current
-		openWebPage: 'http://www.efunda.com/math/hypergeometric/hypergeometric.cfm']
+	'http://www.efunda.com/math/hypergeometric/hypergeometric.cfm' asURL browse]
 
 { #category : #accessing }
 HypergeometricFunction >> a: aNumber [

@@ -28,8 +28,7 @@ BoxCoxTransformation class >> on: data [
 
 { #category : #bibliography }
 BoxCoxTransformation class >> references [
-	ShellDLL current
-		openWebPage: 'http://www.itl.nist.gov/div898/handbook/pmc/section5/pmc52.htm']
+	'http://www.itl.nist.gov/div898/handbook/pmc/section5/pmc52.htm' asURL browse]
 
 { #category : #computing }
 BoxCoxTransformation >> compute [

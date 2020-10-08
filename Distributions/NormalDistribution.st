@@ -65,8 +65,7 @@ valued: x2 [
 
 { #category : #bibliography }
 NormalDistribution class >> references [
-	^ShellDLL current
-		openWebPage: 'http://www.codeplanet.eu/files/download/accuratecumnorm.pdf']
+	'http://www.codeplanet.eu/files/download/accuratecumnorm.pdf' asURL browse]
 
 { #category : #examples }
 NormalDistribution class >> sampleInstance [

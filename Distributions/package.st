@@ -6,14 +6,14 @@
 Package { 
 	#name : #Distributions,
 	#requires : [
-		'extensions',
-		'Fml Expressions',
-		'JSON Support',
+		'Extensions',
+		'FML',
+		'JSON',
 		'NumericalMethods',
 		'SKernel',
-		'sunit',
-		'sunitvalidation',
-		'Utilities'
+		'SUnit',
+		'Utilities',
+		'Validations'
 	]
 	#classes : [
 		'ArrayStatisticsCalculator',

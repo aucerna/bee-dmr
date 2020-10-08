@@ -57,7 +57,7 @@ Histogram class >> on: sample numberOfBins: aNumber [
 
 { #category : #bibliography }
 Histogram class >> references [
-	ShellDLL current openWebPage: 'http://en.wikipedia.org/wiki/Histogram']
+	'http://en.wikipedia.org/wiki/Histogram' asURL browse]
 
 { #category : #validation }
 Histogram class >> validatorClass [

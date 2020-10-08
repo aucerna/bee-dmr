@@ -56,8 +56,7 @@ KernelDensityEstimator class >> quartic [
 
 { #category : #bibliography }
 KernelDensityEstimator class >> references [
-	ShellDLL current
-		openWebPage: 'http://en.wikipedia.org/wiki/Kernel_density_estimation']
+	'http://en.wikipedia.org/wiki/Kernel_density_estimation' asURL browse]
 
 { #category : #'instance creation' }
 KernelDensityEstimator class >> triangular [

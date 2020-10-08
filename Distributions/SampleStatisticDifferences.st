@@ -56,6 +56,10 @@ SampleStatisticDifferences >> data: aCollection [
 	diff data: aCollection.
 	self updateData]
 
+{ #category : #accessing }
+SampleStatisticDifferences >> dataAt: i [
+	^diff dataAt: i]
+
 { #category : #testing }
 SampleStatisticDifferences >> hasData [
 	^sample hasData]
