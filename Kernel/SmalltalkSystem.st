@@ -262,42 +262,19 @@ SmalltalkSystem >> includesKey: aSymbol [
 
 { #category : #initialization }
 SmalltalkSystem >> initialize [
-	globals := Dictionary new
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeEvents [
+	globals := Dictionary new.
+	finalizer := WeakIdentitySet new.
+	resources := WeakIdentitySet new.
+	properties := WeakIdentityDictionary new.
 	eventHandlers := WeakIdentityDictionary new.
-	registeredEvents := WeakIdentityDictionary new
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeExternals [
+	registeredEvents := WeakIdentityDictionary new.
 	externals := OrderedCollection new
 ]
 
 { #category : #initialization }
-SmalltalkSystem >> initializeFinalizer [
-	finalizer := WeakIdentitySet new finalizer: [:object | object finalize]
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeProperties [
-	properties := WeakIdentityDictionary new
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeResources [
-	resources := WeakIdentitySet new finalizer: [:object | object finalize]
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeWeakRegistries [
-	self
-		initializeFinalizer;
-		initializeResources;
-		initializeProperties;
-		initializeEvents
+SmalltalkSystem >> initializeFinalizationBlocks [
+	finalizer finalizer: [:object | object finalize].
+	resources finalizer: [:object | object finalize]
 ]
 
 { #category : #testing }
@@ -523,11 +500,14 @@ SmalltalkSystem >> showBacktraceOf: aProcess label: aString [
 
 { #category : #'startup/shutdown' }
 SmalltalkSystem >> startUp [
-	self transcript initialize.
-	resources isNil ifTrue: [self initializeWeakRegistries] ifFalse: [
-		self ephemeronsDo: [:e | e activate].
-		resources do: [:object | object sessionStartup]].
-	self initializeExternals
+	self
+		initializeFinalizationBlocks;
+		ephemeronsDo: [:e | e activate].
+	resources do: [:object | object sessionStartup].
+	Float startUp.
+	memory startUp.
+	"platform startUp."
+	session := SmalltalkSession new startUp
 ]
 
 { #category : #accessing }

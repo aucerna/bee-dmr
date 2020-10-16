@@ -589,7 +589,8 @@ Memory >> spaces [
 
 { #category : #initialization }
 Memory >> startUp [
-	self createSpaces; initializeCollector; createPinnedSpace
+	self createSpaces; initializeCollector; createPinnedSpace.
+	CRITICAL := false.
 ]
 
 { #category : #services }

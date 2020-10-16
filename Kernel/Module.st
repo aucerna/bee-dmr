@@ -9,9 +9,8 @@ Class {
 	#instVars : [
 		'name',
 		'version',
-		'classes',
+		'exports',
 		'hash',
-		'signature',
 		'loadAction'
 	],
 	#category : #Kernel

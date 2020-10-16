@@ -7,12 +7,14 @@ Class {
 	#name : #Kernel,
 	#superclass : #Module,
 	#instVars : [
-		'entrypointCode',
-		'entrypointReceiver'
+		'runtime'
 	],
 	#category : #Kernel
 }
 
 Kernel >> entry: argc argv: argv [
-	self halt.
+	<callback: long (long, pointer)>
+	"^Smalltalk startSession"
+	^1
 ]
+

@@ -462,7 +462,7 @@ ProtoObject >> behavior: aBehavior [
 	^self _isSmallInteger
 		ifTrue: [self error: 'can''t change behavior of a small integer']
 		ifFalse: [
-			aBehavior holdRefererIfNeeded: self.
+			aBehavior _holdRefererIfNeeded: self.
 			self _basicULongAt: 0 put: aBehavior]
 ]
 
@@ -644,7 +644,7 @@ ProtoObject >> objectAtValid: index [
 
 { #category : #private }
 ProtoObject >> objectAtValid: index put: anObject [
-	anObject holdRefererIfNeeded: self.
+	anObject _holdRefererIfNeeded: self.
 	^self _basicAt: index put: anObject
 ]
 

@@ -7,6 +7,8 @@ Class {
 	#name : #Process,
 	#superclass : #Object,
 	#instVars : [
+		'stack',
+		'name',
 		'hopping'
 	],
 	#category : #Kernel
@@ -19,3 +21,4 @@ Process >> wantsToStepInto [
 	answer ifTrue: [hopping := false].
 	^answer
 ]
+
