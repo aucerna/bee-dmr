@@ -45,7 +45,7 @@ SendSite class >> allocateCaches: amount using: lookupInstructions [
 ]
 
 { #category : #initialization }
-SendSite class >> allocateInitialCachesUsing: lookupInstructions [
+SendSite class >> initializeCachesWith: lookupInstructions [
 	self allocateCaches: 3000 using: lookupInstructions
 ]
 
@@ -123,11 +123,21 @@ SendSite class >> mics [
 ]
 
 { #category : #initialization }
+SendSite class >> monomorphicCache: instructions [
+	MonomorphicStub := instructions
+]
+
+{ #category : #initialization }
 SendSite class >> newPICUsing: lookupInstructions [
 	| new |
 	new := Array new: 15.
 	new at: 15 put: lookupInstructions.
 	^new
+]
+
+{ #category : #initialization }
+SendSite class >> polymorphicCache: instructions [
+	PolymorphicStub := instructions
 ]
 
 { #category : #private }
@@ -216,17 +226,12 @@ SendSite >> _dispatchOn: anObject startingAt: aBehavior [
 
 { #category : #'meta accessing' }
 SendSite >> _invokeOn: anObject [
-	| cm code |
 	#savePreviousSelf.
 	#specialABIBegin.
 	#anObject -> #regR.
 	#self -> #regA.
 	#specialABIEnd.
-	cm := cache.
-	code := cm nativeCode code.
-	instructions := code.
-	instructions holdRefererIfNeeded: self.
-	^anObject _transferControlTo: code
+	^anObject _transferControlTo: cache nativeCode
 ]
 
 { #category : #private }
@@ -347,21 +352,16 @@ SendSite >> maxSize [
 
 { #category : #private }
 SendSite >> monomorphicMap: aBehavior to: code [
-	instructions := self monomorphicStub.
+	instructions := MonomorphicStub.
 	cache := self takeNextFreeMIC.
 	cache objectAtValid: 1 put: aBehavior.
 	cache objectAtValid: 2 put: code
 ]
 
 { #category : #private }
-SendSite >> monomorphicStub [
-	^MonomorphicStub code
-]
-
-{ #category : #private }
 SendSite >> polymorphicMap: aBehavior to: code [
 	cache _size == 2 ifTrue: [
-		instructions := self polymorphicStub.
+		instructions := PolymorphicStub.
 		cache := self takeNextFreePIC.
 		self bePolymorphic].
 	aBehavior == SmallInteger instanceBehavior
@@ -372,11 +372,6 @@ SendSite >> polymorphicMap: aBehavior to: code [
 				objectAtValid: tally + 1 put: aBehavior;
 				objectAtValid: tally + 2 put: code.
 			tally := tally + 2]
-]
-
-{ #category : #private }
-SendSite >> polymorphicStub [
-	^PolymorphicStub code
 ]
 
 { #category : #printing }
@@ -423,9 +418,9 @@ SendSite >> printPolymorphicTypeOn: aStream [
 { #category : #printing }
 SendSite >> printTypeOn: aStream [
 	cache isCompiledMethod ifTrue: [^self printInvokeTypeOn: aStream].
-	instructions == MonomorphicStub code
+	instructions == MonomorphicStub
 		ifTrue: [^self printMonomorphicTypeOn: aStream].
-	instructions == PolymorphicStub code
+	instructions == PolymorphicStub
 		ifTrue: [^self printPolymorphicTypeOn: aStream].
 	instructions == (Smalltalk at: #Lookup ifAbsent: [''])
 		ifTrue: [^aStream nextPutAll: 'lookup'].

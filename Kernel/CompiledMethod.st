@@ -334,9 +334,6 @@ CompiledMethod >> postCopy [
 { #category : #unclassified }
 CompiledMethod >> prepareForExecution [
 	self isNativized ifFalse: [self nativize].
-	nativeCode isFresh ifFalse: [
-		nativeCode acquireReferences.
-		self refreshBlocks]
 ]
 
 { #category : #accessing }
@@ -350,15 +347,6 @@ CompiledMethod >> printOn: aStream [
 		print: class;
 		nextPutAll: '>>';
 		print: selector
-]
-
-{ #category : #unclassified }
-CompiledMethod >> refreshBlocks [
-	| blocks |
-	blocks := self blocks.
-	1 to: blocks size do: [:index | | block |
-		block := blocks at: index.
-		block nativeCode refresh]
 ]
 
 { #category : #accessing }
