@@ -32,13 +32,13 @@ CompiledMethod class >> initializeFormatFlags [
 	Flags := PoolDictionary newConstantPool.
 	Flags
 		at: 'ArgCount' put: (1 thru: 6);
-		at: 'BlockCount' put: (7 thru: 17);
-		at: 'TempCount' put: (18 thru: 28);
-		at: 'TypeField' put: (29 thru: 31);
-		at: 'EnvCount' put: (32 thru: 42);
-		at: 'Debuggable' put: (1 bitShift: 28);
-		at: 'DMR' put: (1 bitShift: 29);
-		at: 'HasBlock' put: (1 bitShift: 30)
+		at: 'BlockCount' put: (7 thru: 13);
+		at: 'TempCount' put: (14 thru: 21);
+		at: 'CapturesSelf' put: (1 bitShift: 22 - 1);
+		at: 'HasEnvironment' put: (1 bitShift: 23 - 1);
+		at: 'HasFrame' put: (1 bitShift: 24 - 1);
+		at: 'Debuggable' put: (1 bitShift: 25 - 1);
+		at: 'EnvCount' put: (26 thru: 31)
 ]
 
 { #category : #initialization }
@@ -98,18 +98,12 @@ CompiledMethod >> asOverridden [
 ]
 
 { #category : #accessing }
-CompiledMethod >> beDMRVersion [
-	format := format bitOr: DMR
-]
-
-{ #category : #accessing }
 CompiledMethod >> blockCount [
 	^format bitsAt: BlockCount
 ]
 
 { #category : #accessing }
 CompiledMethod >> blockCount: anInteger [
-	anInteger > 0 ifTrue: [format := format bitOr: HasBlock].
 	format := format bitsAt: BlockCount put: anInteger
 ]
 
@@ -154,11 +148,6 @@ CompiledMethod >> classBinding: aClass [
 { #category : #queries }
 CompiledMethod >> currentVersion [
 	^class compiledMethodAt: selector
-]
-
-{ #category : #private }
-CompiledMethod >> dmrVersion [
-	^nil
 ]
 
 { #category : #accessing }
@@ -246,11 +235,6 @@ CompiledMethod >> isCurrentVersion [
 { #category : #testing }
 CompiledMethod >> isDebuggable [
 	^format isOnBit: Debuggable
-]
-
-{ #category : #accessing }
-CompiledMethod >> isDMRVersion [
-	^format isOnBit: DMR
 ]
 
 { #category : #accessing }
@@ -390,20 +374,6 @@ CompiledMethod >> timestamp [
 	| s |
 	s := self sourceReference.
 	^(s respondsTo: #timestamp) ifTrue: [s timestamp]
-]
-
-{ #category : #accessing }
-CompiledMethod >> type [
-	self ASSERT: false.
-	^format bitsAt: TypeField
-]
-
-{ #category : #accessing }
-CompiledMethod >> type: anInteger [
-	self ASSERT: false.
-	format := format bitsAt: TypeField put: anInteger.
-	anInteger > 3
-		ifTrue: [format := (format negated bitAnd: 16r7FFFFFFF) negated]
 ]
 
 { #category : #accessing }
