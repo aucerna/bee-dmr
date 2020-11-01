@@ -137,14 +137,14 @@ Closure >> evaluateFor: anObject [
 { #category : #handling }
 Closure >> evaluateWith: value [
 	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> evaluateWith: anObject with: anotherObject [
 	block argumentCount = 2
 		ifFalse: [^super evaluateWith: anObject with: anotherObject].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #evaluating }
@@ -335,25 +335,25 @@ Closure >> templateIndex [
 { #category : #handling }
 Closure >> value [
 	block argumentCount = 0 ifFalse: [^self arityError: 0].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: value [
 	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second [
 	block argumentCount = 2 ifFalse: [^self arityError: 2].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second value: third [
 	block argumentCount = 3 ifFalse: [^self arityError: 3].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #evaluating }
@@ -375,7 +375,7 @@ Closure >> valueWithArguments: arguments [
 	size := arguments basicSize.
 	block argumentCount = size ifFalse: [^self arityError: size].
 	arguments _expandInStackSized: size.
-	^self _invoke: block blockCode
+	^self _invoke: block blockNativeCode
 ]
 
 { #category : #handling }

@@ -284,10 +284,10 @@ ProtoObject >> _lookup: aSymbol [
 { #category : #lookup }
 ProtoObject >> _lookup: aSymbol in: behavior [
 	| methods cm next |
-	methods := behavior _basicAt: 1.
+	methods := behavior _basicAt: 2.
 	cm := self _lookup: aSymbol inDictionary: methods.
 	cm == nil ifFalse: [^cm].
-	next := behavior _basicAt: 2.
+	next := behavior _basicAt: 3.
 	^next == nil ifFalse: [self _lookup: aSymbol in: next]
 ]
 

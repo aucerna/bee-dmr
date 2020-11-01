@@ -20,6 +20,21 @@ NativeCode class >> aspects [
 ]
 
 { #category : #accessing }
+NativeCode >> block [
+	^compiledCode
+]
+
+{ #category : #accessing }
+NativeCode >> block: aCompiledBlock [
+	compiledCode := aCompiledBlock
+]
+
+{ #category : #accessing }
+NativeCode >> bytes [
+	^machineCode
+]
+
+{ #category : #accessing }
 NativeCode >> code [
 	^machineCode
 ]
@@ -29,9 +44,14 @@ NativeCode >> code: bytes [
 	machineCode := bytes
 ]
 
-{ #category : #private }
-NativeCode >> decodedReferences [
-	^self asArray
+{ #category : #accessing }
+NativeCode >> compiledCode [
+	^compiledCode
+]
+
+{ #category : #accessing }
+NativeCode >> compiledCode: anObject [
+	compiledCode := anObject
 ]
 
 { #category : #accessing }
@@ -55,28 +75,18 @@ NativeCode >> isNativeCode [
 ]
 
 { #category : #accessing }
+NativeCode >> method [
+	^compiledCode
+]
+
+{ #category : #accessing }
+NativeCode >> method: aCompiledMethod [
+	compiledCode := aCompiledMethod
+]
+
+{ #category : #accessing }
 NativeCode >> nativeCodeAddress [
 	^machineCode _oop
-]
-
-{ #category : #accessing }
-NativeCode >> objectAtOffset: offset put: position [
-	^machineCode _objectAtOffset: offset put: position
-]
-
-{ #category : #accessing }
-NativeCode >> pointerAtOffset: offset put: position [
-	machineCode pointerAtOffset: offset put: position
-]
-
-{ #category : #accessing }
-NativeCode >> referencedObjects [
-	^self asArray
-]
-
-{ #category : #services }
-NativeCode >> registerSendSites [
-	self do: [:o | o class == SendSite ifTrue: [o register]]
 ]
 
 { #category : #private }

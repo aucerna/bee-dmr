@@ -112,6 +112,15 @@ CompiledBlock >> blockCode [
 ]
 
 { #category : #accessing }
+CompiledBlock >> blockNativeCode [
+	"
+	required to let the optimizing compiler inline this code
+	without confusing with CompiledMethod>>#nativeCode
+	"
+	^nativeCode
+]
+
+{ #category : #accessing }
 CompiledBlock >> blockNumber [
 	^format bitsAt: Id
 ]
@@ -200,6 +209,7 @@ CompiledBlock >> nativeCode [
 
 { #category : #comparing }
 CompiledBlock >> nativeCode: code [
+	code block: self.
 	nativeCode := code
 ]
 

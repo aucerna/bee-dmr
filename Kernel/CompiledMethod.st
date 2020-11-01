@@ -290,6 +290,7 @@ CompiledMethod >> nativeCode [
 
 { #category : #accessing }
 CompiledMethod >> nativeCode: code [
+	code method: self.
 	nativeCode := code
 ]
 
