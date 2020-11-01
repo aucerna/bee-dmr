@@ -130,6 +130,7 @@ SmalltalkSystem >> bootstrapInitialize [
 	LargeInteger initializeBase.
 	LargeNegativeInteger initializeConstants.
 	SmallInteger initializeConstants.
+	GlobalDispatchCache initialize.
 	StarToken initializeCurrent.
 	Unicode allSubclasses do: [:c | c initializeCurrent]
 ]
@@ -507,7 +508,7 @@ SmalltalkSystem >> startUp [
 	Float startUp.
 	memory startUp.
 	"platform startUp."
-	session := SmalltalkSession new startUp
+	session := SmalltalkSession new
 ]
 
 { #category : #accessing }
