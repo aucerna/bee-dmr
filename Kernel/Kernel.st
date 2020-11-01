@@ -15,6 +15,6 @@ Class {
 Kernel >> entry: argc argv: argv [
 	<callback: long (long, pointer)>
 	"^Smalltalk startSession"
-	^1
+	^1 yourself
 ]
 
