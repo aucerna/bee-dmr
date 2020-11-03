@@ -132,7 +132,9 @@ SmalltalkSystem >> bootstrapInitialize [
 	SmallInteger initializeConstants.
 	GlobalDispatchCache initialize.
 	StarToken initializeCurrent.
-	Unicode allSubclasses do: [:c | c initializeCurrent]
+	Unicode allSubclasses do: [:c | c initializeCurrent].
+	self initializeDMRMemory.
+
 ]
 
 { #category : #testing }
@@ -269,7 +271,20 @@ SmalltalkSystem >> initialize [
 	properties := WeakIdentityDictionary new.
 	eventHandlers := WeakIdentityDictionary new.
 	registeredEvents := WeakIdentityDictionary new.
-	externals := OrderedCollection new
+	externals := OrderedCollection new.	
+]
+
+{ #category : #initialization }
+SmalltalkSystem >> initializeDMRMemory [
+	| kernel rs |
+	kernel := GCSpace new.
+	rs := CriticalArray on: (Array new: 16 * 1024).
+	memory := Memory new
+		addSpace: kernel;
+		fromSpace: kernel;
+		eden: kernel;
+		rememberedSet: rs.
+	Memory current: memory
 ]
 
 { #category : #initialization }

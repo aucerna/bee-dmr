@@ -108,7 +108,7 @@ SendSite class >> instances [
 
 { #category : #initialization }
 SendSite class >> initializeInvoke: aNativeCode [
-	Invoke := aNativeCode
+	Invoke := aNativeCode code
 ]
 
 { #category : #private }

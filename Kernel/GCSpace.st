@@ -8,11 +8,11 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'base',
-		'commitedLimit',
 		'nextFree',
-		'reservedLimit',
 		'softLimit',
-		'prev',
+		'commitedLimit',
+		'reservedLimit',
+		'prevBase',
 		'mutex'
 	],
 	#category : #Kernel
@@ -386,13 +386,13 @@ GCSpace >> percentageOfReservedUsed [
 ]
 
 { #category : #accessing }
-GCSpace >> prevAddress [
-	^prev
+GCSpace >> prevBase [
+	^prevBase
 ]
 
 { #category : #accessing }
-GCSpace >> prevAddress: address [
-	prev := address
+GCSpace >> prevBase: anInteger [
+	prevBase := anInteger
 ]
 
 { #category : #actions }
