@@ -19,6 +19,11 @@ StackFrameCursor class >> at: position [
 ]
 
 { #category : #'instance creation' }
+StackFrameCursor class >> caller [
+	^self at: (self _framePointer _basicAt: 1) _asPointer
+]
+
+{ #category : #'instance creation' }
 StackFrameCursor class >> classFor: aStackWrapper [
 	^aStackWrapper isNative
 		ifTrue: [StackFrameCursor]
@@ -32,7 +37,7 @@ StackFrameCursor class >> on: aStackWrapper [
 	^class new current: aStackWrapper lastFrame previous: aStackWrapper top
 ]
 
-{ #category : #'accessing instances' }
+{ #category : #'instance creation' }
 StackFrameCursor class >> top [
 	^self at: self _framePointer _asPointer
 ]

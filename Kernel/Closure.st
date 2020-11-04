@@ -28,7 +28,7 @@ Closure class >> initializeIndexes [
 { #category : #gs }
 Closure class >> newFrom: aBlock [
 	| size closure |
-	size := aBlock size + self instSize.
+	size := aBlock environmentCount + self instSize.
 	closure := self allocate: size * WordSize size: size.
 	closure _beNamed; _beArrayed.
 	self nil: size slotsOf: closure.
@@ -311,6 +311,11 @@ Closure >> repeatUntil: aBlock [
 	[
 		self value.
 		aBlock value] whileFalse
+]
+
+{ #category : #services }
+Closure >> saveHomeFrame [
+	homeFrame := StackFrameCursor caller
 ]
 
 { #category : #handling }

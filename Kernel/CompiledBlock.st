@@ -45,11 +45,12 @@ CompiledBlock class >> initializeFormatFlags [
 	self class compileAll
 	"
 	Flags := PoolDictionary newConstantPool
-		at: 'ArgCount' put: (1 thru: 8);
-		at: 'TempCount' put: (9 thru: 16);
-		at: 'Id' put: (17 thru: 24);
-		at: 'CapturesSelf' put: (1 bitShift: 25 - 1);
-		at: 'EnvCount' put: (26 thru: 31);
+		at: 'ArgCount' put: (1 thru: 6);
+		at: 'TempCount' put: (7 thru: 14);
+		at: 'Id' put: (15 thru: 22);
+		at: 'CapturesSelf' put: (1 bitShift: 23 - 1);
+		at: 'CapturesHome' put: (1 bitShift: 24 - 1);
+		at: 'EnvCount' put: (25 thru: 31);
 		yourself.
 ]
 
@@ -128,6 +129,11 @@ CompiledBlock >> blockNumber [
 { #category : #accessing }
 CompiledBlock >> blockNumber: anInteger [
 	format := format bitsAt: Id put: anInteger
+]
+
+{ #category : #accessing }
+CompiledBlock >> environmentCount [
+	^format bitsAt: EnvCount
 ]
 
 { #category : #accessing }
@@ -211,6 +217,11 @@ CompiledBlock >> nativeCode [
 CompiledBlock >> nativeCode: code [
 	code block: self.
 	nativeCode := code
+]
+
+{ #category : #services }
+CompiledBlock >> newClosure [
+	^Closure newFrom: self
 ]
 
 { #category : #comparing }

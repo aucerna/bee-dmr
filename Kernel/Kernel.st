@@ -15,6 +15,14 @@ Class {
 Kernel >> entry: argc argv: argv [
 	<callback: long (long, pointer)>
 	"^Smalltalk startSession"
-	^1 yourself
+	^Kernel new foo.
+
+]
+
+Kernel >> foo [
+	| result |
+	"self _halt."
+	#(1 2 3 4 5) do: [:i | result := i].
+	^result
 ]
 

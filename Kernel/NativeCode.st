@@ -89,6 +89,11 @@ NativeCode >> nativeCodeAddress [
 	^machineCode _oop
 ]
 
+{ #category : #services }
+NativeCode >> newEnvironment: anInteger [
+	^Array new: anInteger
+]
+
 { #category : #private }
 NativeCode >> sendSites [
 	^self select: [:obj | obj class == SendSite]
