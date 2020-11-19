@@ -82,7 +82,7 @@ Species >> allExistingInstances [
 { #category : #instances }
 Species >> allInstances [
 	^[
-		GC forceCompact.
+		Smalltalk collectGarbage.
 		self allExistingInstances] evaluateAtomically
 ]
 
@@ -125,7 +125,7 @@ Species >> allSubinstances [
 	| subinstances |
 	subinstances := OrderedCollection new.
 	[
-		GC forceCompact.
+		Smalltalk collectGarbage.
 		self
 			withAllSubclassesDo: [:cls | subinstances
 				addAll: cls allExistingInstances]]
