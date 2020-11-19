@@ -113,30 +113,6 @@ SmalltalkSystem >> bindEventTable: aDictionary to: anObject [
 		ifFalse: [eventHandlers at: anObject put: aDictionary]
 ]
 
-{ #category : #initializing }
-SmalltalkSystem >> bootstrapInitialize [
-	CompiledBlock initializeFormatFlags.
-	CompiledMethod initializeFormatFlags.
-	SendSite initializeFormatFlags.
-	Species initializeFormatFlags.
-	ProtoObject initializeConstants; initializeBitMasks.
-	Character initializeCharacters; initializeCharacterConstants.
-	Closure initializeIndexes.
-	ExternalMemory initializeConstants.
-	Float initializeConstants.
-	HashTable initializeConstants; initializeSizes.
-	HashTablePolicy initializeEmptySlot.
-	HashedCollection initializePolicies.
-	LargeInteger initializeBase.
-	LargeNegativeInteger initializeConstants.
-	SmallInteger initializeConstants.
-	GlobalDispatchCache initialize.
-	StarToken initializeCurrent.
-	Unicode allSubclasses do: [:c | c initializeCurrent].
-	self initializeDMRMemory.
-
-]
-
 { #category : #testing }
 SmalltalkSystem >> canOpenBacktrace [
 	^true
@@ -231,6 +207,11 @@ SmalltalkSystem >> globals [
 ]
 
 { #category : #accessing }
+SmalltalkSystem >> globals: aNamespace [
+	globals := aNamespace
+]
+
+{ #category : #accessing }
 SmalltalkSystem >> hasDebugger [
 	^false
 ]
@@ -265,13 +246,13 @@ SmalltalkSystem >> includesKey: aSymbol [
 
 { #category : #initialization }
 SmalltalkSystem >> initialize [
-	globals := Dictionary new.
 	finalizer := WeakIdentitySet new.
 	resources := WeakIdentitySet new.
 	properties := WeakIdentityDictionary new.
 	eventHandlers := WeakIdentityDictionary new.
 	registeredEvents := WeakIdentityDictionary new.
 	externals := OrderedCollection new.	
+	self initializeDMRMemory
 ]
 
 { #category : #initialization }

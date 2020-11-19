@@ -9,6 +9,7 @@ Class {
 	#instVars : [
 		'name',
 		'version',
+		'imports',
 		'exports',
 		'hash',
 		'loadAction'
