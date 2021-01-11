@@ -7,7 +7,7 @@ Package {
 	#name : #Specs,
 	#requires : [
 		'scompiler',
-		'SKernel'
+		'Kernel'
 	]
 	#classes : [
 		'ClassSpec',

@@ -10,9 +10,9 @@ Package {
 		'Extensions',
 		'GUIbase',
 		'PetitParser',
-		'SKernel',
+		'Kernel',
 		'SUnit',
-		'SUnitValidation'
+		'Validations'
 	]
 	#classes : [
 		'BooleanAdaptor',

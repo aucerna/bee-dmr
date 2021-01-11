@@ -7,7 +7,7 @@ Package {
 	#name : #Units,
 	#requires : [
 		'JSON',
-		'SKernel',
+		'Kernel',
 		'Utilities'
 	]
 	#classes : [

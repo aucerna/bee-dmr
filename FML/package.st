@@ -12,7 +12,7 @@ Package {
 		'JSON',
 		'NumericalMethods',
 		'RTF',
-		'SKernel',
+		'Kernel',
 		'Units',
 		'Utilities'
 	]

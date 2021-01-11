@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'CSS',
 		'GUIbase',
-		'SKernel'
+		'Kernel'
 	]
 	#classes : [
 		'Html401Frameset',

@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'CSS',
 		'HTML',
-		'SKernel',
+		'Kernel',
 		'SUnit'
 	]
 	#classes : [

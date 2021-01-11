@@ -6,7 +6,7 @@
 Package { 
 	#name : #CurvesFitting,
 	#requires : [
-		'SKernel',
+		'Kernel',
 		'Utilities'
 	]
 	#classes : [

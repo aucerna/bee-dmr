@@ -10,7 +10,7 @@ Package {
 		'GUIbase',
 		'JSON',
 		'Scompiler',
-		'SKernel',
+		'Kernel',
 		'SUnit'
 	]
 	#classes : [

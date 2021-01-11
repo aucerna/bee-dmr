@@ -11,7 +11,7 @@ Package {
 		'NumericalMethods',
 		'ObjectDumper',
 		'SCompiler',
-		'SKernel',
+		'Kernel',
 		'SUnit',
 		'Utilities'
 	]

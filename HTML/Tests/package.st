@@ -7,7 +7,7 @@ Package {
 	#name : #'HTML\Tests',
 	#requires : [
 		'HTML',
-		'SKernel',
+		'Kernel',
 		'SUnit'
 	]
 	#classes : [

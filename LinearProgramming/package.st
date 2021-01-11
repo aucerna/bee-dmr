@@ -6,7 +6,7 @@
 Package { 
 	#name : #LinearProgramming,
 	#requires : [
-		'SKernel',
+		'Kernel',
 		'Utilities'
 	]
 	#classes : [

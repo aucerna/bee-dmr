@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'Compiler',
 		'JavaScript',
-		'SKernel',
+		'Kernel',
 		'SUnit'
 	]
 	#classes : [

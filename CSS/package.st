@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'GUIbase',
 		'HTML',
-		'SKernel'
+		'Kernel'
 	]
 	#classes : [
 		'CssAbsoluteSizeValue',

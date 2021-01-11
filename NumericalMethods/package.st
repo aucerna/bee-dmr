@@ -8,9 +8,9 @@ Package {
 	#requires : [
 		'Extensions',
 		'Distributions',
-		'SKernel',
+		'Kernel',
 		'SUnit',
-		'SUnitvalidation',
+		'Validations',
 		'Utilities'
 	]
 	#classes : [

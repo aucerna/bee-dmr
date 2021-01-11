@@ -10,7 +10,7 @@ Package {
 		'PetitParser',
 		'PetitParser\Parsers',
 		'PetitParser\Tools',
-		'SKernel'
+		'Kernel'
 	]
 	#classes : [
 		'JSEAbstractParser',

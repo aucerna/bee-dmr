@@ -10,7 +10,7 @@ Package {
 		'FML',
 		'JSON',
 		'NumericalMethods',
-		'SKernel',
+		'Kernel',
 		'SUnit',
 		'Utilities',
 		'Validations'

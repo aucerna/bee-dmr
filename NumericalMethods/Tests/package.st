@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'NumericalMethods',
 		'Distributions',
-		'SKernel',
+		'Kernel',
 		'SUnit',
 		'Utilities'
 	]
