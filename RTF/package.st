@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'GUIbase',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'CHARSETINFO',
 		'FONTSIGNATURE',

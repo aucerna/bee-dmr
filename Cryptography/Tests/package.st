@@ -9,7 +9,7 @@ Package {
 		'Cryptography',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'Base64EncodingTest',
 		'BcryptDLLTest',

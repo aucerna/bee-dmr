@@ -10,7 +10,7 @@ Package {
 		'Kernel',
 		'SUnit',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'ADDRINFOW',
 		'CredHandle',

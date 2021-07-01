@@ -9,7 +9,7 @@ Package {
 		'HTTP',
 		'Kernel',
 		'Sockets'
-	]
+	],
 	#classes : [
 		'BeeHttpServer',
 		'CustomLogging',

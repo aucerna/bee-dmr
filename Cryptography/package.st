@@ -10,7 +10,7 @@ Package {
 		'SUnit',
 		'Validations',
 		'Windows Registry'
-	]
+	],
 	#classes : [
 		'BCRYPT_KEY_DATA_BLOB_HEADER',
 		'BcryptDLL',

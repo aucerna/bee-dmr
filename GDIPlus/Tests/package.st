@@ -11,7 +11,7 @@ Package {
 		'GUIbase',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'GDIPlusDrawerTest',
 		'GDIPlusTest'

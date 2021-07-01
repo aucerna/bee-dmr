@@ -5,13 +5,13 @@
 
 Package {
 	#name : #Tonel, 
-	#requires : OrderedCollection [
+	#requires : [
 		'Compiler', 
 		'Kernel', 
 		'STON', 
 		'SUnit'
 	], 
-	#classes : OrderedCollection [
+	#classes : [
 		'TonelReader', 
 		'TonelTest', 
 		'TonelWriter'

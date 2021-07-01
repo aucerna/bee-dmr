@@ -13,7 +13,7 @@ Package {
 		'Kernel',
 		'SUnit',
 		'Validations'
-	]
+	],
 	#classes : [
 		'BooleanAdaptor',
 		'DataAdaptor',

@@ -14,7 +14,7 @@ Package {
 		'SUnit',
 		'Utilities',
 		'Validations'
-	]
+	],
 	#classes : [
 		'ArrayStatisticsCalculator',
 		'BernoulliCalculator',

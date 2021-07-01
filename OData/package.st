@@ -10,7 +10,7 @@ Package {
 		'Kernel',
 		'PetitParser\Parsers',
 		'PetitParser\Tools'
-	]
+	],
 	#classes : [
 		'DataflowQuery',
 		'ODataBinaryExpression',

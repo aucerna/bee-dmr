@@ -11,7 +11,7 @@ Package {
 		'PetitParser\Parsers',
 		'PetitParser\Tools',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'JSEAbstractParser',
 		'JSEArrayNode',

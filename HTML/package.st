@@ -9,7 +9,7 @@ Package {
 		'CSS',
 		'GUIbase',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'Html401Frameset',
 		'Html401Strict',

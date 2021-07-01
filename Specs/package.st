@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'scompiler',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'ClassSpec',
 		'MetaclassSpec',

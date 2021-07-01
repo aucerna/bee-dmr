@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'ProjectChanges',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'ChangeHeaderSpecTest',
 		'ChangesetTest',

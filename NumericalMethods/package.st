@@ -12,7 +12,7 @@ Package {
 		'SUnit',
 		'Validations',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'AnnealingAlgorithm',
 		'AnnealingCorrelationSolver',

@@ -12,7 +12,7 @@ Package {
 		'PetitParser\Parsers',
 		'PetitParser\Tools',
 		'Sockets'
-	]
+	],
 	#classes : [
 		'HttpBasicAuthenticator',
 		'HttpConfiguration',

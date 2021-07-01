@@ -11,7 +11,7 @@ Package {
 		'SKernel',
 		'SUnit',
 		'WindowsSystem'
-	]
+	],
 	#classes : [
 		'ARGBColor',
 		'Bitmap',

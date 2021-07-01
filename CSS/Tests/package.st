@@ -10,7 +10,7 @@ Package {
 		'HTML',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'CssCompilingTest',
 		'CssParsingTest'

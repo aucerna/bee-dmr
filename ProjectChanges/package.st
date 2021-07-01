@@ -15,7 +15,7 @@ Package {
 		'Smalltalk Browsers',
 		'SourceCodeQA',
 		'WindowsSystem'
-	]
+	],
 	#classes : [
 		'ActionDefinition',
 		'BeeProjectDefinition',

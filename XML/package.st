@@ -11,7 +11,7 @@ Package {
 		'PetitParser',
 		'PetitParser\Parsers',
 		'PetitParser\Tools'
-	]
+	],
 	#classes : [
 		'PPXmlAttribute',
 		'PPXmlComment',

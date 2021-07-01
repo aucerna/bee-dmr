@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'ExampleSetTest',
 		'ResumableTestFailureTestCase',

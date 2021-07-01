@@ -14,7 +14,7 @@ Package {
 		'Kernel',
 		'SUnit',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'BernoulliCalculatorTest',
 		'BetaDistributionFinderTest',

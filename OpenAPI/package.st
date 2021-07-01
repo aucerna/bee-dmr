@@ -11,7 +11,7 @@ Package {
 		'JSON',
 		'Kernel',
 		'WebApplications'
-	]
+	],
 	#classes : [
 		'OpenAPI.Callback',
 		'OpenAPI.Components',

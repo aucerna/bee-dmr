@@ -14,7 +14,7 @@ Package {
 		'JSON',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'HttpClientTest',
 		'HttpConfigurationTest',

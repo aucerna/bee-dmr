@@ -9,7 +9,7 @@ Package {
 		'GUIbase',
 		'Kernel',
 		'RTF'
-	]
+	],
 	#classes : [
 		'GenericTestException',
 		'SUnitNameResolver',

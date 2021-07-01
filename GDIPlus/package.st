@@ -10,7 +10,7 @@ Package {
 		'GUIbase',
 		'Kernel',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'ARGB',
 		'BitmapData',

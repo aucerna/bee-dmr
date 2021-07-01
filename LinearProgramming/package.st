@@ -8,7 +8,7 @@ Package {
 	#requires : [
 		'Kernel',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'LinearAllocator',
 		'SimplexAlgorithm'

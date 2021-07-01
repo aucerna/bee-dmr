@@ -9,7 +9,7 @@ Package {
 		'GUIbase',
 		'HTML',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'CssAbsoluteSizeValue',
 		'CssActiveSelector',

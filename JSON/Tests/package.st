@@ -12,7 +12,7 @@ Package {
 		'Scompiler',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'JsonMappingTest',
 		'JsonParserTest',

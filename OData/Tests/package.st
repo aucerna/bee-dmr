@@ -9,7 +9,7 @@ Package {
 		'Kernel',
 		'OData',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'ODataQueryTest',
 		'ODataURLParserTest'

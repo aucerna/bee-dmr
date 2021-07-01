@@ -15,7 +15,7 @@ Package {
 		'Kernel',
 		'Units',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'CompiledTableFunction',
 		'CompiledTableInterpolate',

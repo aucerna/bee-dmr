@@ -9,7 +9,7 @@ Package {
 		'HTML',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'HtmlCompilingTest',
 		'HtmlParsingTest'

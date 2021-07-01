@@ -11,7 +11,7 @@ Package {
 		'Kernel',
 		'RTF',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'RtfTest',
 		'RtfTextExtractorTest'

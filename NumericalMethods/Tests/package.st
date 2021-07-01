@@ -11,7 +11,7 @@ Package {
 		'Kernel',
 		'SUnit',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'CholeskyDecompositionTest',
 		'ContinuedFractionTest',

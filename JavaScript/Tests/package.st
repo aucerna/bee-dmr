@@ -10,7 +10,7 @@ Package {
 		'JavaScript',
 		'Kernel',
 		'SUnit'
-	]
+	],
 	#classes : [
 		'BasicJavascriptParserTest',
 		'JavascriptCompilingTest',

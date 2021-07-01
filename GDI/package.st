@@ -10,7 +10,7 @@ Package {
 		'SKernel',
 		'SUnit',
 		'WindowsSystem'
-	]
+	],
 	#classes : [
 		'ABC',
 		'BITMAP',

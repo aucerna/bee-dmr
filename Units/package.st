@@ -9,7 +9,7 @@ Package {
 		'JSON',
 		'Kernel',
 		'Utilities'
-	]
+	],
 	#classes : [
 		'AccelerationUnit',
 		'AreaUnit',

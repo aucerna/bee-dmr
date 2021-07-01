@@ -9,7 +9,7 @@ Package {
 		'Cryptography',
 		'HTTP',
 		'Kernel'
-	]
+	],
 	#classes : [
 		'DirectHttpClient',
 		'FTPConnection',
