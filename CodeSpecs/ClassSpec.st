@@ -1,28 +1,28 @@
 "
-	Copyright (c) 2020 Aucerna.
+	Copyright (c) 2021 Quorum Software.
 	See (MIT) license in root directory.
 "
 
 Class {
-	#name : #ClassSpec,
-	#superclass : #SpeciesSpec,
+	#name : #ClassSpec, 
+	#superclass : #SpeciesSpec, 
 	#instVars : [
-		'name',
-		'supername',
-		'classVariables',
-		'sharedPools',
-		'metaclass',
-		'variable',
+		'name', 
+		'supername', 
+		'classVariables', 
+		'sharedPools', 
+		'metaclass', 
+		'variable', 
 		'pointers'
-	],
-	#category : #Specs
+	], 
+	#category : #CodeSpecs
 }
 
-{ #category : #inquiries }
+{#category : #inquiries}
 ClassSpec >> allMethods [
 	^methods & metaclass methods]
 
-{ #category : #enumerating }
+{#category : #enumerating}
 ClassSpec >> allSuperclassesDo: aBlock [
 	| s |
 	supername isNil ifTrue: [^self].
@@ -31,90 +31,98 @@ ClassSpec >> allSuperclassesDo: aBlock [
 	aBlock value: s.
 	s allSuperclassesDo: aBlock]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> classVariables [
 	^classVariables]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 ClassSpec >> classVarNames [
 	^classVariables keys]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> configureCompiler: aCompiler [
 	]
 
-{ #category : #accessing }
+{#category : #accessing}
+ClassSpec >> cvarNames: aCollection [
+	aCollection do: [:cvar | classVariables at: cvar put: nil]]
+
+{#category : #accessing}
 ClassSpec >> cvars: aCollection [
 	classVariables := aCollection]
 
-{ #category : #initialization }
+{#category : #testing}
+ClassSpec >> hasMethods [
+	^super hasMethods or: [metaclass hasMethods]]
+
+{#category : #initialization}
 ClassSpec >> initialize [
 	super initialize.
 	classVariables := OrderedDictionary new.
 	sharedPools := OrderedCollection new]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> instanceClass [
 	^self]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> isPointers [
 	^pointers]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> isPointers: aBoolean [
 	pointers := aBoolean]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> isVariable [
 	^variable]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> isVariable: aBoolean [
 	variable := aBoolean]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 ClassSpec >> localPools [
 	^classVariables select: [:c | c isKindOf: PoolDictionary]]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> metaclass [
 	^metaclass]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> metaclass: aMetaclassSpec [
 	metaclass := aMetaclassSpec]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 ClassSpec >> metaMethods [
 	^metaclass methods]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> name [
 	^name]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> name: aString [
 	name := aString]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> sharedPools [
 	^sharedPools]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> sharedPools: aCollection [
 	sharedPools addAll: aCollection]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> superclass [
 	supername ifNil: [^nil].
 	^module resolveClass: supername]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> supername [
 	^supername]
 
-{ #category : #accessing }
+{#category : #accessing}
 ClassSpec >> supername: aString [
 	supername := aString]
 

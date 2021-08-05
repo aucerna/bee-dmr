@@ -1,18 +1,18 @@
 "
-	Copyright (c) 2020 Aucerna.
+	Copyright (c) 2021 Quorum Software.
 	See (MIT) license in root directory.
 "
 
 Class {
-	#name : #MetaclassSpec,
-	#superclass : #SpeciesSpec,
+	#name : #MetaclassSpec, 
+	#superclass : #SpeciesSpec, 
 	#instVars : [
 		'class'
-	],
-	#category : #Specs
+	], 
+	#category : #CodeSpecs
 }
 
-{ #category : #enumerating }
+{#category : #enumerating}
 MetaclassSpec >> allSuperclassesDo: aBlock [
 	| s c |
 	class supername isNil ifTrue: [
@@ -24,39 +24,39 @@ MetaclassSpec >> allSuperclassesDo: aBlock [
 	aBlock value: s.
 	s allSuperclassesDo: aBlock]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> classVarNames [
 	^class classVarNames]
 
-{ #category : #accessing }
+{#category : #accessing}
 MetaclassSpec >> instanceClass [
 	^class]
 
-{ #category : #accessing }
+{#category : #accessing}
 MetaclassSpec >> instanceClass: aClassSpec [
 	class := aClassSpec]
 
-{ #category : #testing }
+{#category : #testing}
 MetaclassSpec >> isMetaclass [
 	^true]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> metaMethods [
 	^#()]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> name [
 	^class name , ' class']
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> sharedPools [
 	^class sharedPools]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> superclass [
 	^class superclass ifNotNil: [:c | c metaclass]]
 
-{ #category : #inquiries }
+{#category : #inquiries}
 MetaclassSpec >> supername [
 	^self superclass name]
 
