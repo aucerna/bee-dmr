@@ -14,6 +14,11 @@ Class {
 }
 
 { #category : #'instance creation' }
+Point class >> fromPackedLong: anInteger [
+	^anInteger lowShort @ anInteger highShort
+]
+
+{ #category : #'instance creation' }
 Point class >> fromString: aString [
 	^self readFrom: aString readStream
 ]
@@ -106,6 +111,11 @@ Point >> >= aPoint [
 { #category : #arithmetic }
 Point >> abs [
 	^x abs @ y abs
+]
+
+{ #category : #comparing }
+Point >> asPackedLarge [
+	^x lowULong + (y lowULong bitShift: 32)
 ]
 
 { #category : #comparing }
