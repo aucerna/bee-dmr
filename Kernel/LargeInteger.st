@@ -42,9 +42,9 @@ LargeInteger class >> fromInteger: anInteger [
 		digit := integer wideDigitAt: i.
 		digit > 0 ifTrue: [size := i] ifFalse: [i := i - 1]].
 	large := LargePositiveInteger new: size * DigitLength.
-	1 to: size do: [:j | | digit |
-		digit := integer wideDigitAt: j.
-		large digitAt: j put: digit].
+	1 to: size do: [:i | | digit |
+		digit := integer wideDigitAt: i.
+		large digitAt: i put: digit].
 	^int >= 0 ifTrue: [large] ifFalse: [large negated]
 ]
 
@@ -326,7 +326,7 @@ LargeInteger >> bitShift: delta [
 	| count bits m result q carry i |
 	delta = 0 ifTrue: [^self].
 	bits := self nbDigits * Bits + delta.
-	bits <= 0 ifTrue: [^0].
+	bits <= 0 ifTrue: [^self positive ifTrue: [0] ifFalse: [-1]].
 	result := self class
 		new: bits + 3 // 4 + (Bits / 4) - 1 // (Bits / 4) * DigitLength.
 	m := result nbDigits.
@@ -454,16 +454,16 @@ LargeInteger >> nbDigits [
 	^self sizeInBytes // DigitLength
 ]
 
-{ #category : #private }
-LargePositiveInteger >> outOfBoundsIndex: anInteger [
-	^self
-		error: 'index: ' , anInteger printString
-			, ' is outside of large integer bounds'
-]
-
 { #category : #arithmetic }
 LargeInteger >> negated [
 	^self bitInvert + 1
+]
+
+{ #category : #private }
+LargeInteger >> outOfBoundsIndex: anInteger [
+	^self
+		error: 'index: ' , anInteger printString
+			, ' is outside of large integer bounds'
 ]
 
 { #category : #replacing }
@@ -478,25 +478,6 @@ startingAt: position [
 		startingAt: position
 ]
 
-{ #category : #unclassified }
-LargeInteger >> shortAtOffset: [
-offset
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 2 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self shortAtValidOffset: offset
-]
-
-{ #category : #unclassified }
-LargeInteger >> shortAtValidOffset: offset [
-	| lo hi sign |
-	lo := self byteAtValid: offset + 1.
-	hi := self byteAtValid: offset + 2.
-	sign := hi bitAnd: 16r80.
-	hi := hi - (sign * 2).
-	^hi * 16r100 + lo
-]
-
 { #category : #accessing }
 LargeInteger >> sizeInBytes [
 	^self size
@@ -507,7 +488,7 @@ LargeInteger >> uShortAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset
+	^self _uShortAtValidOffset: offset
 ]
 
 { #category : #private }
@@ -515,19 +496,7 @@ LargeInteger >> uShortAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset put: anInteger
-]
-
-{ #category : #unclassified }
-LargeInteger >> uShortAtValidOffset: offset [
-	^(self byteAtValid: offset + 2) * 16r100 + (self byteAtValid: offset + 1)
-]
-
-{ #category : #unclassified }
-LargeInteger >> uShortAtValidOffset: offset put: anInteger [
-	anInteger size > 2 ifTrue: [self error: 'does not fit in 16 bits'].
-	self _uShortAtOffset: offset put: anInteger.
-	^anInteger
+	^self _uShortAtValidOffset: offset put: anInteger
 ]
 
 { #category : #private }
