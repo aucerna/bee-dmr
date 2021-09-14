@@ -76,14 +76,12 @@ Species >> allClassVarNames [
 
 { #category : #private }
 Species >> allExistingInstances [
-	^Memory current allInstancesOf: self
+	^Smalltalk memory allExistingInstancesOf: self
 ]
 
 { #category : #instances }
 Species >> allInstances [
-	^[
-		GC forceCompact.
-		self allExistingInstances] evaluateAtomically
+	^Smalltalk memory allInstancesOf: self
 ]
 
 { #category : #queries }
@@ -100,7 +98,7 @@ Species >> allocate: byteSize size: size [
 	buffer := self memory allocate: totalSize.
 	object := (buffer + headerSize _asPointer) _asObject.
 	object
-		_basicULongAt: _Behavior put: self instanceBehavior;
+		_longSlotAt: _Behavior put: self instanceBehavior;
 		initializeExtended: extended contentSize: size.
 	^object
 ]
@@ -122,15 +120,7 @@ Species >> allSubclassesDo: aBlock [
 
 { #category : #queries }
 Species >> allSubinstances [
-	| subinstances |
-	subinstances := OrderedCollection new.
-	[
-		GC forceCompact.
-		self
-			withAllSubclassesDo: [:cls | subinstances
-				addAll: cls allExistingInstances]]
-		evaluateAtomically.
-	^subinstances asArray
+	^Smalltalk memory allSubinstancesOf: self
 ]
 
 { #category : #queries }
@@ -186,7 +176,7 @@ Species >> browse [
 ]
 
 { #category : #services }
-Species >> buildBehavior [
+Species >> buildBehavior
 	| behavior |
 	behavior := Behavior with: self methodDictionary copy.
 	superclass ifNotNil: [behavior next: superclass instanceBehavior].
@@ -310,6 +300,18 @@ Species >> includesSelector: aSymbol [
 ]
 
 { #category : #inquiries }
+Species >> indexOfSlot: varname [
+	| i |
+	i := instanceVariables
+		ifNil: [0]
+		ifNotNil: [instanceVariables indexOf: varname].
+	superclass ifNil: [^i].
+	^i > 0
+		ifTrue: [superclass instSize + i]
+		ifFalse: [superclass indexOfSlot: varname]
+]
+
+{ #category : #inquiries }
 Species >> inheritsFrom: aClass [
 	| class |
 	class := self.
@@ -338,6 +340,11 @@ Species >> instanceBehavior: aBehavior [
 { #category : #testing }
 Species >> instancesAreArrayed [
 	^self _instancesAreArrayed
+]
+
+{ #category : #testing }
+Species >> instancesAreFixed [
+	^self _instancesAreFixed
 ]
 
 { #category : #testing }
@@ -393,9 +400,9 @@ Species >> isVariable [
 
 { #category : #services }
 Species >> kindOfSubclass [
-	self _instancesAreFixed ifTrue: [^'subclass:'].
+	self instancesAreFixed ifTrue: [^'subclass:'].
 	self isBytes ifTrue: [^'variableByteSubclass:'].
-	self _instancesHavePointers ifTrue: [^'variableSubclass:'].
+	self instancesHavePointers ifTrue: [^'variableSubclass:'].
 	self error: 'invalid type of subclass'
 ]
 
@@ -495,7 +502,7 @@ Species >> primitiveNew [
 	totalSize := headerSize + byteSize.
 	buffer := self memory allocate: totalSize.
 	object := (buffer + headerSize _asPointer) _asObject.
-	object _basicULongAt: _Behavior put: self instanceBehavior.
+	object _longSlotAt: _Behavior put: self instanceBehavior.
 	object initializeExtended: false contentSize: size; _beNamed.
 	self nil: size slotsOf: object.
 	^object
@@ -513,6 +520,7 @@ Species >> primitiveNew: size [
 { #category : #unclassified }
 Species >> primitiveNewBytes: size [
 	| object padded |
+	#atomic.
 	padded := size + WordSize - 1 bitAnd: 0 - WordSize.
 	object := self allocate: padded size: size.
 	object _beBytes; _beArrayed.
@@ -523,6 +531,7 @@ Species >> primitiveNewBytes: size [
 { #category : #unclassified }
 Species >> primitiveNewPointers: size [
 	| object |
+	#atomic.
 	object := self allocate: size * WordSize size: size.
 	object _beArrayed.
 	self instSize > 0 ifTrue: [object _beNamed].
