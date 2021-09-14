@@ -83,7 +83,7 @@ OrderedDictionary >> last [
 
 { #category : #removing }
 OrderedDictionary >> remove: anObject ifAbsent: aBlock [
-	table removeObject: anObject ifAbsent: aBlock.
+	table removeObject: anObject ifAbsent: [^aBlock value].
 	tally := tally - 1.
 	^anObject
 ]
