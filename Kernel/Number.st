@@ -301,7 +301,7 @@ Number >> printDecimals: decimals separatedBy: aString [
 
 { #category : #printing }
 Number >> printFraction: decimals [
-	^self printDecimals: decimals separatedBy: ActiveLocale decimalSeparator
+	^self printDecimals: decimals separatedBy: Locale current decimalSeparator
 ]
 
 { #category : #printing }
@@ -335,7 +335,10 @@ Number >> radiansToDegrees [
 Number >> raisedTo: aNumber [
 	| n |
 	aNumber = 0 ifTrue: [^self raisedToInteger: 0].
-	(self = 0 and: [aNumber > 0]) ifTrue: [^0].
+	self = 0 ifTrue: [
+		^aNumber > 0 ifTrue: [0] ifFalse: [
+			(ZeroDivide on: #raisedTo:) signalInvalidOperation.
+			Float nan]].
 	aNumber isInteger ifTrue: [^self raisedToInteger: aNumber].
 	self positive ifTrue: [^(aNumber * self abs ln) exp].
 	n := aNumber rounded.
