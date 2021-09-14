@@ -49,12 +49,12 @@ WideString class >> fromExternalUTF8: anExternalMemory [
 
 { #category : #'instance creation' }
 WideString class >> fromMemory: anExternalMemory [
-	| s i |
-	s := self new: 1.
+	| i |
 	i := 1.
-	[
-		s replaceBytesFrom: 1 to: 2 with: anExternalMemory startingAt: i.
-		(s codeAt: 1) = 0]
+	[| first second |
+		first := anExternalMemory byteAt: i.
+		second := anExternalMemory byteAt: i + 1.
+		first = 0 and: [second = 0]]
 		whileFalse: [i := i + 2].
 	^self fromMemory: anExternalMemory length: i - 1 // 2
 ]
@@ -405,13 +405,6 @@ WideString >> reduced [
 ]
 
 { #category : #replacing }
-WideString >> replace: anInteger with: aString [
-	1 to: anInteger do: [:i | | char |
-		char := aString at: i.
-		self at: i put: char]
-]
-
-{ #category : #replacing }
 WideString >> replaceFirst: anInteger with: aString [
 	1 to: anInteger do: [:i | | char |
 		char := aString at: i.
@@ -470,22 +463,6 @@ WideString >> td1 [
 		code := self codeAt: i.
 		td1 at: code + 1 ifAbsentPut: [m - i + 1]].
 	^td1
-]
-
-{ #category : #private }
-WideString >> primitiveULongAtOffset: offset [
-put: anInteger
-	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
-	(0 <= offset and: [offset + 3 <= self _size])
-		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset put: anInteger
-]
-
-{ #category : #unclassified }
-WideString >> uLongAtValidOffset: offset put: anInteger [
-	anInteger size > 4 ifTrue: [self error: 'does not fit in 32 bits'].
-	self _uLongAtOffset: offset put: anInteger.
-	^anInteger
 ]
 
 { #category : #services }
