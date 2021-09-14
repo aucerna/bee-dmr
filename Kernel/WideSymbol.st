@@ -91,10 +91,6 @@ WideSymbol >> atValid: index [
 	^Character value: cp
 ]
 
-WideSymbol >> basicSize [
-	^self _size
-]
-
 { #category : #private }
 WideSymbol >> codeAt: index [
 	^self uLongAtOffset: index - 1 * 4
@@ -112,7 +108,7 @@ WideSymbol >> isUnicodeSymbol [
 
 { #category : #accessing }
 WideSymbol >> size [
-	^self _size // 4
+	^super size // 4
 ]
 
 { #category : #accessing }
