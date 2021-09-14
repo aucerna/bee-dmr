@@ -25,7 +25,7 @@ Float class >> basicErrorOn: aSymbol status: status for: aNumber [
 
 { #category : #errors }
 Float class >> clearStatusFlags [
-	Status at: 1 put: ((Status at: 1) bitAnd: 0xC0).
+	Status at: 1 put: 0x80.
 	self _status: Status
 ]
 
@@ -90,12 +90,12 @@ Float class >> fromInteger: anInteger [
 Float class >> fromLocalString: aString [
 	| thous dec string currency sign float |
 	aString isEmpty ifTrue: [^0.0].
-	thous := ActiveLocale thousandsSeparator.
-	dec := ActiveLocale decimalSeparator.
+	thous := Locale current thousandsSeparator.
+	dec := Locale current decimalSeparator.
 	string := thous = dec
 		ifTrue: [aString]
 		ifFalse: [aString reject: [:c | thous includes: c]].
-	currency := ActiveLocale currency first.
+	currency := Locale current currency first.
 	string := string reject: [:c | c = currency].
 	string isEmpty ifTrue: [^0.0].
 	sign := 1.0.
@@ -118,7 +118,7 @@ Float class >> hasCoprocessorMissingFlag [
 
 { #category : #testing }
 Float class >> hasCoprocessorMissingFlag: status [
-	^(status bitAnd: 128) ~= 0
+	^(status bitAnd: 128) != 0
 ]
 
 { #category : #testing }
@@ -133,7 +133,7 @@ Float class >> hasDenormalizedOperandFlag: status [
 
 { #category : #testing }
 Float class >> hasErrorFlag: status [
-	^(status bitAnd: 0x1F) ~= 0
+	^(status bitAnd: 0x1F) != 0
 ]
 
 { #category : #testing }
@@ -148,7 +148,7 @@ Float class >> hasInexactFlag [
 
 { #category : #testing }
 Float class >> hasInexactFlag: status [
-	^(status bitAnd: 32) ~= 0
+	^(status bitAnd: 32) != 0
 ]
 
 { #category : #testing }
@@ -158,7 +158,7 @@ Float class >> hasInvalidOperationFlag [
 
 { #category : #testing }
 Float class >> hasInvalidOperationFlag: status [
-	^(status bitAnd: 1) ~= 0
+	^(status bitAnd: 1) != 0
 ]
 
 { #category : #testing }
@@ -168,7 +168,7 @@ Float class >> hasOverflowFlag [
 
 { #category : #testing }
 Float class >> hasOverflowFlag: status [
-	^(status bitAnd: 8) ~= 0
+	^(status bitAnd: 8) != 0
 ]
 
 { #category : #testing }
@@ -178,7 +178,7 @@ Float class >> hasUnderflowFlag [
 
 { #category : #testing }
 Float class >> hasUnderflowFlag: status [
-	^(status bitAnd: 16) ~= 0
+	^(status bitAnd: 16) != 0
 ]
 
 { #category : #testing }
@@ -193,7 +193,7 @@ Float class >> hasZeroDivisorFlag [
 
 { #category : #testing }
 Float class >> hasZeroDivisorFlag: status [
-	^(status bitAnd: 4) ~= 0
+	^(status bitAnd: 4) != 0
 ]
 
 { #category : #constants }
@@ -212,8 +212,10 @@ Float class >> initializeConstants [
 	self
 		initializeInfinity;
 		initializeMinusInfinity;
+		initializeStatus;
 		initializePi;
-		initializeE
+		initializeE;
+		initializeRadiansPerDegree
 ]
 
 { #category : #initialization }
@@ -323,12 +325,12 @@ Float class >> new [
 	buffer := self memory allocate: totalSize.
 	object := (buffer + headerSize _asPointer) _asObject.
 	object
-		_basicULongAt: _Behavior put: self instanceBehavior;
+		_longSlotAt: _Behavior put: self instanceBehavior;
 		initializeExtended: false contentSize: byteSize;
 		_beArrayed;
 		_beBytes;
-		_basicULongAt: 1 put: 0 _asNative;
-		_basicULongAt: 2 put: 0 _asNative.
+		_longSlotAt: 1 put: 0 _asNative;
+		_longSlotAt: 2 put: 0 _asNative.
 	^object
 ]
 
@@ -351,11 +353,6 @@ Float class >> plusInfinity [
 { #category : #accessing }
 Float class >> sizeInBytes [
 	^8
-]
-
-{ #category : #accessing }
-Float class >> startUp [
-	self initializeRadiansPerDegree
 ]
 
 { #category : #accessing }
@@ -526,7 +523,7 @@ Float >> abs [
 
 { #category : #trigonometry }
 Float >> arcTan [
-	^Smalltalk os libc atan: self
+	^OS libc atan: self
 ]
 
 { #category : #converting }
@@ -596,7 +593,7 @@ Float >> coerce: aNumber [
 
 { #category : #trigonometry }
 Float >> cos [
-	^Smalltalk os libc cos: self
+	^OS libc cos: self
 ]
 
 { #category : #trigonometry }
@@ -611,7 +608,7 @@ Float >> errorOn: aSymbol status: anInteger [
 
 { #category : #logarithms }
 Float >> exp [
-	^Smalltalk os libc exp: self
+	^OS libc exp: self
 ]
 
 { #category : #accessing }
@@ -725,7 +722,7 @@ Float >> isSpecialValue [
 Float >> ln [
 	self > 0
 		ifFalse: [^self error: 'ln is not defined for ' , self printString].
-	^Smalltalk os libc log: self
+	^OS libc log: self
 ]
 
 { #category : #accessing }
@@ -733,7 +730,7 @@ Float >> mantissa [
 	^self significand
 ]
 
-{ #category : #errors }
+{ #category : #private }
 Float >> marshalOn: aStream [
 	aStream putBytesFrom: self from: 1 to: 8
 ]
@@ -756,7 +753,7 @@ Float >> printDecimals: decimals separatedBy: aString [
 
 { #category : #printing }
 Float >> printOn: aStream [
-	self printOn: aStream separatedBy: ActiveLocale decimalSeparator
+	self printOn: aStream separatedBy: Locale current decimalSeparator
 ]
 
 { #category : #printing }
@@ -886,7 +883,7 @@ Float >> significand [
 
 { #category : #trigonometry }
 Float >> sin [
-	^Smalltalk os libc sin: self
+	^OS libc sin: self
 ]
 
 { #category : #accessing }
@@ -914,7 +911,7 @@ Float >> storeOn: aStream [
 
 { #category : #trigonometry }
 Float >> tan [
-	^Smalltalk os libc tan: self
+	^OS libc tan: self
 ]
 
 { #category : #arithmetic }
