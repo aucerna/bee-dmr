@@ -150,6 +150,14 @@ Integer >> bitAt: anInteger [
 ]
 
 { #category : #bits }
+Integer >> bitClear: mask [
+	"
+	(2r111100110 bitClear: 2r111100) = 2r111000010
+	"
+	^self bitAnd: mask bitInvert
+]
+
+{ #category : #bits }
 Integer >> bitInvert [
 	^-1 - self
 ]
@@ -297,6 +305,30 @@ Integer >> hashMultiply [
 ]
 
 { #category : #accessing }
+Integer >> highLong [
+	| ulong |
+	ulong := self highULong.
+	^ulong >= 0x80000000 ifTrue: [ulong - 0x100000000] ifFalse: [ulong]
+]
+
+{ #category : #accessing }
+Integer >> highShort [
+	| ushort |
+	ushort := self highUShort.
+	^ushort >= 0x8000 ifTrue: [ushort - 0x10000] ifFalse: [ushort]
+]
+
+{ #category : #accessing }
+Integer >> highULong [
+	^(self bitShift: -32) lowULong
+]
+
+{ #category : #accessing }
+Integer >> highUShort [
+	^(self bitShift: -16) lowUShort
+]
+
+{ #category : #accessing }
 Integer >> highWord [
 	^(self bitAnd: 16rFFFFFFFF) bitShift: -16
 ]
@@ -323,11 +355,6 @@ Integer >> lcm: anInteger [
 	^gcd = 0 ifTrue: [1] ifFalse: [(self // gcd * anInteger) abs]
 ]
 
-{ #category : #'bit operations' }
-Integer >> low32 [
-	^self bitAnd: 0xFFFFFFFF
-]
-
 { #category : #bits }
 Integer >> lowBit [
 	| count mask |
@@ -337,6 +364,30 @@ Integer >> lowBit [
 		mask := mask bitShift: 1.
 		count := count + 1].
 	^count
+]
+
+{ #category : #'bit operations' }
+Integer >> lowLong [
+	| ulong |
+	ulong := self lowULong.
+	^ulong >= 0x80000000 ifTrue: [ulong - 0x100000000] ifFalse: [ulong]
+]
+
+{ #category : #'bit operations' }
+Integer >> lowShort [
+	| ushort |
+	ushort := self lowUShort.
+	^ushort >= 0x8000 ifTrue: [ushort - 0x10000] ifFalse: [ushort]
+]
+
+{ #category : #'bit operations' }
+Integer >> lowULong [
+	^self bitAnd: 0xFFFFFFFF
+]
+
+{ #category : #'bit operations' }
+Integer >> lowUShort [
+	^self bitAnd: 0xFFFF
 ]
 
 { #category : #accessing }
