@@ -275,11 +275,11 @@ Collection >> gather: aBlock [
 ]
 
 { #category : #enumerating }
-Collection >> gather: aBlock in: collection [
+Collection >> gather: aBlock in: aCollection [
 	self do: [:each | | things |
 		things := aBlock evaluateWith: each.
-		collection addAll: things].
-	^collection
+		aCollection addAll: things].
+	^aCollection
 ]
 
 { #category : #enumerating }
