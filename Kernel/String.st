@@ -61,6 +61,11 @@ String class >> fromUTF8: aByteArray [
 ]
 
 { #category : #'instance creation' }
+String class >> new [
+	^self new: 0
+]
+
+{ #category : #'instance creation' }
 String class >> new: anInteger [
 	^self primitiveNewBytes: anInteger + 1
 ]
@@ -594,6 +599,14 @@ td1: anArray [
 	^0
 ]
 
+{ #category : #unclassified }
+String >> join: aCollection [
+	^self class streamContents: [:s | 
+		aCollection
+			do: [:elem | s nextPutAll: elem]
+			separatedBy: [s nextPutAll: self]]
+]
+
 { #category : #accessing }
 String >> length [
 	^self size
@@ -762,10 +775,5 @@ String >> withoutBlanks [
 { #category : #converting }
 String >> writeStream [
 	^WriteStringStream on: self
-]
-
-{ #category : #copying }
-String >> zapLfs [
-	^self reject: [:c | c isLf]
 ]
 
