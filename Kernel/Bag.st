@@ -169,15 +169,6 @@ Bag >> size [
 	^tally
 ]
 
-{ #category : #private }
-Bag >> sortedCounts [
-	| counts |
-	counts := Array
-		streamContents: [:strm | contents
-			keysAndValuesDo: [:k :v | strm nextPut: v -> k]].
-	^counts sortBy: [:x :y | x key >= y key]
-]
-
 { #category : #accessing }
 Bag >> usePolicy: aHashTablePolicy [
 	^contents usePolicy: aHashTablePolicy
