@@ -134,62 +134,37 @@ ArrayedCollection >> deepCopy [
 	^self objectDeepCopy
 ]
 
-{ #category : #marshalling }
-ByteArray >> largeAtOffset: offset [
-	| integer lo hi |
-	(self at: offset + 8) >= 16r80 ifTrue: [
-		integer := 0.
-		offset + 8
-			to: offset + 1
-			by: -1
-			do: [:i | integer := (integer bitShift: 8) + ((self at: i) bitXor: 16rFF)].
-		^(integer + 1) negated].
-	lo := self uLongAtOffset: 0.
-	hi := self uLongAtOffset: 4.
-	^(hi bitShift: 32) + lo
-]
-
-{ #category : #marshalling }
-ByteArray >> longAtOffset: offset [
+{ #category : #accessing }
+ArrayedCollection >> longAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 3 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self longAtValidOffset: offset
+	^self _longAtValidOffset: offset
 ]
 
-{ #category : #marshalling }
-ByteArray >> longAtOffset: offset put: anInteger [
+{ #category : #accessing }
+ArrayedCollection >> longAtOffset: offset put: anInteger [
 	| ulong |
 	ulong := anInteger < 0
 		ifTrue: [16r100000000 + anInteger]
 		ifFalse: [anInteger].
-	self uLongAtOffset: offset put: ulong
+	^self uLongAtOffset: offset put: ulong
 ]
 
 { #category : #accessing }
-ArrayedCollection >> longAtValidOffset: offset [
-	| lo hi sign |
-	lo := self uShortAtValidOffset: offset.
-	hi := self uShortAtValidOffset: offset + 2.
-	sign := hi bitAnd: 16r8000.
-	hi := hi - (sign * 2).
-	^hi * 16r10000 + lo
-]
-
-{ #category : #accessing }
-ArrayedCollection >> pointerAtOffset: offset [
+ArrayedCollection >> uLargeAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 7 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset
+	^self _uLargeAtValidOffset: offset
 ]
 
 { #category : #accessing }
-ArrayedCollection >> pointerAtOffset: offset put: anInteger [
+ArrayedCollection >> uLargeAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 7 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset put: anInteger
+	^self _uLargeAtValidOffset: offset put: anInteger
 ]
 
 { #category : #removing }
@@ -231,22 +206,12 @@ ArrayedCollection >> select: selectBlock thenCollect: collectBlock [
 	^(self species new: size) replaceFrom: 1 to: size with: selected
 ]
 
-{ #category : #marshalling }
-ByteArray >> shortAtOffset: offset [
+{ #category : #accessing }
+ArrayedCollection >> shortAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 2 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self shortAtValidOffset: offset
-]
-
-{ #category : #accessing }
-ArrayedCollection >> shortAtValidOffset: offset [
-	| lo hi sign |
-	lo := self byteAtValid: offset + 1.
-	hi := self byteAtValid: offset + 2.
-	sign := hi bitAnd: 16r80.
-	hi := hi - (sign * 2).
-	^hi * 16r100 + lo
+	^self _shortAtValidOffset: offset
 ]
 
 { #category : #accessing }
@@ -291,101 +256,52 @@ ArrayedCollection >> storeOn: aStream [
 				aStream nextPut: $)]]
 ]
 
-{ #category : #marshalling }
+{ #category : #accessing }
 ArrayedCollection >> uLargeAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 7 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset
+	^self _uLargeAtValidOffset: offset
 ]
 
-{ #category : #marshalling }
+{ #category : #accessing }
 ArrayedCollection >> uLargeAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 7 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLargeAtValidOffset: offset put: anInteger
+	^self _uLargeAtValidOffset: offset put: anInteger
 ]
 
-{ #category : #private }
-ArrayedCollection >> uLargeAtValidOffset: offset [
-	^(self _uLargeAtOffset: offset)
-		ifNil: [self _uLargeAtOffset: offset into: (LargePositiveInteger new: 8)]
-]
-
-{ #category : #marshalling }
-ArrayedCollection >> uLargeAtValidOffset: offset put: anInteger [
-	anInteger size > 8 ifTrue: [self error: 'does not fit in 64 bits'].
-	self _uLargeAtOffset: offset put: anInteger.
-	^anInteger
-]
-
-{ #category : #marshalling }
+{ #category : #accessing }
 ArrayedCollection >> uLongAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 3 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset
+	^self _uLongAtValidOffset: offset
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 ArrayedCollection >> uLongAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 3 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset put: anInteger
+	^self _uLongAtValidOffset: offset put: anInteger
 ]
 
 { #category : #accessing }
-ArrayedCollection >> uLongAtValidOffset: offset [
-	^(self _uLongAtOffset: offset)
-		ifNil: [self _uLongAtOffset: offset into: (LargePositiveInteger new: 4)]
-]
-
-{ #category : #accessing }
-ArrayedCollection >> uLongAtValidOffset: offset put: anInteger [
-	anInteger size > 4 ifTrue: [self error: 'does not fit in 32 bits'].
-	self _uLongAtOffset: offset put: anInteger.
-	^anInteger
-]
-
-{ #category : #marshalling }
 ArrayedCollection >> uShortAtOffset: offset [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset
+	^self _uShortAtValidOffset: offset
 ]
 
-{ #category : #marshalling }
+{ #category : #accessing }
 ArrayedCollection >> uShortAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 1 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uShortAtValidOffset: offset put: anInteger
-]
-
-{ #category : #accessing }
-ArrayedCollection >> uShortAtValidOffset: offset [
-	^(self byteAtValid: offset + 2) * 16r100 + (self byteAtValid: offset + 1)
-]
-
-{ #category : #unclassified }
-ArrayedCollection >> uShortAtValidOffset: offset put: anInteger [
-	anInteger size > 2 ifTrue: [self error: 'does not fit in 16 bits'].
-	self _uShortAtOffset: offset put: anInteger.
-	^anInteger
-]
-
-{ #category : #accessing }
-ArrayedCollection >> validShortAtValidOffset: offset put: anInteger [
-	| hi lo |
-	hi := anInteger bitShift: -8.
-	lo := anInteger bitAnd: 16rFF.
-	self
-		_byteAt: offset + 1 put: lo;
-		_byteAt: offset + 2 put: hi.
-	^anInteger
+	^self _uShortAtValidOffset: offset put: anInteger
 ]
 
 { #category : #enumerating }

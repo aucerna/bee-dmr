@@ -750,8 +750,9 @@ SequenceableCollection >> sortBy: aBlock [
 SequenceableCollection >> swap: index1 with: index2 [
 	| temp |
 	temp := self at: index1.
-	self at: index1 put: (self at: index2).
-	self at: index2 put: temp.
+	self
+		at: index1 put: (self at: index2);
+		at: index2 put: temp
 ]
 
 { #category : #private }

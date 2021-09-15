@@ -16,6 +16,7 @@ Class {
 	#classVars : [
 		'FormatFlags',
 		'Instances',
+		'Invoke',
 		'LookupCount',
 		'MICs',
 		'MonomorphicStub',
@@ -28,7 +29,7 @@ Class {
 }
 
 { #category : #initialization }
-SendSite class >> allocateCaches: amount using: lookupInstructions [
+SendSite class >> allocateCaches: amount lookup: aNativeCode [
 	| mics pics array |
 	mics := amount.
 	pics := amount // 4.
@@ -37,32 +38,30 @@ SendSite class >> allocateCaches: amount using: lookupInstructions [
 	MICs := array.
 	NextMIC := 1.
 	array := Array new: pics.
-	1
-		to: pics
-		do: [:i | array basicAt: i put: (self newPICUsing: lookupInstructions)].
+	1 to: pics do: [:i | array basicAt: i put: (self newPICUsing: aNativeCode)].
 	PICs := array.
 	NextPIC := 1
 ]
 
 { #category : #initialization }
-SendSite class >> allocateInitialCachesUsing: lookupInstructions [
-	self allocateCaches: 3000 using: lookupInstructions
+SendSite class >> allocateInitialCachesUsing: aNativeCode [
+	self allocateCaches: 3000 lookup: aNativeCode
 ]
 
 { #category : #initialization }
 SendSite class >> allocateMoreCaches [
-	self beeAllocateCaches: 140000 using: (Smalltalk at: #Lookup)
+	self beeAllocateCaches: 140000 lookup: (Smalltalk at: #Lookup)
 ]
 
 { #category : #initialization }
-SendSite class >> beeAllocateCaches: amount using: lookupInstructions [
+SendSite class >> beeAllocateCaches: amount lookup: aNativeCode [
 	| mics pics array mic pic memory |
 	mics := amount.
 	pics := amount // 5.
 	array := Array new: mics.
 	mic := Array new: 2.
 	pic := (Array new: 15)
-		at: 15 put: lookupInstructions;
+		at: 15 put: aNativeCode;
 		yourself.
 	memory := Memory current.
 	1 to: mics do: [:i | array basicAt: i put: (memory pinnedCopy: mic)].
@@ -81,9 +80,22 @@ SendSite class >> flush [
 
 { #category : #initialization }
 SendSite class >> flush: selector [
-	| sends |
+	| sends count copy |
 	sends := self instances at: selector ifAbsent: [^self].
-	sends do: [:send | send flush: selector]
+	count := 0.
+	sends do: [:send | 
+		send ifNotNil: [
+			count := count + 1.
+			send flush: selector]].
+	count * 3 < sends size ifFalse: [^self].
+	count = 0 ifTrue: [^sends removeKey: selector].
+	copy := WeakArray new: (count * 1.5) asInteger.
+	count := 0.
+	sends do: [:send | 
+		send ifNotNil: [
+			count := count + 1.
+			copy at: count put: send]].
+	self instances at: selector put: copy
 ]
 
 { #category : #private }
@@ -92,10 +104,10 @@ SendSite class >> initializeFormatFlags [
 	SendSite initializeFormatFlags
 	"
 	FormatFlags := PoolDictionary newConstantPool
-		at: 'IsStaticSend' put: 16r1;
-		at: 'IsSuperSend' put: 16r2;
-		at: 'IsPolymorphic' put: 16r4;
-		at: 'HasBeenReset' put: 16r8;
+		at: 'IsStaticSend' put: 0x1;
+		at: 'IsSuperSend' put: 0x2;
+		at: 'IsPolymorphic' put: 0x4;
+		at: 'HasBeenReset' put: 0x8;
 		yourself
 ]
 
@@ -103,7 +115,7 @@ SendSite class >> initializeFormatFlags [
 SendSite class >> instances [
 	Instances ifNil: [
 		Instances := IdentityDictionary new.
-		self allExistingInstances do: [:send | send register]].
+		self allInstances do: [:send | send register]].
 	^Instances
 ]
 
@@ -123,10 +135,10 @@ SendSite class >> mics [
 ]
 
 { #category : #initialization }
-SendSite class >> newPICUsing: lookupInstructions [
+SendSite class >> newPICUsing: aNativeCode [
 	| new |
 	new := Array new: 15.
-	new at: 15 put: lookupInstructions.
+	new at: 15 put: aNativeCode.
 	^new
 ]
 
@@ -137,7 +149,6 @@ SendSite class >> sending: aSelector with: instructions [
 
 { #category : #initialization }
 SendSite class >> startUp [
-	self allocateMoreCaches.
 	Instances := nil
 ]
 
@@ -157,7 +168,7 @@ SendSite >> _dispatchDebuggableOn: anObject [
 	invoked prepareForExecution.
 	nativeCode := invoked nativeCode.
 	"self when: anObject behavior use: nativeCode code."
-	^anObject _transferControlTo: (nativeCode _basicAt: 1)
+	^anObject _transferControlTo: nativeCode
 ]
 
 { #category : #'meta accessing' }
@@ -177,7 +188,7 @@ SendSite >> _dispatchDebuggableOn: anObject startingAt: aBehavior [
 	invoked prepareForExecution.
 	nativeCode := invoked nativeCode.
 	"self when: aBehavior use: nativeCode code."
-	^anObject _transferControlTo: (nativeCode _basicAt: 1)
+	^anObject _transferControlTo: nativeCode
 ]
 
 { #category : #'meta accessing' }
@@ -192,13 +203,13 @@ SendSite >> _dispatchOn: anObject [
 	cm == nil ifTrue: [^anObject doesNotUnderstandSelector: selector].
 	cm prepareForExecution.
 	nativeCode := cm nativeCode.
-	self when: anObject behavior use: nativeCode code.
-	^anObject _transferControlTo: (nativeCode _basicAt: 1)
+	self when: anObject behavior use: nativeCode.
+	^anObject _transferControlTo: nativeCode
 ]
 
 { #category : #'meta accessing' }
 SendSite >> _dispatchOn: anObject startingAt: aBehavior [
-	| cm nativeCode code |
+	| cm nativeCode |
 	#specialABIBegin.
 	#anObject -> #regR.
 	#self -> #regA.
@@ -209,24 +220,18 @@ SendSite >> _dispatchOn: anObject startingAt: aBehavior [
 	cm == nil ifTrue: [^anObject doesNotUnderstandSelector: selector].
 	cm prepareForExecution.
 	nativeCode := cm nativeCode.
-	code := nativeCode _basicAt: 1.
-	self beInvoke: cm using: code.
-	^anObject _transferControlTo: code
+	self beInvoke: cm using: Invoke.
+	^anObject _transferControlTo: nativeCode
 ]
 
 { #category : #'meta accessing' }
 SendSite >> _invokeOn: anObject [
-	| cm code |
 	#savePreviousSelf.
 	#specialABIBegin.
 	#anObject -> #regR.
 	#self -> #regA.
 	#specialABIEnd.
-	cm := cache.
-	code := cm nativeCode code.
-	instructions := code.
-	instructions holdRefererIfNeeded: self.
-	^anObject _transferControlTo: code
+	^anObject _transferControlTo: cache nativeCode
 ]
 
 { #category : #private }
@@ -258,8 +263,8 @@ SendSite >> cache [
 { #category : #private }
 SendSite >> flush [
 	instructions := self isSuperSend
-		ifTrue: [Smalltalk at: #LookupSuper]
-		ifFalse: [Smalltalk at: #Lookup].
+		ifTrue: [Smalltalk at: #LookupSuperCode]
+		ifFalse: [Smalltalk at: #LookupCode].
 	cache := nil
 ]
 
@@ -457,7 +462,8 @@ SendSite >> selector [
 { #category : #private }
 SendSite >> selector: aSelector [
 	selector := aSelector.
-	self isStaticSelector ifTrue: [self beStaticSend]
+	self isStaticSelector ifTrue: [self beStaticSend].
+	Smalltalk isDMR ifTrue: [self register]
 ]
 
 { #category : #private }
@@ -468,18 +474,18 @@ SendSite >> sentSelector [
 { #category : #private }
 SendSite >> takeNextFreeMIC [
 	| position |
-	NextMIC = MICs _size ifTrue: [self class allocateMoreCaches].
 	position := NextMIC.
 	NextMIC := NextMIC + 1.
+	position + 50 = MICs _size ifTrue: [self class allocateMoreCaches].
 	^MICs _basicAt: position
 ]
 
 { #category : #private }
 SendSite >> takeNextFreePIC [
 	| position |
-	NextPIC = PICs _size ifTrue: [self class allocateMoreCaches].
 	position := NextPIC.
 	NextPIC := NextPIC + 1.
+	NextPIC + 50 = PICs _size ifTrue: [self class allocateMoreCaches].
 	^PICs _basicAt: position
 ]
 
@@ -489,12 +495,14 @@ SendSite >> unreset [
 ]
 
 { #category : #private }
-SendSite >> when: aBehavior use: code [
+SendSite >> when: aBehavior use: aNativeCode [
 	cache == nil
 		ifTrue: [
 			self isStaticSend
-				ifTrue: [instructions := code]
-				ifFalse: [self monomorphicMap: aBehavior to: code]]
-		ifFalse: [self polymorphicMap: aBehavior to: code]
+				ifTrue: [
+					instructions := Invoke.
+					cache := aNativeCode compiledCode]
+				ifFalse: [self monomorphicMap: aBehavior to: aNativeCode]]
+		ifFalse: [self polymorphicMap: aBehavior to: aNativeCode]
 ]
 

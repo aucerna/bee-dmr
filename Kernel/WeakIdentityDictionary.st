@@ -55,8 +55,8 @@ WeakIdentityDictionary >> equates: element with: ephemeron [
 ]
 
 { #category : #private }
-WeakIdentityDictionary >> hashFor: element [
-	^element basicHash
+WeakIdentityDictionary >> hashFor: object [
+	^object basicHash * 16273
 ]
 
 { #category : #private }

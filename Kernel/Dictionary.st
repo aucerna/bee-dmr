@@ -147,7 +147,7 @@ Dictionary >> basicAdd: anAssociation [
 ]
 
 { #category : #private }
-Dictionary >> basicAt: key put: element for: aDictionary [
+Dictionary >> basicAtKey: key put: element [
 	table basicAtKey: key put: element.
 	tally := tally + 1
 ]
@@ -299,10 +299,7 @@ Dictionary >> postCopy [
 { #category : #private }
 Dictionary >> rebuildOn: aDictionary [
 	self
-		keysAndElementsDo: [:key :assoc | aDictionary
-			basicAt: key
-			put: assoc
-			for: aDictionary].
+		keysAndElementsDo: [:key :assoc | aDictionary basicAtKey: key put: assoc].
 	table := aDictionary table
 ]
 

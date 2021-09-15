@@ -99,6 +99,11 @@ UndefinedObject >> isNil [
 	^true
 ]
 
+{ #category : #private }
+UndefinedObject >> marshalOn: aStream [
+	0 marshalOn: aStream
+]
+
 { #category : #testing }
 UndefinedObject >> notNil [
 	^false

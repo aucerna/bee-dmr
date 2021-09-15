@@ -56,6 +56,17 @@ Exception >> activeHandler: anExceptionHandler [
 	activeHandler := anExceptionHandler
 ]
 
+{ #category : #handling }
+Exception >> basicOuter [
+	| prev result |
+	prev := resumeBlock.
+	[
+		resumeBlock := [:res | ^res].
+		result := self evaluateHandlers]
+		ensure: [resumeBlock := prev].
+	^result
+]
+
 { #category : #actions }
 Exception >> defaultAction [
 	Processor activeProcess
@@ -92,7 +103,7 @@ Exception >> doDefaultAction [
 Exception >> doSignal [
 	self isActive ifTrue: [^self ASSERT: false].
 	signalContext := ActiveProcess.
-	^self outer
+	^self basicOuter
 ]
 
 { #category : #handling }
@@ -154,18 +165,12 @@ Exception >> nextHandler [
 
 { #category : #handling }
 Exception >> outer [
-	| prev result |
-	prev := resumeBlock.
-	[
-		resumeBlock := [:res | ^res].
-		result := self evaluateHandlers]
-		ensure: [resumeBlock := prev].
-	^result
+	^self basicOuter
 ]
 
 { #category : #handling }
 Exception >> pass [
-	self resume: self evaluateHandlers
+	self exit: self evaluateHandlers
 ]
 
 { #category : #handling }
@@ -181,7 +186,7 @@ Exception >> resignal [
 { #category : #signaling }
 Exception >> resignalAs: anException [
 	resignaledException := anException.
-	self resume: nil
+	resumeBlock value: nil
 ]
 
 { #category : #handling }
@@ -220,6 +225,8 @@ Exception >> return: value [
 { #category : #signaling }
 Exception >> signal [
 	| signaller result |
+	Smalltalk memory inGC
+		ifTrue: [self _error: 'trying to signal an exception in a critical moment'].
 	signaller := self.
 	[signaller notNil] whileTrue: [
 		resignaledException := nil.
@@ -230,11 +237,29 @@ Exception >> signal [
 
 { #category : #services }
 Exception >> stacktrace [
-	^signalContext backtrace.
+	| stream backtrace |
+	stream := '' writeStream.
+	backtrace := signalContext
+		backtraceUntil: nil
+		maxLevels: 100
+		filtered: Smalltalk isRuntime not
+		arguments: true.
+	backtrace do: [:line | stream nextPutAll: line; cr].
+	^stream contents
 ]
 
 { #category : #sunit }
 Exception >> sunitRetry [
 	
+]
+
+{ #category : #handling }
+Exception >> tryResume [
+	self isResumable ifTrue: [self resume]
+]
+
+{ #category : #handling }
+Exception >> tryResume: value [
+	self isResumable ifTrue: [self resume: value]
 ]
 

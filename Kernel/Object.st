@@ -47,6 +47,12 @@ Object >> != anObject [
 	^(self = anObject) not
 ]
 
+{ #category : #debugging }
+Object >> _ASSERT: aBoolean [
+	aBoolean value ifFalse: [AssertionFailure signal].
+	^aBoolean
+]
+
 { #category : #unclassified }
 Object >> _basicAt: anInteger put: anObject [
 	^self at: anInteger put: anObject
@@ -94,12 +100,6 @@ Object >> asActionSequence [
 { #category : #inspecting }
 Object >> aspects [
 	^self class aspects
-]
-
-{ #category : #debugging }
-Object >> ASSERT: aBoolean [
-	aBoolean value ifFalse: [AssertionFailure signal].
-	^aBoolean
 ]
 
 { #category : #converting }
@@ -711,7 +711,7 @@ Object >> literalString [
 	^self canBePrintedAsLiteral ifTrue: [self storeString]
 ]
 
-{ #category : #errors }
+{ #category : #private }
 Object >> marshalOn: aStream [
 	| s |
 	s := self sizeInBytes.
@@ -797,6 +797,14 @@ with: arg3 [
 { #category : #copying }
 Object >> postCopy [
 	
+]
+
+{ #category : #unclassified }
+Object >> primitiveAt: i put: anObject [
+	self _isSmallInteger ifTrue: [^self shouldNotImplement].
+	^self _isBytes
+		ifTrue: [self basicByteAt: i put: anObject]
+		ifFalse: [self basicObjectAt: i put: anObject]
 ]
 
 { #category : #printing }
@@ -892,15 +900,6 @@ Object >> removeDependent: anObject [
 { #category : #'instance behavior' }
 Object >> removeInstanceBehavior [
 	self behavior: self class instanceBehavior
-]
-
-{ #category : #'instance behavior' }
-Object >> removeMethods: aMethodDictionary [
-	| behavior copy |
-	self hasInstanceBehavior ifFalse: [^self].
-	behavior := self behavior.
-	copy := behavior copyWithout: aMethodDictionary.
-	copy == behavior ifFalse: [self behavior: copy]
 ]
 
 { #category : #'accessing-properties' }
@@ -1013,7 +1012,7 @@ Object >> shallowCopyTo: anObject [
 	1 to: n do: [:index | | slot |
 		slot := self instVarAt: index.
 		anObject instVarAt: index put: slot].
-	self class _instancesAreArrayed ifTrue: [
+	self class instancesAreArrayed ifTrue: [
 		n := self basicSize min: anObject basicSize.
 		1 to: n do: [:index | | slot |
 			slot := self basicAt: index.

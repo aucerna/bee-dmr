@@ -13,7 +13,6 @@ Class {
 	#category : #Kernel
 }
 
-
 { #category : #initialization }
 ProtoObject class >> initializeBitMasks [
 	"
@@ -51,11 +50,6 @@ ProtoObject class >> initializeConstants [
 		at: '_Hash' put: -8
 ]
 
-{ #category : #testing }
-ProtoObject class >> isUndermethod: aSelector [
-	^self undermethodSelectors includes: aSelector
-]
-
 { #category : #'instance creation' }
 ProtoObject class >> new [
 	^self basicNew initialize
@@ -64,10 +58,9 @@ ProtoObject class >> new [
 { #category : #private }
 ProtoObject class >> staticSelectors [
 	"
-	(NativizationEnvironment primitiveObjectMethods collect: #selector) sort
+	ProtoObject undermethodSelectors asArray sort
 	"
-	^#(
-_beArrayed _beBytes _beLarge _beNamed _beNotRemembered _beRemembered _beSecondGeneration _beSeen _beSmall _beSpecial _beNotSpecial _beUnseen _copyBasicHeaderFrom: _copyHeaderSized:from: _flagsMask: _flagsSet: _hasBeenSeen _headerSizeInBytes _isArrayed _isBit1Set _isBytes _isEphemeron _isFixed _isLarge _hasNamedSlots _isProxy _isRemembered _isSecondGeneration _isSmall _isSpecial _largeSize: _maskBit1 _nextBasePointer _objectFromBasePointer _pointersSize _setBit1 _size _sizeInBytes _strongPointersSize )
+	^#(#_beArrayed #_beBytes #_beFirstGeneration #_beLarge #_beNamed #_beNotRemembered #_beNotSpecial #_beRemembered #_beSecondGeneration #_beSeen #_beSmall #_beSpecial #_beUnseen #_bodySizeInBytes #_copyBasicHeaderFrom: #_copyHeaderSized:from: #_flagsMask: #_flagsSet: #_hasBeenSeen #_hasNamedSlots #_headerSizeInBytes #_isArrayed #_isBytes #_isFixed #_isLarge #_isProxy #_isRemembered #_isSecondGeneration #_isSmall #_isSpecial #_largeSize: #_longAtValidOffset: #_makeExtendedSize: #_nextBasePointer #_objectFromBasePointer #_pointersSize #_shortAtValidOffset: #_size #_sizeInBytes #_strongPointersSize #_uLargeAtValidOffset: #_uLargeAtValidOffset:put: #_uLongAtValidOffset: #_uLongAtValidOffset:put: #_uShortAtValidOffset: #_uShortAtValidOffset:put: #initializeExtended:contentSize:)
 ]
 
 { #category : #private }
@@ -83,11 +76,6 @@ ProtoObject class >> undermethodSelectors [
 { #category : #comparing }
 ProtoObject >> !== anObject [
 	^self == anObject ifTrue: [false] ifFalse: [true]
-]
-
-{ #category : #underprimitives }
-ProtoObject >> _basicAt: anInteger [
-	^self basicAt: anInteger
 ]
 
 { #category : #'header access' }
@@ -155,6 +143,15 @@ ProtoObject >> _beUnseen [
 	self _flagsMask: HasBeenSeenMask
 ]
 
+{ #category : #'header access' }
+ProtoObject >> _bodySizeInBytes [
+	| total |
+	total := self _size.
+	^self _isBytes
+		ifTrue: [total + WordSize - 1 bitAnd: 0 - WordSize]
+		ifFalse: [total * WordSize]
+]
+
 { #category : #lookup }
 ProtoObject >> _cachedLookup: aSymbol [
 	^self _cachedLookup: aSymbol in: self behavior
@@ -168,19 +165,19 @@ ProtoObject >> _cachedLookup: aSymbol in: behavior [
 { #category : #'header access' }
 ProtoObject >> _copyBasicHeaderFrom: other [
 	self
-		_basicULongAt: -1 put: (other _basicULongAt: -1);
-		_basicULongAt: 0 put: (other _basicULongAt: 0)
+		_longSlotAt: -1 put: (other _longSlotAt: -1);
+		_longSlotAt: 0 put: (other _longSlotAt: 0)
 ]
 
 { #category : #'header access' }
 ProtoObject >> _copyHeaderSized: byteSize from: anObject [
 	byteSize = 16 ifTrue: [
 		self
-			_basicULongAt: -3 put: (anObject _basicULongAt: -3);
-			_basicULongAt: -2 put: (anObject _basicULongAt: -2)].
+			_longSlotAt: -3 put: (anObject _longSlotAt: -3);
+			_longSlotAt: -2 put: (anObject _longSlotAt: -2)].
 	self
-		_basicULongAt: -1 put: (anObject _basicULongAt: -1);
-		_basicULongAt: 0 put: (anObject _basicULongAt: 0)
+		_longSlotAt: -1 put: (anObject _longSlotAt: -1);
+		_longSlotAt: 0 put: (anObject _longSlotAt: 0)
 ]
 
 { #category : #'header access' }
@@ -206,11 +203,6 @@ ProtoObject >> _hasNamedSlots [
 { #category : #'header access' }
 ProtoObject >> _headerSizeInBytes [
 	^self _isSmall ifTrue: [8] ifFalse: [16]
-]
-
-{ #category : #underprimitives }
-ProtoObject >> _highHalf [
-	^self _oop bitShift: WordSize * 8 / -2
 ]
 
 { #category : #lookup }
@@ -266,11 +258,6 @@ ProtoObject >> _isSmall [
 	^(self _basicFlags bitAnd: IsSmall) = IsSmall
 ]
 
-{ #category : #underprimitives }
-ProtoObject >> _isSmallInteger [
-	^false
-]
-
 { #category : #'header access' }
 ProtoObject >> _isSpecial [
 	^(self _basicFlags bitAnd: IsSpecial) = IsSpecial
@@ -278,7 +265,17 @@ ProtoObject >> _isSpecial [
 
 { #category : #'header access' }
 ProtoObject >> _largeSize: size [
-	self _basicULongAt: _ExtendedSize put: size _asNative
+	self _longSlotAt: _ExtendedSize put: size _asNative
+]
+
+{ #category : #undermethods }
+ProtoObject >> _longAtValidOffset: offset [
+	| lo hi sign |
+	lo := self _uShortAtValidOffset: offset.
+	hi := self _uShortAtValidOffset: offset + 2.
+	sign := hi bitAnd: 16r8000.
+	hi := hi - (sign * 2).
+	^hi * 16r10000 + lo
 ]
 
 { #category : #lookup }
@@ -287,12 +284,12 @@ ProtoObject >> _lookup: aSymbol [
 ]
 
 { #category : #lookup }
-ProtoObject >> _lookup: aSymbol in: behavior [
+ProtoObject >> _lookup: aSymbol in: aBehavior [
 	| methods cm next |
-	methods := behavior _basicAt: 1.
+	methods := aBehavior _basicAt: 1.
 	cm := self _lookup: aSymbol inDictionary: methods.
 	cm == nil ifFalse: [^cm].
-	next := behavior _basicAt: 2.
+	next := aBehavior _basicAt: 2.
 	^next == nil ifFalse: [self _lookup: aSymbol in: next]
 ]
 
@@ -307,28 +304,18 @@ ProtoObject >> _lookup: aSymbol inDictionary: methodDictionary [
 	^nil
 ]
 
-{ #category : #underprimitives }
-ProtoObject >> _low32 [
-	^WordSize > 4 ifTrue: [self bitAnd: 0xFFFFFFFF] ifFalse: [self]
-]
-
-{ #category : #underprimitives }
-ProtoObject >> _lowHalf [
-	^self _oop bitAnd: 16rFFFF
-]
-
 { #category : #'header access' }
 ProtoObject >> _makeExtendedSize: size [
 	self
 		_beLarge;
 		_smallSize: 4;
 		_largeSize: size;
-		_basicULongAt: _Reserved put: 0 _asNative
+		_longSlotAt: _Reserved put: 0 _asNative
 ]
 
 { #category : #'header access' }
 ProtoObject >> _nextBasePointer [
-	^self _asPointer + self _sizeInBytes _asPointer
+	^self _asPointer + self _bodySizeInBytes _asPointer
 ]
 
 { #category : #'header access' }
@@ -355,6 +342,13 @@ ProtoObject >> _returnTo: aBeeFrame [
 	^self
 ]
 
+{ #category : #undermethods }
+ProtoObject >> _shortAtValidOffset: offset [
+	| ushort |
+	ushort := self _primitiveUShortAtOffset: offset.
+	^ushort >= 0x8000 ifTrue: [-0x10000 + ushort] ifFalse: [ushort]
+]
+
 { #category : #'header access' }
 ProtoObject >> _size [
 	^self _isSmall ifTrue: [self _smallSize] ifFalse: [self _largeSize]
@@ -362,16 +356,54 @@ ProtoObject >> _size [
 
 { #category : #'header access' }
 ProtoObject >> _sizeInBytes [
-	| total |
-	total := self _size.
-	^self _isBytes
-		ifTrue: [total + WordSize - 1 bitAnd: 0 - WordSize]
-		ifFalse: [total * WordSize]
+	^self _headerSizeInBytes + self _bodySizeInBytes
 ]
 
 { #category : #'header access' }
 ProtoObject >> _strongPointersSize [
 	^(self _isBytes or: [self _isSpecial]) ifTrue: [0] ifFalse: [0 + self _size]
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uLargeAtValidOffset: offset [
+	^(self _primitiveULargeAtOffset: offset)
+		ifNil: [self
+			_primitiveULargeAtOffset: offset
+			into: (LargePositiveInteger new: 8)]
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uLargeAtValidOffset: offset put: anInteger [
+	anInteger size > 8 ifTrue: [self error: 'does not fit in 64 bits'].
+	self _primitiveULargeAtOffset: offset put: anInteger.
+	^anInteger
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uLongAtValidOffset: offset [
+	^(self _primitiveULongAtOffset: offset)
+		ifNil: [self
+			_primitiveULongAtOffset: offset
+			into: (LargePositiveInteger new: 4)]
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uLongAtValidOffset: offset put: anInteger [
+	anInteger size > 4 ifTrue: [self error: 'does not fit in 32 bits'].
+	self _primitiveULongAtOffset: offset put: anInteger.
+	^anInteger
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uShortAtValidOffset: offset [
+	^self _primitiveUShortAtOffset: offset
+]
+
+{ #category : #undermethods }
+ProtoObject >> _uShortAtValidOffset: offset put: anInteger [
+	anInteger size > 2 ifTrue: [self error: 'does not fit in 16 bits'].
+	self _primitiveUShortAtOffset: offset put: anInteger.
+	^anInteger
 ]
 
 { #category : #comparing }
@@ -452,14 +484,14 @@ ProtoObject >> basicSize [
 
 { #category : #services }
 ProtoObject >> become: anotherObject [
-	Memory current make: self become: anotherObject
+	Smalltalk memory make: self become: anotherObject
 ]
 
 { #category : #'meta accessing' }
 ProtoObject >> behavior [
 	^self _isSmallInteger
 		ifTrue: [SmallInteger instanceBehavior]
-		ifFalse: [self _basicULongAt: 0]
+		ifFalse: [self _longSlotAt: 0]
 ]
 
 { #category : #'meta accessing' }
@@ -467,33 +499,24 @@ ProtoObject >> behavior: aBehavior [
 	^self _isSmallInteger
 		ifTrue: [self error: 'can''t change behavior of a small integer']
 		ifFalse: [
-			aBehavior holdRefererIfNeeded: self.
-			self _basicULongAt: 0 put: aBehavior]
+			aBehavior _holdRefererIfNeeded: self.
+			self _longSlotAt: 0 put: aBehavior]
 ]
 
-{ #category : #system }
 ProtoObject >> class [
 	^self behavior classBinding
 ]
 
 { #category : #system }
 ProtoObject >> doesNotUnderstand: aMessage [
-	| stream |
-	(Smalltalk at: #MessageNotUnderstood)
-		ifNotNil: [:cls | ^cls message: aMessage].
-	stream := '' writeStream.
-	aMessage arguments
-		do: [:argument | stream nextPutAll: argument printString]
-		separatedBy: [stream nextPutAll: ' '].
-	self
-		error: 'Message #' , aMessage selector , ' not understood by: '
-			, aMessage receiver printString
-			, ' with: ('
-			, stream contents
-			, ')'
-		title: 'Message not understood'
-		resumable: false.
-	self _halt
+	^MessageNotUnderstood message: aMessage receiver: self
+]
+
+{ #category : #private }
+ProtoObject >> doesNotUnderstand: selector with: arguments [
+	| message |
+	message := Message receiver: self selector: selector arguments: arguments.
+	^self doesNotUnderstand: message
 ]
 
 { #category : #private }
@@ -501,7 +524,7 @@ ProtoObject >> doesNotUnderstandSelector: selector [
 	| arguments message |
 	arguments := StackFrameCursor top moveNext
 		argumentsWithArity: selector arity.
-	message := Message receiver: self selector: selector arguments: arguments.
+	message := Message selector: selector arguments: arguments.
 	^self doesNotUnderstand: message
 ]
 
@@ -549,7 +572,7 @@ ProtoObject >> hash [
 
 { #category : #testing }
 ProtoObject >> hasIndexedSlots [
-	^self class _instancesAreArrayed
+	^self class instancesAreArrayed
 ]
 
 { #category : #private }
@@ -587,13 +610,13 @@ ProtoObject >> ignoreFinalization [
 
 { #category : #'header access' }
 ProtoObject >> initializeExtended: aBoolean contentSize: size [
-	self _basicULongAt: -1 put: 0 _asNative.
+	self _longSlotAt: -1 put: 0 _asNative.
 	aBoolean
 		ifTrue: [
 			self
 				_smallSize: 4;
-				_basicULongAt: _ExtendedSize put: size _asNative;
-				_basicULongAt: _Reserved put: 0 _asNative]
+				_longSlotAt: _ExtendedSize put: size _asNative;
+				_longSlotAt: _Reserved put: 0 _asNative]
 		ifFalse: [self _smallSize: size; _beSmall]
 ]
 
@@ -628,15 +651,6 @@ ProtoObject >> literalString [
 	^nil
 ]
 
-{ #category : #lookup }
-ProtoObject >> lookupAndInvoke: aSymbol [
-	| cm |
-	cm := self _cachedLookup: aSymbol.
-	cm == nil ifTrue: [^self doesNotUnderstandSelector: aSymbol].
-	cm prepareForExecution.
-	self _transferControlDiscardingLastArgTo: cm validNativeCodeAddress _asNative
-]
-
 { #category : #system }
 ProtoObject >> notNil [
 	^true
@@ -649,14 +663,19 @@ ProtoObject >> objectAtValid: index [
 
 { #category : #private }
 ProtoObject >> objectAtValid: index put: anObject [
-	anObject holdRefererIfNeeded: self.
+	anObject _holdRefererIfNeeded: self.
 	^self _basicAt: index put: anObject
 ]
 
 { #category : #system }
 ProtoObject >> perform: aSymbol [
+	| cm debug |
 	aSymbol arity = 0 ifFalse: [^self error: 'incorrect arity'].
-	^self lookupAndInvoke: aSymbol
+	cm := self _cachedLookup: aSymbol.
+	cm == nil ifTrue: [^self doesNotUnderstand: aSymbol with: #()].
+	debug ifNotNil: [cm := cm debuggableCopy].
+	cm prepareForExecution.
+	^self _invoke: cm nativeCode
 ]
 
 { #category : #system }
@@ -666,11 +685,15 @@ ProtoObject >> perform: aSymbol with: anObject [
 
 { #category : #system }
 ProtoObject >> perform: aSymbol withArguments: anArray [
-	| size |
+	| size cm debug |
 	size := anArray basicSize.
 	aSymbol arity = size ifFalse: [^self error: 'incorrect arity'].
+	cm := self _cachedLookup: aSymbol.
+	cm == nil ifTrue: [^self doesNotUnderstand: aSymbol with: anArray].
+	debug ifNotNil: [cm := cm debuggableCopy].
+	cm prepareForExecution.
 	anArray _expandInStackSized: size.
-	^self lookupAndInvoke: aSymbol
+	^self _invoke: cm nativeCode
 ]
 
 { #category : #accessing }
@@ -679,14 +702,6 @@ ProtoObject >> primitiveAt: i [
 	^self _isBytes
 		ifTrue: [self basicByteAt: i]
 		ifFalse: [self basicObjectAt: i]
-]
-
-{ #category : #unclassified }
-ProtoObject >> primitiveAt: i put: anObject [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
-	^self _isBytes
-		ifTrue: [self basicByteAt: i put: anObject]
-		ifFalse: [self basicObjectAt: i put: anObject]
 ]
 
 { #category : #underprimitives }
@@ -722,18 +737,6 @@ ProtoObject >> requireFinalization [
 { #category : #testing }
 ProtoObject >> requiresFinalization [
 	^self finalizationRegistry includes: self
-]
-
-{ #category : #private }
-ProtoObject >> shouldBeInRememberedSet [
-	| m |
-	m := Memory current.
-	(m isYoung: self) ifTrue: [^false].
-	(m isYoung: self behavior) ifTrue: [^true].
-	1 to: self _pointersSize do: [:index | | ivar |
-		ivar := self _basicAt: index.
-		ivar _isSmallInteger ifFalse: [(m isYoung: ivar) ifTrue: [^true]]].
-	^false
 ]
 
 { #category : #interrupts }

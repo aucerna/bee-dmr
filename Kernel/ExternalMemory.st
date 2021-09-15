@@ -101,7 +101,7 @@ ExternalMemory >> asUnsignedInteger [
 
 { #category : #accessing }
 ExternalMemory >> at: index [
-	^self atOffset: index - 1
+	^self byteAtOffset: index - 1
 ]
 
 { #category : #accessing }
@@ -112,32 +112,27 @@ ExternalMemory >> at: index ifAbsent: aBlock [
 
 { #category : #accessing }
 ExternalMemory >> at: index put: byte [
-	^self atOffset: index - 1 put: byte
-]
-
-{ #category : #private }
-ExternalMemory >> atOffset: offset [
-	^(address _basicAt: 1) _byteAt: offset + 1
-]
-
-{ #category : #private }
-ExternalMemory >> atOffset: offset put: byte [
-	^(address _basicAt: 1) _byteAt: offset + 1 put: byte
+	^self byteAtOffset: index - 1 put: byte
 ]
 
 { #category : #accessing }
 ExternalMemory >> byteAt: anInteger [
-	^self at: anInteger
+	^self byteAtOffset: anInteger - 1
 ]
 
 { #category : #accessing }
 ExternalMemory >> byteAt: anInteger put: byte [
-	^self at: anInteger put: byte
+	^self byteAtOffset: anInteger - 1 put: byte
 ]
 
 { #category : #accessing }
-ExternalMemory >> byteAtOffset: anInteger [
-	^self atOffset: anInteger
+ExternalMemory >> byteAtOffset: offset [
+	^(address _basicAt: 1) _byteAt: offset + 1
+]
+
+{ #category : #private }
+ExternalMemory >> byteAtOffset: offset put: byte [
+	^(address _basicAt: 1) _byteAt: offset + 1 put: byte
 ]
 
 { #category : #services }
@@ -203,7 +198,7 @@ ExternalMemory >> indexOf: byte [
 	| offset |
 	offset := 0.
 	[
-		(self atOffset: offset) = byte ifTrue: [^offset + 1].
+		(self byteAtOffset: offset) = byte ifTrue: [^offset + 1].
 		offset := offset + 1] repeat
 ]
 
@@ -255,7 +250,7 @@ ExternalMemory >> initialize [
 
 { #category : #accessing }
 ExternalMemory >> invalidate [
-	address := NullAddress
+	self address: 0
 ]
 
 { #category : #testing }
@@ -266,6 +261,15 @@ ExternalMemory >> isExternalMemory [
 { #category : #testing }
 ExternalMemory >> isValid [
 	^address != NullAddress
+]
+
+{ #category : #private }
+ExternalMemory >> largeAtOffset: offset [
+	offset _isSmallInteger
+		ifFalse: [^self error: offset printString , ' must be an SmallInteger'].
+	(offset < 0 or: [offset + 8 > self length])
+		ifTrue: [^self error: 'out of bounds'].
+	^(self objectAtValidOffset: offset) _asSmallInteger
 ]
 
 { #category : #accessing }
@@ -290,8 +294,8 @@ ExternalMemory >> longAtOffset: offset put: integer [
 { #category : #accessing }
 ExternalMemory >> longAtValidOffset: offset [
 	| lo hi sign |
-	lo := self uShortAtValidOffset: offset.
-	hi := self uShortAtValidOffset: offset + 2.
+	lo := self uShortAtOffset: offset.
+	hi := self uShortAtOffset: offset + 2.
 	sign := hi bitAnd: 16r8000.
 	hi := hi - (sign * 2).
 	^hi * 16r10000 + lo
@@ -334,6 +338,11 @@ ExternalMemory >> makeUnicode [
 	^unicode
 ]
 
+{ #category : #private }
+ExternalMemory >> objectAtValidOffset: offset [
+	^(address _basicAt: 1) _objectAtOffset: offset
+]
+
 { #category : #converting }
 ExternalMemory >> pointedMemory [
 	^self
@@ -341,16 +350,15 @@ ExternalMemory >> pointedMemory [
 
 { #category : #accessing }
 ExternalMemory >> uLargeAtOffset: offset [
-	| low hi |
-	low := self uLongAtOffset: offset.
-	hi := self uLongAtOffset: offset + 4.
-	^(hi bitShift: 32) + low
+	^((address _basicAt: 1) _primitiveULargeAtOffset: offset) ifNil: [
+		(address _basicAt: 1)
+			_primitiveULargeAtOffset: offset
+			into: (LargePositiveInteger new: 8)]
 ]
 
 { #category : #accessing }
-ExternalMemory >> uLargeAtOffset: offset put: value [
-	self uLongAtOffset: offset put: (value bitAnd: 16rFFFFFFFF).
-	self uLongAtOffset: offset + 4 put: (value bitShift: -32)
+ExternalMemory >> uLargeAtOffset: offset put: anInteger [
+	^(address _basicAt: 1) _primitiveULargeAtOffset: offset put: anInteger
 ]
 
 { #category : #printing }
@@ -379,7 +387,8 @@ ExternalMemory >> release [
 ExternalMemory >> releaseMemory [
 	"
 	default is do nothing
-	"	
+	"
+	
 ]
 
 { #category : #accessing }
@@ -421,16 +430,6 @@ ExternalMemory >> sessionShutdown [
 { #category : #startup }
 ExternalMemory >> sessionStartup [
 	self invalidate
-]
-
-{ #category : #accessing }
-ExternalMemory >> shortAtValidOffset: offset [
-	| lo hi sign |
-	lo := self atOffset: offset.
-	hi := self atOffset: offset + 1.
-	sign := hi bitAnd: 16r80.
-	hi := hi - (sign * 2).
-	^hi * 16r100 + lo
 ]
 
 { #category : #accessing }
@@ -478,60 +477,45 @@ ExternalMemory >> smallPointerAtOffset: offset put: anInteger [
 
 { #category : #accessing }
 ExternalMemory >> uLargeAtOffset: offset [
-	| low hi |
-	low := self uLongAtOffset: offset.
-	hi := self uLongAtOffset: offset + 4.
-	^(hi bitShift: 32) + low
+	^((address _basicAt: 1) _primitiveULargeAtOffset: offset) ifNil: [
+		(address _basicAt: 1)
+			_primitiveULargeAtOffset: offset
+			into: (LargePositiveInteger new: 8)]
 ]
 
 { #category : #accessing }
-ExternalMemory >> uLargeAtOffset: offset put: value [
-	self uLongAtOffset: offset put: (value bitAnd: 16rFFFFFFFF).
-	self uLongAtOffset: offset + 4 put: (value bitShift: -32)
+ExternalMemory >> uLargeAtOffset: offset put: anInteger [
+	^(address _basicAt: 1) _primitiveULargeAtOffset: offset put: anInteger
 ]
 
 { #category : #accessing }
 ExternalMemory >> uLongAtOffset: offset [
-	| ulong |
-	ulong := 0.
-	offset + 4
-		to: offset + 1
-		by: -1
-		do: [:i | ulong := (ulong bitShift: 8) + (self byteAt: i)].
-	^ulong
+	^((address _basicAt: 1) _primitiveULongAtOffset: offset) ifNil: [
+		(address _basicAt: 1)
+			_primitiveULongAtOffset: offset
+			into: (LargePositiveInteger new: 4)]
 ]
 
 { #category : #accessing }
 ExternalMemory >> uLongAtOffset: offset put: anInteger [
-	| low high |
-	low := anInteger isInteger
-		ifTrue: [anInteger bitAnd: 0xFFFF]
-		ifFalse: [anInteger lowPart].
-	high := anInteger isInteger
-		ifTrue: [anInteger bitShift: -16]
-		ifFalse: [anInteger highPart].
-	self
-		byteAt: offset + 1 put: (low bitAnd: 16rFF);
-		byteAt: offset + 2 put: (low bitShift: -8);
-		byteAt: offset + 3 put: (high bitAnd: 16rFF);
-		byteAt: offset + 4 put: ((high bitShift: -8) bitAnd: 16rFF)
+	^(address _basicAt: 1) _primitiveULongAtOffset: offset put: anInteger
 ]
 
 { #category : #accessing }
 ExternalMemory >> uShortAtOffset: offset [
-	^(self atOffset: offset) + ((self atOffset: offset + 1) bitShift: 8)
+	^(self byteAtOffset: offset) + ((self byteAtOffset: offset + 1) bitShift: 8)
 ]
 
 { #category : #accessing }
 ExternalMemory >> uShortAtOffset: offset put: integer [
 	self
-		atOffset: offset put: (integer bitAnd: 16rFF);
-		atOffset: offset + 1 put: ((integer bitShift: -8) bitAnd: 16rFF)
+		byteAtOffset: offset put: (integer bitAnd: 16rFF);
+		byteAtOffset: offset + 1 put: ((integer bitShift: -8) bitAnd: 16rFF)
 ]
 
 { #category : #accessing }
 ExternalMemory >> uShortAtValidOffset: offset [
-	^(self atOffset: offset + 1) * 16r100 + (self atOffset: offset)
+	^(self byteAtOffset: offset + 1) * 16r100 + (self byteAtOffset: offset)
 ]
 
 { #category : #services }

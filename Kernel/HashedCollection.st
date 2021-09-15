@@ -113,6 +113,14 @@ HashedCollection >> bucketOfSize: anInteger [
 ]
 
 { #category : #private }
+HashedCollection >> checkCapacity [
+	(table isCapacityGreaterThan: tally) ifTrue: [^true].
+	self usesWeakSlots ifFalse: [^false].
+	tally := table count.
+	^table isCapacityGreaterThan: tally
+]
+
+{ #category : #private }
 HashedCollection >> contentOfSize: anInteger [
 	^self policy == self
 		ifTrue: [(self bucketClass new: anInteger) owner: self]
@@ -169,7 +177,7 @@ HashedCollection >> hashFor: anObject [
 { #category : #private }
 HashedCollection >> incrementTally [
 	tally := tally + 1.
-	(table isCapacityGreaterThan: tally) ifFalse: [self grow]
+	self checkCapacity ifFalse: [self grow]
 ]
 
 { #category : #initialization }

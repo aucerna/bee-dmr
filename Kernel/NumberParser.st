@@ -194,7 +194,8 @@ NumberParser >> nextNumber: aCharacter [
 NumberParser >> nextScaledFrom: aNumber fractionDigits: digits [
 	| scale denominator sd |
 	scale := (stream atEnd not and: [stream peek isDigit])
-		ifTrue: [self nextIntegerRadix: 10].
+		ifTrue: [self nextIntegerRadix: 10]
+		ifFalse: [0].
 	denominator := 10 raisedToInteger: digits.
 	sd := ScaledDecimal
 		numerator: aNumber

@@ -43,6 +43,7 @@ SmallInteger >> - aNumber [
 
 { #category : #comparing }
 SmallInteger >> != aNumber [
+	aNumber _isSmallInteger ifFalse: [^aNumber != self].
 	^self == aNumber ifTrue: [false] ifFalse: [true]
 ]
 
@@ -336,11 +337,6 @@ SmallInteger >> isFixedObject [
 { #category : #testing }
 SmallInteger >> isSmallInteger [
 	^true
-]
-
-{ #category : #'bit operations' }
-SmallInteger >> low32 [
-	^WordSize > 4 ifTrue: [self bitAnd: 0xFFFFFFFF] ifFalse: [self]
 ]
 
 { #category : #private }

@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : #services }
-DummyGlobalDispatchCache >> lookupAndCache: selector in: aProtocol [
-	^self _lookup: selector in: aProtocol
+DummyGlobalDispatchCache >> lookupAndCache: selector in: aBehavior [
+	^self _lookup: selector in: aBehavior
 ]
 

@@ -21,6 +21,12 @@ Locale class >> startUp [
 	ActiveLocale := self new initialize
 ]
 
+{ #category : #accessing }
+Locale class >> current [
+	^ActiveLocale
+]
+
+
 { #category : #times }
 Locale >> amSymbol [
 	^time amSymbol

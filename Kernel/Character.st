@@ -181,14 +181,14 @@ Character class >> initializeCharacterConstants [
 		at: 'TimerTick' put: 253 asCharacter;
 		at: 'Emdash' put: 8212 asCharacter;
 		at: 'Endash' put: 8211 asCharacter;
-		at: 'Emspace' put: Character emspace;
-		at: 'Enspace' put: Character enspace;
-		at: 'Qmspace' put: Character qmspace;
-		at: 'Bullet' put: Character bullet;
-		at: 'Lquote' put: Character lquote;
-		at: 'Rquote' put: Character rquote;
-		at: 'Ldblquote' put: Character ldblquote;
-		at: 'Rdblquote' put: Character rdblquote
+		at: 'Emspace' put: 8195 asCharacter;
+		at: 'Enspace' put: 8194 asCharacter;
+		at: 'Qmspace' put: 8197 asCharacter;
+		at: 'Bullet' put: 8226 asCharacter;
+		at: 'Lquote' put: 8216 asCharacter;
+		at: 'Rquote' put: 8217 asCharacter;
+		at: 'Ldblquote' put: 8220 asCharacter;
+		at: 'Rdblquote' put: 8221 asCharacter
 ]
 
 { #category : #initialization }

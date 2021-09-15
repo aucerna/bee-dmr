@@ -154,6 +154,11 @@ LargePositiveInteger >> highBit [
 	^last highBit + (Bits * (n - 1))
 ]
 
+{ #category : #accessing }
+LargePositiveInteger >> lowUShort [
+	^self bitAnd: 0xFFFF
+]
+
 { #category : #private }
 LargePositiveInteger >> mult: aNumber [
 	| m integer n result |

@@ -13,10 +13,15 @@ Class {
 		'nativeCode'
 	],
 	#classVars : [
-		'Flags'
+		'Formats'
 	],
 	#category : #Kernel
 }
+
+{ #category : #initialization }
+CompiledBlock class >> ArgCountStretch [
+	^ArgCount
+]
 
 { #category : #initialization }
 CompiledBlock class >> ensureFormatCorrectness [
@@ -34,6 +39,11 @@ CompiledBlock class >> fromArray: anArray [
 	| block |
 	block := self new: anArray size - 2.
 	^block loadFrom: anArray
+]
+
+{ #category : #initialization }
+CompiledBlock class >> IdStretch [
+	^Id
 ]
 
 { #category : #initialization }
@@ -60,6 +70,11 @@ CompiledBlock class >> maxArgCount [
 { #category : #initialization }
 CompiledBlock class >> maxTempCount [
 	^(2 raisedTo: TempCount length) - 1
+]
+
+{ #category : #initialization }
+CompiledBlock class >> TempCountStretch [
+	^TempCount
 ]
 
 { #category : #accessing }
@@ -108,6 +123,15 @@ CompiledBlock >> bindMethod: aCompiledMethod [
 { #category : #accessing }
 CompiledBlock >> blockCode [
 	^nativeCode code
+]
+
+{ #category : #accessing }
+CompiledBlock >> blockNativeCode [
+	"
+	required to let the optimizing compiler inline this code
+	without confusing with CompiledMethod>>#nativeCode
+	"
+	^nativeCode
 ]
 
 { #category : #accessing }
@@ -199,6 +223,7 @@ CompiledBlock >> nativeCode [
 
 { #category : #comparing }
 CompiledBlock >> nativeCode: code [
+	code block: self.
 	nativeCode := code
 ]
 

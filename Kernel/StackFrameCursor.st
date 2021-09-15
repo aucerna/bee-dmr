@@ -26,10 +26,15 @@ StackFrameCursor class >> classFor: aStackWrapper [
 ]
 
 { #category : #'instance creation' }
+StackFrameCursor class >> native [
+	^self new
+]
+
+{ #category : #'instance creation' }
 StackFrameCursor class >> on: aStackWrapper [
 	| class |
 	class := self classFor: aStackWrapper.
-	^class new current: aStackWrapper lastFrame previous: aStackWrapper top
+	^class new current: aStackWrapper bp previous: aStackWrapper sp
 ]
 
 { #category : #'accessing instances' }
@@ -142,14 +147,9 @@ StackFrameCursor >> hasBlocks [
 	^m isBlock or: [m hasBlocks]
 ]
 
-{ #category : #actions }
-StackFrameCursor >> initialize [
-	
-]
-
 { #category : #accessing }
 StackFrameCursor >> method [
-	^current _asObject _basicAt: -1
+	^(current _asObject _basicAt: -1) _basicAt: 2
 ]
 
 { #category : #accessing }
@@ -157,11 +157,6 @@ StackFrameCursor >> methodEnvironment [
 	^self method isBlock
 		ifTrue: [self environment methodEnvironment]
 		ifFalse: [self environment]
-]
-
-{ #category : #accessing }
-StackFrameCursor >> methodFrame [
-	^self method isBlock ifTrue: [self environment methodFrame] ifFalse: [self]
 ]
 
 { #category : #actions }
@@ -191,6 +186,20 @@ StackFrameCursor >> previous [
 ]
 
 { #category : #accessing }
+StackFrameCursor >> printOn: aStream [
+	current ifNil: [^self].
+	aStream
+		nextPut: $@;
+		nextPutAll: (current * 2) hex.
+	previous ifNil: [^self].
+	aStream
+		space;
+		nextPut: $(;
+		nextPutAll: (previous * 2) hex;
+		nextPut: $)
+]
+
+{ #category : #accessing }
 StackFrameCursor >> receiver [
 	^current _asObject _basicAt: 0
 ]
@@ -198,6 +207,11 @@ StackFrameCursor >> receiver [
 { #category : #accessing }
 StackFrameCursor >> receiver: object [
 	current _asObject _basicAt: 0 put: object
+]
+
+{ #category : #accessing }
+StackFrameCursor >> returnAddress [
+	^(current _asObject _basicAt: 1) _asSmallInteger
 ]
 
 { #category : #accessing }

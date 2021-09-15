@@ -17,11 +17,6 @@ Class {
 }
 
 { #category : #accessing }
-GlobalDispatchCache class >> current [
-	^Thread currentGlobalLookup ifNil: [Current]
-]
-
-{ #category : #accessing }
 GlobalDispatchCache class >> current: aCache [
 	Current := aCache
 ]
@@ -32,28 +27,28 @@ GlobalDispatchCache class >> globalLookupCount [
 ]
 
 { #category : #accessing }
-GlobalDispatchCache >> at: selector for: protocol [
+GlobalDispatchCache >> at: selector for: aBehavior [
 	| index |
-	index := self indexOf: selector with: protocol.
-	^self lookup: selector for: protocol startingAt: index
+	index := self indexOf: selector with: aBehavior.
+	^self lookup: selector for: aBehavior startingAt: index
 ]
 
 { #category : #accessing }
-GlobalDispatchCache >> at: selector for: protocol put: aCompiledMethod [
+GlobalDispatchCache >> at: aSymbol for: aBehavior put: aCompiledMethod [
 	| index |
-	index := self indexOf: selector with: protocol.
-	^self startingAt: index for: protocol put: aCompiledMethod
+	index := self indexOf: aSymbol with: aBehavior.
+	^self startingAt: index for: aBehavior put: aCompiledMethod
 ]
 
 { #category : #accessing }
-GlobalDispatchCache >> flush: selector for: protocol [
+GlobalDispatchCache >> flush: selector for: aBehavior [
 	| index |
-	index := self indexOf: selector with: protocol.
-	^self flush: selector for: protocol startingAt: index
+	index := self indexOf: selector with: aBehavior.
+	^self flush: selector for: aBehavior startingAt: index
 ]
 
 { #category : #services }
-GlobalDispatchCache >> flush: selector for: aProtocol startingAt: position [
+GlobalDispatchCache >> flush: selector for: aBehavior startingAt: position [
 	contents
 		_basicAt: position put: nil;
 		_basicAt: position + 2 put: nil;
@@ -79,7 +74,7 @@ GlobalDispatchCache >> flush: selector forSpecies: aSpecies [
 GlobalDispatchCache >> flushAll: selector [
 	1 to: contents _size by: 2 do: [:i | | method |
 		method := contents _basicAt: i.
-		(method != nil and: [method selector == selector])
+		(method !== nil and: [method selector == selector])
 			ifTrue: [contents _basicAt: i put: nil]]
 ]
 
@@ -100,42 +95,44 @@ GlobalDispatchCache >> initialize [
 ]
 
 { #category : #accessing }
-GlobalDispatchCache >> lookup: selector for: aProtocol startingAt: position [
+GlobalDispatchCache >> lookup: selector for: aBehavior startingAt: position [
 	| index |
 	index := position.
 	8 timesRepeat: [| method protocol |
 		method := contents _basicAt: index.
 		method == nil ifTrue: [^nil].
 		protocol := contents _basicAt: index + 1.
-		(protocol == aProtocol and: [method selector == selector]) ifTrue: [^method].
+		(protocol == aBehavior and: [method selector == selector]) ifTrue: [^method].
 		index := index + 2].
 	^nil
 ]
 
 { #category : #services }
-GlobalDispatchCache >> lookupAndCache: selector in: aProtocol [
+GlobalDispatchCache >> lookupAndCache: aSymbol in: aBehavior [
 	| method |
-	method := self at: selector for: aProtocol.
+	aBehavior hasInstanceBehavior
+		ifTrue: [^self _lookup: aSymbol in: aBehavior].
+	method := self at: aSymbol for: aBehavior.
 	method == nil ifTrue: [
 		GlobalLookupCount := GlobalLookupCount + 1.
-		method := self _lookup: selector in: aProtocol.
-		self at: selector for: aProtocol put: method].
+		method := self _lookup: aSymbol in: aBehavior.
+		self at: aSymbol for: aBehavior put: method].
 	^method
 ]
 
 { #category : #services }
-GlobalDispatchCache >> startingAt: position for: aProtocol put: aCompiledMethod [
+GlobalDispatchCache >> startingAt: position for: aBehavior put: aCompiledMethod [
 	| index |
 	index := position.
 	8 timesRepeat: [| method |
 		method := contents _basicAt: index.
 		method == nil ifTrue: [
 			contents objectAtValid: index put: aCompiledMethod.
-			^contents objectAtValid: index + 1 put: aProtocol].
+			^contents objectAtValid: index + 1 put: aBehavior].
 		index := index + 2].
 	contents
 		objectAtValid: position put: aCompiledMethod;
-		objectAtValid: position + 1 put: aProtocol;
+		objectAtValid: position + 1 put: aBehavior;
 		_basicAt: position + 2 put: nil;
 		_basicAt: position + 4 put: nil;
 		_basicAt: position + 6 put: nil;
