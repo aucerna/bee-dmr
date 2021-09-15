@@ -49,6 +49,11 @@ StackChunk >> callbacksDo: aBlock [
 		chunk := chunk prev]
 ]
 
+{ #category : #accessing }
+StackChunk >> cursor [
+	^StackFrameCursor new current: bp previous: sp
+]
+
 { #category : #testing }
 StackChunk >> isForCallback [
 	^prev notNil
@@ -68,11 +73,18 @@ StackChunk >> prev: aCallbackStackLink [
 StackChunk >> recordStackPointers [
 	| frame dropped |
 	frame := StackFrameCursor top.
-	dropped := 4.
+	dropped := 1.
 	dropped timesRepeat: [frame moveNext].
 	bp := frame current.
 	sp := frame previous + 8 _asPointer
 		- 8 _asPointer "is going to push 2 arguments for ffiCall:withArguments"
+]
+
+{ #category : #actions }
+StackChunk >> relocate: anInteger [
+	sp := sp + anInteger.
+	bp := bp + anInteger.
+	base := base + anInteger
 ]
 
 { #category : #accessing }
