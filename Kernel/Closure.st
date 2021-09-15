@@ -28,6 +28,7 @@ Closure class >> initializeIndexes [
 { #category : #gs }
 Closure class >> newFrom: aBlock [
 	| size closure |
+	#atomic.
 	size := aBlock size + self instSize.
 	closure := self allocate: size * WordSize size: size.
 	closure _beNamed; _beArrayed.
@@ -44,7 +45,16 @@ Closure class >> receiverIndex [
 { #category : #handling }
 Closure >> _return: result [
 	self canReturn ifFalse: [^self cannotReturn].
-	^ActiveProcess returnTo: homeFrame methodFrame with: result
+	^ActiveProcess returnTo: homeFrame with: result
+]
+
+{ #category : #comparing }
+Closure >> = aBlockClosure [
+	self == aBlockClosure ifTrue: [^true].
+	self class == aBlockClosure class ifFalse: [^false].
+	self size = aBlockClosure size ifFalse: [^false].
+	block == aBlockClosure block ifFalse: [^false].
+	^true
 ]
 
 { #category : #accessing }
@@ -67,14 +77,6 @@ Closure >> arityError: anInteger [
 		, ', but was called with '
 		, count.
 	^self error: msg
-]
-
-{ #category : #errors }
-Closure >> basicAt: anInteger [
-	anInteger _isSmallInteger ifFalse: [^self outOfBoundsIndex: anInteger].
-	(1 <= anInteger and: [anInteger <= self _size])
-		ifFalse: [^self outOfBoundsIndex: anInteger].
-	^self _basicAt: anInteger
 ]
 
 { #category : #private }
@@ -137,14 +139,14 @@ Closure >> evaluateFor: anObject [
 { #category : #handling }
 Closure >> evaluateWith: value [
 	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> evaluateWith: anObject with: anotherObject [
 	block argumentCount = 2
 		ifFalse: [^super evaluateWith: anObject with: anotherObject].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #evaluating }
@@ -178,9 +180,15 @@ Closure >> forkNamed: aString [
 	^self forkAt: Processor activePriority named: aString
 ]
 
-{ #category : #handling }
-Closure >> forkThread [
-	^Thread newOn: self
+{ #category : #comparing }
+Closure >> hash [
+	| hash |
+	hash := self size.
+	hash := (hash hashMultiply: 16r19660D) bitXor: block hash.
+	1
+		to: hash
+		do: [:i | hash := (hash hashMultiply: 16r19660D) bitXor: (self at: i) hash].
+	^hash
 ]
 
 { #category : #handling }
@@ -188,14 +196,30 @@ Closure >> hasMethodEnvironment [
 	^self size >= ParentEnvironmentIndex
 ]
 
+{ #category : #accessing }
+Closure >> homeFrame [
+	^homeFrame
+]
+
+{ #category : #accessing }
+Closure >> homeFrame: aStackFrameCursor [
+	homeFrame := aStackFrameCursor
+]
+
 { #category : #evaluating }
-Closure >> ifCurtailed: exceptionClosure [
+Closure >> ifCurtailed: aBlock [
 	| success |
 	success := false.
-	^[
-		self value.
-		success := true]
-		ensure: [success ifFalse: [exceptionClosure value]]
+	^[| value |
+		value := self value.
+		success := true.
+		value]
+		ensure: [success ifFalse: [aBlock value]]
+]
+
+{ #category : #accessing }
+Closure >> invalidateHome [
+	homeFrame := nil
 ]
 
 { #category : #testing }
@@ -231,29 +255,9 @@ Closure >> methodEnvironment: environment [
 	self at: ParentEnvironmentIndex put: environment
 ]
 
-{ #category : #accessing }
-Closure >> methodFrame [
-	^homeFrame methodFrame
-]
-
 { #category : #handling }
 Closure >> needsArgument [
 	^self argumentCount > 0
-]
-
-{ #category : #handling }
-Closure >> newProcess [
-	^Process sending: #value to: self
-]
-
-{ #category : #handling }
-Closure >> newProcessWith: anArray [
-	| message |
-	message := MessageSend
-		receiver: self
-		selector: #valueWithArguments:
-		argument: anArray.
-	^Process evaluating: message
 ]
 
 { #category : #accessing }
@@ -335,25 +339,25 @@ Closure >> templateIndex [
 { #category : #handling }
 Closure >> value [
 	block argumentCount = 0 ifFalse: [^self arityError: 0].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: value [
 	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second [
 	block argumentCount = 2 ifFalse: [^self arityError: 2].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #handling }
 Closure >> value: first value: second value: third [
 	block argumentCount = 3 ifFalse: [^self arityError: 3].
-	self _transferControlTo: block blockCode
+	self _transferControlTo: block blockNativeCode
 ]
 
 { #category : #evaluating }
@@ -375,7 +379,7 @@ Closure >> valueWithArguments: arguments [
 	size := arguments basicSize.
 	block argumentCount = size ifFalse: [^self arityError: size].
 	arguments _expandInStackSized: size.
-	^self _invoke: block blockCode
+	^self _invoke: block blockNativeCode
 ]
 
 { #category : #handling }
