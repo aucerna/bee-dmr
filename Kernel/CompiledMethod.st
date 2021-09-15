@@ -177,7 +177,7 @@ CompiledMethod >> executeOn: receiver withArguments: anArray [
 	size := anArray basicSize.
 	self argumentCount = size ifFalse: [^self error: 'incorrect arity'].
 	anArray _expandInStackSized: size.
-	^receiver _invoke: self validNativeCodeAddress _asNative
+	^receiver _invoke: nativeCode
 ]
 
 { #category : #accessing }
@@ -278,6 +278,13 @@ CompiledMethod >> isOverridden [
 ]
 
 { #category : #accessing }
+CompiledMethod >> literalAt: anInteger [
+	^anInteger > 0
+		ifTrue: [self at: anInteger]
+		ifFalse: [self instVarAt: self class instSize + anInteger]
+]
+
+{ #category : #accessing }
 CompiledMethod >> literalIndexFrom: grossIndex [
 	| instVars index |
 	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].
@@ -305,18 +312,19 @@ CompiledMethod >> nativeCode [
 
 { #category : #accessing }
 CompiledMethod >> nativeCode: code [
+	code method: self.
 	nativeCode := code
 ]
 
 { #category : #accessing }
 CompiledMethod >> nativeCodeAddress [
 	nativeCode isNil ifTrue: [self nativize].
-	nativeCode nativeCodeAddress
+	^nativeCode codeAddress
 ]
 
 { #category : #services }
 CompiledMethod >> nativize [
-	nativeCode := Smalltalk nativizer nativeCodeFor: self
+	 self nativeCode: (Smalltalk nativizer nativeCodeFor: self)
 ]
 
 { #category : #copying }
@@ -332,10 +340,7 @@ CompiledMethod >> postCopy [
 
 { #category : #unclassified }
 CompiledMethod >> prepareForExecution [
-	self isNativized ifFalse: [self nativize].
-	nativeCode isFresh ifFalse: [
-		nativeCode acquireReferences.
-		self refreshBlocks]
+	self isNativized ifFalse: [self nativize]
 ]
 
 { #category : #accessing }
