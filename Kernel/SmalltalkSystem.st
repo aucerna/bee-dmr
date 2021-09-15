@@ -206,22 +206,6 @@ SmalltalkSystem >> finalizer [
 	^finalizer
 ]
 
-{ #category : #services }
-SmalltalkSystem >> flushNativizedSends [
-	ImageSegment bound do: [:s | 
-		s overriddenMethods ifNotNil: [:overridden | 
-			overridden
-				do: [:m | m isNativized ifTrue: [m currentVersion prepareForExecution]];
-				do: [:m | SendSite flush: m selector]]].
-	SendSite flush
-]
-
-{ #category : #services }
-SmalltalkSystem >> flushOverriddenSends [
-	ImageSegment bound do: [:s | s flushOverriddenSends].
-	SendSite flush
-]
-
 { #category : #accessing }
 SmalltalkSystem >> globals [
 	^globals
@@ -277,8 +261,18 @@ SmalltalkSystem >> initializeExternals [
 ]
 
 { #category : #initialization }
+SmalltalkSystem >> initializeFinalizationBlocks [
+	"
+	done in a separate stage because storing closures
+	in the kernel library is not supported yet
+	"
+	finalizer finalizer: [:object | object finalize].
+	resources finalizer: [:object | object finalize]
+]
+
+{ #category : #initialization }
 SmalltalkSystem >> initializeFinalizer [
-	finalizer := WeakIdentitySet new finalizer: [:object | object finalize]
+	finalizer := WeakIdentitySet new
 ]
 
 { #category : #initialization }
@@ -288,7 +282,7 @@ SmalltalkSystem >> initializeProperties [
 
 { #category : #initialization }
 SmalltalkSystem >> initializeResources [
-	resources := WeakIdentitySet new finalizer: [:object | object finalize]
+	resources := WeakIdentitySet new
 ]
 
 { #category : #initialization }
@@ -331,7 +325,7 @@ SmalltalkSystem >> keys [
 
 { #category : #accessing }
 SmalltalkSystem >> memory [
-	^Memory current
+	^memory
 ]
 
 { #category : #accessing }
@@ -524,10 +518,15 @@ SmalltalkSystem >> showBacktraceOf: aProcess label: aString [
 { #category : #'startup/shutdown' }
 SmalltalkSystem >> startUp [
 	self transcript initialize.
-	resources isNil ifTrue: [self initializeWeakRegistries] ifFalse: [
-		self ephemeronsDo: [:e | e activate].
-		resources do: [:object | object sessionStartup]].
-	self initializeExternals
+	self
+		initializeFinalizationBlocks;
+		ephemeronsDo: [:e | e activate];
+		initializeExternals	self initializeExternals
+]
+
+{ #category : #'startup/shutdown' }
+SmalltalkSystem >> startUpResources [
+	resources do: [:object | object sessionStartup]
 ]
 
 { #category : #accessing }
