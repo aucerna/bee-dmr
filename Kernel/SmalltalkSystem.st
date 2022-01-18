@@ -252,20 +252,6 @@ SmalltalkSystem >> initialize [
 	eventHandlers := WeakIdentityDictionary new.
 	registeredEvents := WeakIdentityDictionary new.
 	externals := OrderedCollection new.	
-	self initializeDMRMemory
-]
-
-{ #category : #initialization }
-SmalltalkSystem >> initializeDMRMemory [
-	| kernel rs |
-	kernel := GCSpace new.
-	rs := CriticalArray on: (Array new: 16 * 1024).
-	memory := Memory new
-		addSpace: kernel;
-		fromSpace: kernel;
-		eden: kernel;
-		rememberedSet: rs.
-	Memory current: memory
 ]
 
 { #category : #initialization }
@@ -279,20 +265,6 @@ SmalltalkSystem >> isBee [
 	^true
 ]
 
-{ #category : #private }
-SmalltalkSystem >> justDefined: aSymbol [
-	| s unresolved |
-	s := aSymbol asString.
-	unresolved := UnresolvedObjects
-		select: [:u | (u isKindOf: SymbolicReference) and: [u canBeSolvedWith: s]].
-	unresolved do: [:u | | object |
-		object := u bind.
-		object isNil ifTrue: [^self].
-		object == u ifFalse: [
-			UnresolvedObjects remove: u.
-			u become: object]]
-]
-
 { #category : #accessing }
 SmalltalkSystem >> keyAtValue: anObject [
 	^globals keyAtValue: anObject
@@ -301,11 +273,6 @@ SmalltalkSystem >> keyAtValue: anObject [
 { #category : #accessing }
 SmalltalkSystem >> keys [
 	^globals keys
-]
-
-{ #category : #accessing }
-SmalltalkSystem >> memory [
-	^Memory current
 ]
 
 { #category : #accessing }

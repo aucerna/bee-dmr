@@ -10,10 +10,24 @@ Class {
 		'name',
 		'version',
 		'imports',
-		'exports',
+		'namespace',
 		'hash',
-		'loadAction'
+		'loadAction',
+		'cachedLookups'
 	],
 	#category : #Kernel
 }
+
+
+{ #category : #initializing }
+Module >> initialize [
+	namespace := Namespace new.
+	cachedLookups := Dictionary new
+]
+
+{ #category : #private }
+Module >> justDefined: aSymbol [
+	lookups := cachedLookups at: aSymbol ifAbsent: [^nil].
+	lookups do: [:lookup | lookup flush]
+]
 
