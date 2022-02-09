@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -89,6 +89,25 @@ OBasicBlock >> allLoops [
 	^result
 ]
 
+{ #category : #private }
+OBasicBlock >> allReturnsWithBlocks [
+	"
+	last block ends in a return, but other blocks are the result of inlining,
+	hence they end in a jump to the next block, and the return is the instruction
+	before that jump
+	"
+	| result blocks last |
+	result := OrderedCollection new.
+	blocks := self withSuccessorsPostOrder.
+	last := blocks removeFirst.
+	result add: last lastInstruction -> last.
+	blocks do: [:block | | potential |
+		self _ASSERT: block lastInstruction isReturn not.
+		potential := block lastInstruction prev.
+		potential isReturn ifTrue: [result add: potential -> block]].
+	^result
+]
+
 { #category : #unclassified }
 OBasicBlock >> asArray [
 	^self asReversePostOrderInstructionsCollection asArray
@@ -102,6 +121,16 @@ OBasicBlock >> asReversePostOrderInstructionsCollection [
 		instructionsWithReversePostOrderSuccessorsDo: [:inst | collection
 			add: inst].
 	^collection
+]
+
+{ #category : #private }
+OBasicBlock >> basicFirst [
+	^firstInstruction
+]
+
+{ #category : #private }
+OBasicBlock >> basicLast [
+	^lastInstruction
 ]
 
 { #category : #unclassified }
@@ -134,11 +163,29 @@ OBasicBlock >> computeLiveOutInto: liveOut andLiveInInto: liveIn [
 				liveIn at: block put: live]]]
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OBasicBlock >> dissolveAllInstructions [
+	| value |
+	[
+		value := self lastValue.
+		value notNil]
+		whileTrue: [value dissolveDeep]
+]
+
+{ #category : #private }
 OBasicBlock >> dissolveIfUnreachable [
-	predecessors isEmpty ifTrue: [
-		self lastValue
-			ifNotNil: [:last | last reverseDo: [:instruction | instruction dissolve]]]
+	predecessors isEmpty ifTrue: [self dissolveAllInstructions]
+]
+
+{ #category : #private }
+OBasicBlock >> doDuplicateWith: map [
+	| block copy p |
+	block := map at: self.
+	self instructionsDo: [:i | 
+		copy := i duplicateWith: map.
+		block add: copy].
+	p := predecessors collect: [:pred | pred duplicateWith: map].
+	block predecessors: p
 ]
 
 { #category : #unclassified }
@@ -203,14 +250,34 @@ OBasicBlock >> dominatorTree [
 	^ODominatorTree from: root with: all dominators: idoms
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OBasicBlock >> duplicate [
+	^self duplicateWith: IdentityDictionary new
+]
+
+{ #category : #private }
+OBasicBlock >> duplicateWith: map [
+	| copy |
+	map at: self ifPresent: [:block | block].
+	self
+		withSuccessorsDo: [:block | 
+			copy := self class new.
+			map
+				at: block put: copy;
+				at: lastInstruction put: copy basicLast;
+				at: firstInstruction put: copy basicFirst.
+			block instructionsDo: [:inst | map at: inst put: nil]];
+		withSuccessorsDo: [:block | block doDuplicateWith: map].
+	^map at: self
+]
+
+{ #category : #private }
 OBasicBlock >> endWith: jumpType
 to: target
 skipping: skipped
 if: compare [
 	| jump |
 	jump := jumpType variable: compare target: target implicitTarget: skipped.
-	compare addUse: jump at: #variable.
 	self lastInstruction afterInsert: jump
 ]
 
@@ -378,6 +445,11 @@ OBasicBlock >> instructionsAsCollection [
 { #category : #unclassified }
 OBasicBlock >> instructionsDo: aBlock [
 	^firstInstruction do: aBlock
+]
+
+{ #category : #unclassified }
+OBasicBlock >> instructionsReverseDo: aBlock [
+	^lastInstruction reverseDo: aBlock
 ]
 
 { #category : #unclassified }
@@ -549,6 +621,18 @@ OBasicBlock >> predecessors [
 	^predecessors
 ]
 
+{ #category : #private }
+OBasicBlock >> predecessors: aCollection [
+	predecessors := aCollection
+]
+
+{ #category : #private }
+OBasicBlock >> primitivePrintOn: aStream [
+	aStream
+		nextPutAll: '<=== ' , self name , String cr , firstInstruction asString
+			, '===>'
+]
+
 { #category : #unclassified }
 OBasicBlock >> printAll [
 	| stream |
@@ -580,15 +664,13 @@ OBasicBlock >> printAllNamed [
 
 { #category : #unclassified }
 OBasicBlock >> printOn: aStream [
-	aStream
-		nextPutAll: '<=== ' , self name , String cr , firstInstruction asString
-			, '===>'
+	self primitivePrintOn: aStream
 ]
 
 { #category : #unclassified }
 OBasicBlock >> printOn: aStream using: names [
 	| string |
-	string := names at: self.
+	string := names at: self ifAbsent: [^self primitivePrintOn: aStream].
 	aStream nextPutAll: '<=== ' , string , ' [' , self hash printString , '] \'.
 	predecessors size > 0 ifTrue: [
 		predecessors allButLast
@@ -708,14 +790,12 @@ OBasicBlock >> successorsPostOrder [
 
 { #category : #unclassified }
 OBasicBlock >> unifyReturns [
-	| all last extra ret prev end jump phi |
-	all := self withSuccessorsPostOrder.
-	last := all removeFirst.
-	extra := OrderedCollection new.
-	all do: [:block | | potential |
-		potential := block lastInstruction prev.
-		potential class = OReturn ifTrue: [extra add: potential -> block]].
-	extra size = 0 ifTrue: [^self].
+	| returns last ret prev end jump phi |
+	returns := self allReturnsWithBlocks.
+	last := returns removeFirst.
+	ret := last key.
+	last := last value.
+	returns isEmpty ifTrue: [^self].
 	ret := last lastInstruction.
 	prev := ret prev.
 	(prev isPhi and: prev = last firstInstruction)
@@ -728,12 +808,10 @@ OBasicBlock >> unifyReturns [
 			jump := OJump to: end.
 			prev afterInsert: jump.
 			phi := OPhi new.
-			phi
-				addVariable: ret source from: last;
-				addUse: ret at: #source.
+			phi addVariable: ret source from: last.
 			ret source removeUse: ret at: #source.
 			ret source: phi; beforeInsert: phi].
-	extra do: [:assoc | | tail block |
+	returns do: [:assoc | | tail block |
 		tail := assoc key.
 		block := assoc value.
 		phi addVariable: tail source from: block.
@@ -762,28 +840,41 @@ OBasicBlock >> usesResultOf: anInstruction [
 ]
 
 { #category : #unclassified }
-OBasicBlock >> verifyAllInstructionsSanity [
+OBasicBlock >> validateAllInstructions [
+	| all blocks |
 	self withSuccessorsDo: [:block | | forward current backwards |
 		forward := OrderedCollection new.
 		current := block instVarNamed: #firstInstruction.
-		[current == nil] whileFalse: [
+		[current notNil] whileTrue: [
 			forward add: current.
 			current := current next].
 		backwards := OrderedCollection new.
 		current := forward last.
-		[current == nil] whileFalse: [
+		[current notNil] whileTrue: [
 			backwards add: current.
 			current := current prev].
-		self ASSERT: forward = backwards reversed]
+		self ASSERT: forward = backwards reversed].
+	all := Set new.
+	blocks := OrderedCollection new add: self; yourself.
+	[blocks isEmpty] whileFalse: [| block |
+		block := blocks removeFirst.
+		block instructionsWithSuccessorsDo: [:inst | 
+			all add: inst.
+			inst
+				operandsDo: [:o | o isBlockClosure ifTrue: [blocks add: o firstBlock]]]].
+	self instructionsWithSuccessorsDo: [:inst | 
+		self ASSERT: inst validateUses.
+		inst
+			usesDo: [:operand | self _ASSERT: (all includes: operand instruction)]]
 ]
 
 { #category : #unclassified }
-OBasicBlock >> verifyAllPredecessorsSanity [
+OBasicBlock >> validateCFG [
 	self withSuccessorsDo: [:block | 
 		block successors
-			do: [:successor | self ASSERT: (successor predecessors includes: block)].
+			do: [:successor | self _ASSERT: (successor predecessors includes: block)].
 		block predecessors
-			do: [:predecessor | self ASSERT: (predecessor successors includes: block)]]
+			do: [:predecessor | self _ASSERT: (predecessor successors includes: block)]]
 ]
 
 { #category : #unclassified }

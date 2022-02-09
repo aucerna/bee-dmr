@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -84,7 +84,7 @@ OptimizingRegisterAllocator >> allocation [
 { #category : #unclassified }
 OptimizingRegisterAllocator >> assign: register to: aRange [
 	((free includes: register) not and: [(used at: register) != aRange])
-		ifTrue: [self error: 'register ' , register , ' is not free'].
+		ifTrue: [self error: 'register ' , register printString , ' is not free'].
 	allocation at: aRange put: register.
 	free remove: register ifAbsent: [].
 	used at: register put: aRange
@@ -99,13 +99,6 @@ OptimizingRegisterAllocator >> assignRegisterTo: instruction in: aRange [
 			ifFalse: [free last]].
 	"register == edx ifTrue: [self halt]."
 	self assign: register to: aRange
-]
-
-{ #category : #unclassified }
-OptimizingRegisterAllocator >> assureLiveRangeOf: operand startingAt: anInstruction [
-	| range |
-	range := self assureLiveRangeStartingAt: anInstruction in: currentBlock.
-	liveRanges at: operand put: range
 ]
 
 { #category : #unclassified }
@@ -178,7 +171,8 @@ OptimizingRegisterAllocator >> doAllocation [
 
 { #category : #unclassified }
 OptimizingRegisterAllocator >> firstBlock: aBasicBlock [
-	firstBlock := aBasicBlock
+	firstBlock := aBasicBlock.
+	locals := 2 + firstBlock activationRecord temporaries
 ]
 
 { #category : #unclassified }
@@ -199,32 +193,14 @@ OptimizingRegisterAllocator >> initialize [
 	liveRanges := IdentityDictionary new.
 	unifiedLiveRanges := IdentityDictionary new.
 	expirations := IdentityDictionary new.
-	locals := 2.
 	used := Dictionary new.
 	usedOut := Dictionary new
 ]
 
 { #category : #unclassified }
-OptimizingRegisterAllocator >> insertCopyResultAfter: messageSend [
-	| copy range |
-	copy := OUnaryOperation receiver: messageSend name: #copyResult.
-	messageSend
-		afterInsert: copy;
-		replaceAllUsesWith: copy;
-		addUse: copy at: #receiver.
-	range := self liveRangeOf: messageSend.
-	range definition: copy.
-	liveRanges at: copy put: range.
-	unifiedLiveRanges
-		at: messageSend
-		ifPresent: [:unified | unifiedLiveRanges at: copy put: unified]
-]
-
-{ #category : #unclassified }
 OptimizingRegisterAllocator >> insertCopyToR: anInstruction before: inst [
 	| copy range |
-	copy := OUnaryOperation receiver: anInstruction name: #copy.
-	anInstruction addUse: copy at: #receiver.
+	copy := anInstruction newCopy.
 	inst beforeInsert: copy.
 	range := self unifiedLiveRangeOf: anInstruction.
 	liveRanges at: copy put: range.
@@ -232,24 +208,22 @@ OptimizingRegisterAllocator >> insertCopyToR: anInstruction before: inst [
 ]
 
 { #category : #unclassified }
-OptimizingRegisterAllocator >> insertLoadBefore: use at: block changing: operand [
-	| stack load range definition |
-	use isPhi ifTrue: [
-		range := self liveRangeOf: use.
-		range beSpilled.
-		^self].
+OptimizingRegisterAllocator >> insertLoadBeforeUse: operand [
+	| stack load use range definition predecessor |
 	stack := used at: abi regFP.
-	load := OBinaryConstantOperation
-		left: stack anyDefinition
-		right: 1 - locals
-		name: #_basicAt:.
-	stack anyDefinition addUse: load at: #left.
-	use beforeInsert: load.
+	load := OLoadOperation base: stack anyDefinition slotAtImm: 1 - locals.
+	use := operand instruction.
+	use isPhi
+		ifTrue: [
+			predecessor := operand name.
+			predecessor lastValue beforeInsert: load.
+			range := self assureLiveRangeStartingAt: load in: predecessor]
+		ifFalse: [
+			use beforeInsert: load.
+			range := self assureLiveRangeStartingAt: load in: currentBlock].
 	definition := operand definition.
-	operand replaceUseWith: load.
-	load addUse: use at: operand name.
-	range := self assureLiveRangeStartingAt: load.
-	range addUseFrom: use at: block.
+	operand transferUseTo: load.
+	range addUseFrom: use at: currentBlock.
 	self kill: range at: use.
 	allocation
 		at: definition
@@ -259,7 +233,7 @@ OptimizingRegisterAllocator >> insertLoadBefore: use at: block changing: operand
 { #category : #unclassified }
 OptimizingRegisterAllocator >> insertPop: anInstruction to: register after: messageSend [
 	| pop range |
-	pop := OUnaryOperation receiver: nil name: #pop.
+	pop := OUnaryOperation receiver: OInstruction new name: #pop.
 	messageSend afterInsert: pop.
 	range := self unifiedLiveRangeOf: anInstruction.
 	liveRanges at: pop put: range.
@@ -267,33 +241,25 @@ OptimizingRegisterAllocator >> insertPop: anInstruction to: register after: mess
 ]
 
 { #category : #unclassified }
-OptimizingRegisterAllocator >> insertPush: anInstruction before: inst [
-	| push |
-	push := OUnaryOperation receiver: anInstruction name: #push.
-	anInstruction addUse: push at: #receiver.
-	inst beforeInsert: push
-]
-
-{ #category : #unclassified }
-OptimizingRegisterAllocator >> insertStoreAfter: definition at: block [
-	| stack store range |
+OptimizingRegisterAllocator >> insertStoreAfter: definition with: aLiveRange at: block [
+	| stack store range reg |
 	unifiedLiveRanges removeKey: definition ifAbsent: [].
 	definition isPhi ifTrue: [^self].
 	stack := used at: abi regFP.
-	store := OTernaryOperation
-		receiver: stack anyDefinition
-		left: 1 - locals
-		right: definition
-		name: #_basicAt:put:.
-	stack anyDefinition addUse: store at: #receiver.
-	definition addUse: store at: #right.
+	store := OStoreOperation
+		base: stack anyDefinition
+		slotAtImm: 1 - locals
+		put: definition.
 	definition afterInsert: store.
 	range := self assureLiveRangeStartingAt: definition.
 	range addUseFrom: store at: block.
 	stack addUseFrom: store at: block.
 	self kill: range at: store.
 	range := self assureLiveRangeStartingAt: store.
-	self kill: range at: store
+	self kill: range at: store.
+	usedOut at: block ifPresent: [:map | 
+		reg := map keyAtValue: aLiveRange ifAbsent: nil.
+		reg ifNotNil: [map removeKey: reg]]
 ]
 
 { #category : #unclassified }
@@ -327,7 +293,7 @@ OptimizingRegisterAllocator >> preallocateImplicitVariables [
 	firstBlock instructionsDo: [:inst | | range register |
 		inst isLoadImplicit ifFalse: [^self].
 		range := self unifiedLiveRangeOf: inst.
-		register := inst source.
+		register := inst register.
 		register ifNotNil: [allocation at: range put: register]]
 ]
 
@@ -339,7 +305,7 @@ OptimizingRegisterAllocator >> rangesEndingAt: instruction [
 { #category : #private }
 OptimizingRegisterAllocator >> recalculateRegisterUsage [
 	| incoming recalculated |
-	currentBlock predecessors size = 0 ifTrue: [^self].
+	currentBlock predecessors isEmpty ifTrue: [^self].
 	incoming := (currentBlock predecessors
 		select: [:block | usedOut includesKey: block])
 		collect: [:block | usedOut at: block].
@@ -355,7 +321,7 @@ OptimizingRegisterAllocator >> recalculateRegisterUsage [
 		removeAll: used keys
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingRegisterAllocator >> repairToRespectABI: messageSend with: range [
 	| result clobbered receiver spillPoint |
 	result := allocation at: messageSend ifAbsent: nil.
@@ -363,18 +329,15 @@ OptimizingRegisterAllocator >> repairToRespectABI: messageSend with: range [
 		removeKey: abi regFP ifAbsent: [];
 		removeKey: result ifAbsent: [];
 		yourself) associations.
-	spillPoint := messageSend arguments size > 0
-		ifTrue: [messageSend arguments first]
-		ifFalse: [messageSend].
+	spillPoint := messageSend arguments isEmpty
+		ifTrue: [messageSend]
+		ifFalse: [messageSend arguments first].
 	clobbered do: [:assoc | 
-		self
-			insertPush: assoc value anyDefinition before: spillPoint;
-			insertPop: assoc value anyDefinition to: assoc key after: messageSend].
+		assoc value anyDefinition insertPushBefore: spillPoint.
+		self insertPop: assoc value anyDefinition to: assoc key after: messageSend].
 	receiver := allocation at: messageSend receiver.
 	receiver == abi regR
-		ifFalse: [self insertCopyToR: messageSend receiver before: messageSend].
-	(result != nil and: [result != abi regR])
-		ifTrue: [self insertCopyResultAfter: messageSend]
+		ifFalse: [self insertCopyToR: messageSend receiver before: messageSend]
 ]
 
 { #category : #unclassified }
@@ -397,12 +360,8 @@ OptimizingRegisterAllocator >> splitRange: aLiveRange [
 	| real |
 	real := self unifiedLiveRangeOfRange: aLiveRange.
 	real definitionsWithBlocksDo: [:definition :block | 
-		definition allUses
-			do: [:operand | self
-				insertLoadBefore: operand instruction
-				at: nil
-				changing: operand].
-		self insertStoreAfter: definition at: block]
+		definition allUses do: [:operand | self insertLoadBeforeUse: operand].
+		self insertStoreAfter: definition with: aLiveRange at: block]
 ]
 
 { #category : #unclassified }
@@ -459,7 +418,7 @@ OptimizingRegisterAllocator >> usedRangeReadLast [
 					anySatisfy: [:definition | instruction usesResultOf: definition]].
 			ranges size = 1 ifTrue: [^ranges first].
 			ranges size = 0 ifTrue: [^candidate]].
-	self ASSERT: false
+	self error: 'no range found'
 ]
 
 { #category : #unclassified }
@@ -501,6 +460,15 @@ OptimizingRegisterAllocator >> visitJumpFalse: instruction [
 { #category : #unclassified }
 OptimizingRegisterAllocator >> visitJumpTrue: instruction [
 	self use: instruction variable from: instruction
+]
+
+{ #category : #unclassified }
+OptimizingRegisterAllocator >> visitLoad: load [
+	| index |
+	self use: load base from: load.
+	index := load index.
+	(index isInstruction andNot: [index isConstant])
+		ifTrue: [self use: index from: load]
 ]
 
 { #category : #unclassified }
@@ -546,11 +514,10 @@ OptimizingRegisterAllocator >> visitReturn: instruction [
 ]
 
 { #category : #unclassified }
-OptimizingRegisterAllocator >> visitTernary: instruction [
-	self use: instruction receiver from: instruction.
-	instruction left isInteger
-		ifFalse: [self use: instruction left from: instruction].
-	self use: instruction right from: instruction
+OptimizingRegisterAllocator >> visitStore: store [
+	self use: store base from: store.
+	store index isInteger ifFalse: [self use: store index from: store].
+	self use: store value from: store
 ]
 
 { #category : #unclassified }

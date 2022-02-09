@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -185,8 +185,7 @@ OptimizingBraunAssigner >> getRegisterForSend: send [
 	| receiver copy |
 	receiver := send receiver.
 	copy := receiver insertCopyBefore: send.
-	copy addUse: send at: #receiver.
-	receiver removeUse: send at: #receiver.
+	send changeUseFrom: receiver to: copy at: #receiver.
 	liveness kill: copy at: send.
 	assignments at: copy put: eax.
 	^eax

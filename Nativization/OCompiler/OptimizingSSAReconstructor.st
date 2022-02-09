@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -40,8 +40,7 @@ OptimizingSSAReconstructor >> insertPhiAt: block [
 		arguments := predecessors collect: [:pred | | search |
 			search := pred lastInstruction.
 			self reachingDefinitionFrom: search at: pred].
-		phi := OPhi withAll: arguments in: predecessors.
-		arguments with: predecessors do: [:var :pred | var addUse: phi at: pred].
+		phi := OPhi new variables: arguments blocks: predecessors.
 		block addFront: phi.
 		phi]
 ]
@@ -78,7 +77,7 @@ OptimizingSSAReconstructor >> reconstructSSA [
 				block := blocks at: user.
 				search := user prev].
 		def := self reachingDefinitionFrom: search at: block.
-		use disolveReplacingWith: def]
+		use transferUseTo: def]
 ]
 
 { #category : #initialization }

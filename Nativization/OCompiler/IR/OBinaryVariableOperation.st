@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -34,6 +34,7 @@ OBinaryVariableOperation >> operandsDo: aBlock [
 
 { #category : #unclassified }
 OBinaryVariableOperation >> printStringUsing: names [
-	^(names at: left ifAbsent: 'missing') , ' ' , name , ' ' , (names at: right)
+	^(names at: left ifAbsent: ['?']) , ' ' , name , ' '
+		, (names at: right ifAbsent: ['?'])
 ]
 

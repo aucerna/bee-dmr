@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Package { #name : #IR,
@@ -15,7 +15,6 @@ Package { #name : #IR,
 		'OBlockClosure',
 		'OComposedLiveRange',
 		'OConstant',
-		'ODefineArgument',
 		'ODominatorTree',
 		'OEndInstruction',
 		'OInstruction',
@@ -26,21 +25,18 @@ Package { #name : #IR,
 		'OLiveRange',
 		'OLoadConstant',
 		'OLoadImplicit',
+		'OLoadOperation',
+		'OMemoryOperation',
 		'OMessageSend',
 		'OOperand',
 		'OPhi',
 		'OPrimitiveOperation',
-		'OReadVariable',
 		'OReturn',
 		'OSimpleLiveRange',
-		'OTemporary',
+		'OStoreOperation',
 		'OTernaryOperation',
 		'OTiling',
 		'OUnaryOperation',
-		'OUseVariable',
-		'OValue',
-		'OVariable',
-		'OWriteVariable'
+		'OValue'
 	]
 }
-

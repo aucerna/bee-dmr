@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -46,9 +46,21 @@ OReturn >> basicPrintString [
 	^'[ret ' , source primitivePrintString , ']'
 ]
 
+{ #category : #private }
+OReturn >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy
+		argumentsCount: argumentsCount;
+		source: (source duplicateWith: map);
+		frame: (frame duplicateWith: map).
+	^copy
+]
+
 { #category : #unclassified }
 OReturn >> frame: anInstruction [
-	frame := anInstruction
+	frame := anInstruction.
+	frame addUse: self at: #frame
 ]
 
 { #category : #unclassified }
@@ -69,7 +81,7 @@ OReturn >> primitivePrintString [
 
 { #category : #unclassified }
 OReturn >> printStringUsing: names [
-	^'ret ' , (names at: source ifAbsent: 'missing') , ''
+	^'ret ' , (names at: source ifAbsent: ['?']) , ''
 ]
 
 { #category : #unclassified }
@@ -79,7 +91,8 @@ OReturn >> source [
 
 { #category : #unclassified }
 OReturn >> source: anInstruction [
-	source := anInstruction
+	source := anInstruction.
+	source addUse: self at: #source
 ]
 
 { #category : #unclassified }

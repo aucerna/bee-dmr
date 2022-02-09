@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -126,6 +126,17 @@ OInstruction >> beforeInsertAll: anInstruction [
 	self shouldBeImplemented
 ]
 
+{ #category : #testing }
+OInstruction >> canHaveSideEffects [
+	^true
+]
+
+{ #category : #unclassified }
+OInstruction >> changeUseFrom: anInstruction to: anotherInstruction at: operand [
+	anotherInstruction addUse: self at: operand.
+	anInstruction removeUse: self at: operand
+]
+
 { #category : #unclassified }
 OInstruction >> cutFollowing [
 	| end |
@@ -158,12 +169,27 @@ OInstruction >> detect: aBlock ifNone: absentBlock [
 
 { #category : #unclassified }
 OInstruction >> dissolve [
-	self untie; operandsDo: [:instruction | instruction removeUse: self]
+	self untie; operandsDo: [:instruction | instruction removeUseBy: self]
+]
+
+{ #category : #unclassified }
+OInstruction >> dissolveDeep [
+	prev ifNil: [^self].
+	self
+		untie;
+		operandsDo: [:instruction | instruction
+			removeUseBy: self;
+			dissolveIfUseless]
 ]
 
 { #category : #unclassified }
 OInstruction >> dissolveIfUnused [
 	self isUsed ifFalse: [self dissolve]
+]
+
+{ #category : #unclassified }
+OInstruction >> dissolveIfUseless [
+	self isUseless ifTrue: [self dissolveDeep]
 ]
 
 { #category : #unclassified }
@@ -173,7 +199,10 @@ OInstruction >> dissolveReplacingWith: anInstruction [
 	anInstruction prev: prev.
 	anInstruction next: next.
 	prev := next := nil.
-	self operandsDo: [:instruction | instruction removeUse: self].
+	self
+		operandsDo: [:instruction | instruction
+			removeUseBy: self;
+			dissolveIfUseless].
 	self replaceAllUsesWith: anInstruction
 ]
 
@@ -186,7 +215,7 @@ OInstruction >> dissolveReplacingWithAll: instructions [
 	last next: next.
 	next prev: last.
 	prev := next := nil.
-	self operandsDo: [:instruction | instruction removeUse: self].
+	self operandsDo: [:instruction | instruction removeUseBy: self].
 	self replaceAllUsesWith: last
 ]
 
@@ -196,6 +225,19 @@ OInstruction >> do: aBlock [
 	following := next.
 	aBlock value: self.
 	next ifNil: [following do: aBlock] ifNotNil: [next do: aBlock]
+]
+
+{ #category : #unclassified }
+OInstruction >> doDuplicateWith: map [
+	| copy |
+	copy := self class new.
+	map at: self put: copy.
+	^copy
+]
+
+{ #category : #unclassified }
+OInstruction >> duplicateWith: map [
+	^(map at: self ifAbsent: [self]) ifNil: [self doDuplicateWith: map]
 ]
 
 { #category : #unclassified }
@@ -233,9 +275,13 @@ OInstruction >> insertCopyBefore: anInstruction [
 OInstruction >> insertPushBefore: anInstruction [
 	| push |
 	push := OUnaryOperation receiver: self name: #push.
-	self addUse: push at: #receiver.
 	anInstruction beforeInsert: push.
 	^push
+]
+
+{ #category : #unclassified }
+OInstruction >> isBlockClosure [
+	^false
 ]
 
 { #category : #unclassified }
@@ -250,11 +296,6 @@ OInstruction >> isConditionalJump [
 
 { #category : #unclassified }
 OInstruction >> isConstant [
-	^false
-]
-
-{ #category : #unclassified }
-OInstruction >> isDefineArgument [
 	^false
 ]
 
@@ -285,7 +326,17 @@ OInstruction >> isJump [
 ]
 
 { #category : #unclassified }
+OInstruction >> isLoad [
+	^false
+]
+
+{ #category : #unclassified }
 OInstruction >> isLoadImplicit [
+	^false
+]
+
+{ #category : #unclassified }
+OInstruction >> isMemoryOperation [
 	^false
 ]
 
@@ -306,6 +357,11 @@ OInstruction >> isPrimitiveOperation [
 
 { #category : #unclassified }
 OInstruction >> isReturn [
+	^false
+]
+
+{ #category : #unclassified }
+OInstruction >> isStore [
 	^false
 ]
 
@@ -332,6 +388,11 @@ OInstruction >> isUsedJustOnce [
 { #category : #unclassified }
 OInstruction >> isUsedOnlyBy: instruction [
 	^self isUsedJustOnce and: [firstUse user == instruction]
+]
+
+{ #category : #unclassified }
+OInstruction >> isUseless [
+	^firstUse isNil andNot: [self canHaveSideEffects]
 ]
 
 { #category : #unclassified }
@@ -376,10 +437,7 @@ OInstruction >> livesOutOfBlock: aBasicBlock [
 
 { #category : #unclassified }
 OInstruction >> newCopy [
-	| copy |
-	copy := OUnaryOperation receiver: self name: #copy.
-	self addUse: copy at: #receiver.
-	^copy
+	^OUnaryOperation receiver: self name: #copy
 ]
 
 { #category : #unclassified }
@@ -450,7 +508,8 @@ OInstruction >> printForwardOn: aStream using: names [
 		aStream nextPutAll: '...'.
 		^self].
 	aStream
-		nextPutAll: (names at: self) , ' := ' , (self printStringUsing: names);
+		nextPutAll: (names at: self ifAbsent: '?') , ' := '
+			, (self printStringUsing: names);
 		cr.
 	next printForwardOn: aStream using: names
 ]
@@ -467,6 +526,11 @@ OInstruction >> printOn: aStream [
 ]
 
 { #category : #unclassified }
+OInstruction >> printStringUsing: names [
+	^names at: self ifAbsent: ['?']
+]
+
+{ #category : #unclassified }
 OInstruction >> realReverseDo: aBlock [
 	| following |
 	following := prev.
@@ -477,10 +541,13 @@ OInstruction >> realReverseDo: aBlock [
 ]
 
 { #category : #unclassified }
-OInstruction >> removeUse: instruction [
-	firstUse instruction == instruction
-		ifTrue: [firstUse := firstUse nextUse]
-		ifFalse: [firstUse removeUse: instruction]
+OInstruction >> removeUse: anOperand [
+	self _ASSERT: anOperand class == OOperand.
+	firstUse == anOperand
+		ifTrue: [
+			firstUse := firstUse nextUse.
+			anOperand nextUse: nil]
+		ifFalse: [firstUse removeUse: anOperand]
 ]
 
 { #category : #unclassified }
@@ -491,30 +558,25 @@ OInstruction >> removeUse: instruction at: name [
 ]
 
 { #category : #unclassified }
+OInstruction >> removeUseBy: instruction [
+	firstUse instruction == instruction
+		ifTrue: [firstUse := firstUse nextUse]
+		ifFalse: [firstUse removeUseBy: instruction]
+]
+
+{ #category : #unclassified }
 OInstruction >> replaceAllUsesWith: anInstruction [
 	self == anInstruction ifTrue: [^self].
-	firstUse ifNotNil: [
-		firstUse replaceAllUsesWith: anInstruction.
-		anInstruction addUse: firstUse.
-		firstUse := nil]
+	firstUse ifNil: [^self].
+	firstUse replaceAllUsesWith: anInstruction.
+	self _ASSERT: firstUse isNil
 ]
 
 { #category : #unclassified }
-OInstruction >> replaceOperand: name with: instruction [
-	| previous |
-	previous := self atOperand: name.
-	previous removeUse: self.
-	self atOperand: name put: instruction.
-	instruction addUse: self at: name
-]
-
-{ #category : #unclassified }
-OInstruction >> replaceUsesOf: value with: instruction [
-	self operandsDo: [:operand | 
-		operand = value ifTrue: [
-			operand
-				usesDo: [:use | use user = self
-					ifTrue: [use disolveReplacingWith: instruction]]]]
+OInstruction >> replaceUsesOf: anInstruction with: anotherInstruction [
+	self operandsDo: [:inst | 
+		inst = anInstruction
+			ifTrue: [inst transferUsesBy: self toUsesOf: anotherInstruction]]
 ]
 
 { #category : #unclassified }
@@ -540,6 +602,14 @@ OInstruction >> reverseDo: aBlock [
 { #category : #unclassified }
 OInstruction >> targets [
 	^OrderedCollection new
+]
+
+{ #category : #unclassified }
+OInstruction >> transferUsesBy: anInstruction toUsesOf: anotherInstruction [
+	firstUse
+		ifNotNil: [firstUse
+			transferUsesBy: anInstruction
+			toUsesOf: anotherInstruction]
 ]
 
 { #category : #unclassified }
@@ -569,5 +639,16 @@ OInstruction >> useDistanceTo: value [
 { #category : #unclassified }
 OInstruction >> usesDo: aBlock [
 	firstUse ifNotNil: [firstUse usesDo: aBlock]
+]
+
+{ #category : #unclassified }
+OInstruction >> validateUses [
+	| found |
+	found := Set new.
+	self allUses do: [:use | 
+		use definition == self ifFalse: [self halt].
+		(found includes: use instruction -> use name) ifTrue: [^false halt].
+		found add: use instruction -> use name].
+	^true
 ]
 

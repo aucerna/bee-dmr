@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -26,11 +26,6 @@ from: block2 [
 	^self new
 		addVariable: operation1 from: block1;
 		addVariable: operation2 from: block2
-]
-
-{ #category : #unclassified }
-OPhi class >> withAll: operations in: blocks [
-	^self new variables: operations; blocks: blocks copy
 ]
 
 { #category : #unclassified }
@@ -73,20 +68,31 @@ OPhi >> basicPrintString [
 	^'[phi(' , (sources allButLast: 2) , ')]'
 ]
 
+{ #category : #private }
+OPhi >> basicVariables: aCollection blocks: anotherCollection [
+	blocks := anotherCollection.
+	variables := aCollection
+]
+
 { #category : #enumerating }
 OPhi >> blocks [
 	^blocks
 ]
 
 { #category : #unclassified }
-OPhi >> blocks: aCollection [
-	blocks := aCollection
-]
-
-{ #category : #unclassified }
 OPhi >> clearVariables [
 	variables := OrderedCollection new.
 	blocks := OrderedCollection new
+]
+
+{ #category : #unclassified }
+OPhi >> doDuplicateWith: map [
+	| copy b v |
+	copy := super doDuplicateWith: map.
+	b := blocks collect: [:block | block duplicateWith: map].
+	v := variables collect: [:variable | variable duplicateWith: map].
+	copy variables: v blocks: b.
+	^copy
 ]
 
 { #category : #unclassified }
@@ -117,8 +123,8 @@ OPhi >> printStringUsing: names [
 		ifTrue: [
 			(variables
 				with: blocks
-				collect: [:var :block | (names at: block ifAbsent: ['missing']) , '->'
-					, (names at: var ifAbsent: ['missing'])])
+				collect: [:var :block | (names at: block ifAbsent: ['?']) , '->'
+					, (names at: var ifAbsent: ['?'])])
 				gather: [:x | x , ', ']]
 		ifFalse: ['  '].
 	^'phi(' , (sources allButLast: 2) , ')'
@@ -191,8 +197,10 @@ OPhi >> variables [
 ]
 
 { #category : #unclassified }
-OPhi >> variables: aCollection [
-	variables := aCollection
+OPhi >> variables: aCollection blocks: anotherCollection [
+	blocks := anotherCollection.
+	variables := aCollection.
+	variables with: blocks do: [:var :block | var addUse: self at: block]
 ]
 
 { #category : #unclassified }

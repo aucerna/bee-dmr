@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -30,6 +30,16 @@ OJumpConditional >> atOperand: name [
 { #category : #unclassified }
 OJumpConditional >> atOperand: name put: instruction [
 	variable := instruction
+]
+
+{ #category : #private }
+OJumpConditional >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy target: (target duplicateWith: map).
+	copy implicitTarget: (implicitTarget duplicateWith: map).
+	copy variable: (variable duplicateWith: map).
+	^copy
 ]
 
 { #category : #unclassified }
@@ -103,8 +113,9 @@ OJumpConditional >> variable [
 	^variable
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OJumpConditional >> variable: operand [
-	variable := operand
+	variable := operand.
+	variable addUse: self at: #variable
 ]
 

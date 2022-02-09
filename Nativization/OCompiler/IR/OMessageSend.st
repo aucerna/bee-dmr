@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -35,7 +35,9 @@ OMessageSend >> arguments [
 
 { #category : #unclassified }
 OMessageSend >> arguments: operands [
-	arguments := operands
+	arguments := operands.
+	arguments
+		withIndexDo: [:arg :i | arg isInstruction ifTrue: [arg addUse: self at: i]]
 ]
 
 { #category : #unclassified }
@@ -63,8 +65,20 @@ OMessageSend >> basicPrintString [
 			, (arguments gather: [:arg | arg primitivePrintString , ' '])]
 		ifFalse: [''].
 	^'[send #' , selector , ' to ' , receiver primitivePrintString
-		, string trimTrailingBlanks
+		, string trimRight
 		, ']'
+]
+
+{ #category : #unclassified }
+OMessageSend >> doDuplicateWith: map [
+	| copy args |
+	copy := super doDuplicateWith: map.
+	copy
+		selector: selector;
+		receiver: (receiver duplicateWith: map).
+	args := arguments collect: [:a | a duplicateWith: map].
+	copy arguments: args.
+	^copy
 ]
 
 { #category : #unclassified }
@@ -88,10 +102,10 @@ OMessageSend >> printStringUsing: names [
 	| string |
 	string := arguments size > 0
 		ifTrue: [' with: '
-			, (arguments gather: [:arg | (names at: arg ifAbsent: ['missing']) , ' '])]
+			, (arguments gather: [:arg | (names at: arg ifAbsent: ['?']) , ' '])]
 		ifFalse: [''].
-	^'send #' , selector , ' to ' , (names at: receiver ifAbsent: ['missing'])
-		, string trimTrailingBlanks
+	^'send #' , selector , ' to ' , (names at: receiver ifAbsent: ['?'])
+		, string trimRight
 ]
 
 { #category : #unclassified }
@@ -101,7 +115,8 @@ OMessageSend >> receiver [
 
 { #category : #unclassified }
 OMessageSend >> receiver: operand [
-	receiver := operand
+	receiver := operand.
+	receiver addUse: self at: #receiver
 ]
 
 { #category : #unclassified }

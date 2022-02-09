@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -34,6 +34,20 @@ OBinaryOperation >> atOperand: operandName put: instruction [
 ]
 
 { #category : #unclassified }
+OBinaryOperation >> canHaveSideEffects [
+	^false
+]
+
+{ #category : #unclassified }
+OBinaryOperation >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	left isInstruction ifTrue: [copy left: (left duplicateWith: map)].
+	right isInstruction ifTrue: [copy right: (right duplicateWith: map)].
+	^copy
+]
+
+{ #category : #unclassified }
 OBinaryOperation >> invertOperation [
 	name == #'<' ifTrue: [^name := #'>'].
 	name == #'<=' ifTrue: [^name := #'>='].
@@ -50,7 +64,8 @@ OBinaryOperation >> left [
 
 { #category : #unclassified }
 OBinaryOperation >> left: anInstruction [
-	left := anInstruction
+	left := anInstruction.
+	left addUse: self at: #left
 ]
 
 { #category : #unclassified }
@@ -68,14 +83,15 @@ OBinaryOperation >> right [
 
 { #category : #unclassified }
 OBinaryOperation >> right: anInstruction [
-	right := anInstruction
+	right := anInstruction.
+	right addUse: self at: #right
 ]
 
 { #category : #unclassified }
 OBinaryOperation >> swapOperands [
 	| temp |
-	left removeUse: self.
-	right removeUse: self.
+	left removeUseBy: self.
+	right removeUseBy: self.
 	temp := left.
 	left := right.
 	right := temp.

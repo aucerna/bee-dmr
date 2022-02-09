@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -76,18 +76,13 @@ OptimizingInstructionSelector >> initializeMessages [
 OptimizingInstructionSelector >> insertCopyResultAfter: anInstruction [
 	| copy |
 	copy := OUnaryOperation receiver: anInstruction name: #copyResult.
-	anInstruction
-		afterInsert: copy;
-		replaceAllUsesWith: copy;
-		addUse: copy at: #receiver
+	anInstruction afterInsert: copy; replaceAllUsesWith: copy
 ]
 
 { #category : #unclassified }
 OptimizingInstructionSelector >> insertPush: anInstruction before: instruction [
 	| push tile |
-	push := OUnaryOperation receiver: anInstruction name: #push.
-	anInstruction addUse: push at: #receiver.
-	instruction beforeInsert: push.
+	push := anInstruction insertPushBefore: instruction.
 	tile := self newTile: push.
 	self tile: push as: tile beUsed.
 	^push
@@ -272,7 +267,6 @@ OptimizingInstructionSelector >> tile: instruction receiver: receiver [
 	| receivertile new tile |
 	receivertile := (self tileOf: receiver) beUsed.
 	new := OUnaryOperation new receiver: receiver; name: instruction selector.
-	receiver addUse: new at: #receiver.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -295,9 +289,6 @@ right: right [
 		left: left
 		right: right
 		name: instruction selector.
-	receiver addUse: new at: #receiver.
-	left addUse: new at: #left.
-	right addUse: new at: #right.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -315,8 +306,6 @@ OptimizingInstructionSelector >> tile: instruction using: left to: right [
 		left: left
 		right: right
 		name: instruction selector.
-	left addUse: new at: #left.
-	right addUse: new at: #right.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -333,7 +322,6 @@ OptimizingInstructionSelector >> tile: instruction using: left toConstant: value
 		left: left
 		right: value
 		name: instruction selector.
-	left addUse: new at: #left.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -385,11 +373,9 @@ OptimizingInstructionSelector >> visitLoadImplicit: instruction [
 	instruction name isSmallInteger
 		ifTrue: [
 			sourcetile := (self tileOf: instruction source) beUsed.
-			new := OBinaryConstantOperation
-				left: instruction source
-				right: instruction name
-				name: #_basicAt:.
-			instruction source addUse: new at: #left.
+			new := OLoadOperation
+				base: instruction source
+				slotAtImm: instruction name.
 			instruction beforeInsert: new; replaceAllUsesWith: new; dissolve.
 			tile := self newTile: new.
 			self tile: new as: tile]

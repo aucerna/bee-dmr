@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -8,7 +8,7 @@ Class {
 	#superclass : #OInstruction,
 	#instVars : [
 		'name',
-		'source'
+		'register'
 	],
 	#category : #IR
 }
@@ -24,11 +24,6 @@ OLoadImplicit class >> self [
 ]
 
 { #category : #unclassified }
-OLoadImplicit >> atOperand: operandName put: instruction [
-	source := instruction
-]
-
-{ #category : #unclassified }
 OLoadImplicit >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitLoadImplicit: self
 ]
@@ -36,6 +31,14 @@ OLoadImplicit >> basicAcceptVisitor: aVisitor [
 { #category : #unclassified }
 OLoadImplicit >> basicPrintString [
 	^'[load implicit #' , name printString , ']'
+]
+
+{ #category : #private }
+OLoadImplicit >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy name: name; register: register.
+	^copy
 ]
 
 { #category : #unclassified }
@@ -55,7 +58,7 @@ OLoadImplicit >> name: aSymbol [
 
 { #category : #unclassified }
 OLoadImplicit >> operandsDo: aBlock [
-	source isInstruction ifTrue: [aBlock value: source]
+	
 ]
 
 { #category : #unclassified }
@@ -71,14 +74,15 @@ OLoadImplicit >> printStringUsing: names [
 	^'#' , name printString
 ]
 
-{ #category : #unclassified }
-OLoadImplicit >> source [
-	^source
+{ #category : #accessing }
+OLoadImplicit >> register [
+	^register
 ]
 
-{ #category : #unclassified }
-OLoadImplicit >> source: operand [
-	source := operand
+{ #category : #accessing }
+OLoadImplicit >> register: aRegister [
+	register := aRegister.
+	register isInstruction ifTrue: [self halt]
 ]
 
 { #category : #unclassified }

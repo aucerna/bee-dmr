@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -25,6 +25,19 @@ OLoadConstant >> basicAcceptVisitor: aVisitor [
 { #category : #unclassified }
 OLoadConstant >> basicPrintString [
 	^'[load cst ' , constant printString , ']'
+]
+
+{ #category : #unclassified }
+OLoadConstant >> canHaveSideEffects [
+	^false
+]
+
+{ #category : #unclassified }
+OLoadConstant >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy value: constant.
+	^copy
 ]
 
 { #category : #unclassified }

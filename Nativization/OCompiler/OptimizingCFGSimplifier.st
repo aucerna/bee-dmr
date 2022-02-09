@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -49,7 +49,6 @@ OptimizingCFGSimplifier >> hoistBranchIn: succ to: pred [
 		variable: condition
 		target: target1
 		implicitTarget: target2.
-	condition addUse: new at: #variable.
 	jump dissolveReplacingWith: new
 ]
 

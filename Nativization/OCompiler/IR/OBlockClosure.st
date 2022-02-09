@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -18,6 +18,25 @@ OBlockClosure class >> containing: initialBlock [
 ]
 
 { #category : #unclassified }
+OBlockClosure >> dissolveDeep [
+	firstBlock withSuccessorsDo: [:block | block dissolveAllInstructions].
+	super dissolveDeep
+]
+
+{ #category : #unclassified }
+OBlockClosure >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy firstBlock: (firstBlock duplicateWith: map).
+	^copy
+]
+
+{ #category : #unclassified }
+OBlockClosure >> duplicateWith: map [
+	^map at: self ifAbsent: [self doDuplicateWith: map]
+]
+
+{ #category : #unclassified }
 OBlockClosure >> firstBlock [
 	^firstBlock
 ]
@@ -25,6 +44,16 @@ OBlockClosure >> firstBlock [
 { #category : #unclassified }
 OBlockClosure >> firstBlock: basicBlock [
 	firstBlock := basicBlock
+]
+
+{ #category : #unclassified }
+OBlockClosure >> isBlockClosure [
+	^true
+]
+
+{ #category : #unclassified }
+OBlockClosure >> isUseless [
+	^firstUse isNil
 ]
 
 { #category : #unclassified }

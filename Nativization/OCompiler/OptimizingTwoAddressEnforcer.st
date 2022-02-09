@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -21,8 +21,7 @@ OptimizingTwoAddressEnforcer >> allocation: aDictionary [
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> convert: instruction copyingLeftInto: dest [
 	| load |
-	load := OUnaryOperation receiver: instruction left name: #copy.
-	instruction left addUse: load at: #receiver.
+	load := instruction left newCopy.
 	instruction beforeInsert: load; left: load.
 	allocation at: load put: dest
 ]
@@ -30,10 +29,8 @@ OptimizingTwoAddressEnforcer >> convert: instruction copyingLeftInto: dest [
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> convert: instruction copyingReceiverInto: dest [
 	| load |
-	load := OUnaryOperation receiver: instruction receiver name: #copy.
-	instruction receiver
-		addUse: load at: #receiver;
-		removeUse: instruction.
+	load := instruction receiver newCopy.
+	instruction receiver removeUseBy: instruction.
 	instruction beforeInsert: load; receiver: load.
 	allocation at: load put: dest
 ]
@@ -50,31 +47,18 @@ OptimizingTwoAddressEnforcer >> firstBlock: block [
 ]
 
 { #category : #unclassified }
-OptimizingTwoAddressEnforcer >> insertCopy: instruction rightInto: dest [
-	| load |
-	load := OUnaryOperation receiver: instruction right name: #copy.
-	instruction addUse: load at: #receiver.
-	instruction afterInsert: load.
-	allocation at: load put: dest
-]
-
-{ #category : #unclassified }
 OptimizingTwoAddressEnforcer >> invertMinus: minus with: left with: right [
 	| negate |
 	negate := OUnaryOperation receiver: minus right name: #negate.
 	minus beforeInsert: negate.
 	allocation at: negate put: right.
-	minus right
-		removeUse: minus;
-		addUse: negate at: #receiver.
-	negate addUse: minus at: #right.
+	minus right removeUseBy: minus.
 	minus right: negate; name: #'+'; swapOperands
 ]
 
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> visitBinaryWithConstant: instruction [
 	| left dest |
-	(#(_basicAt: _smallSize:) includes: instruction name) ifTrue: [^self].
 	left := allocation at: instruction left.
 	dest := allocation at: instruction.
 	left == dest ifTrue: [^self].
@@ -89,8 +73,7 @@ OptimizingTwoAddressEnforcer >> visitBinaryWithVariable: instruction [
 	dest := allocation at: instruction ifAbsent: [^self].
 	left == dest ifTrue: [^self].
 	right == dest ifTrue: [
-		(#(< <= = == > >= _transferControlTo: _basicAt: _byteAt: _basicFlags: _smallSize: _extendedFlags:)
-			includes: instruction name)
+		(#(< <= = == > >= _transferControlTo:) includes: instruction name)
 			ifTrue: [^self].
 		instruction name == #'-'
 			ifTrue: [^self invertMinus: instruction with: left with: right].
@@ -116,6 +99,21 @@ OptimizingTwoAddressEnforcer >> visitJumpFalse: instruction [
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> visitJumpTrue: instruction [
 	
+]
+
+{ #category : #unclassified }
+OptimizingTwoAddressEnforcer >> visitLoad: load [
+	| index dest base copy |
+	index := load index.
+	index isInstruction ifFalse: [^self].
+	index isConstant ifTrue: [^self].
+	base := allocation at: load base.
+	index := allocation at: index.
+	dest := allocation at: load.
+	base == dest ifTrue: [^self].
+	copy := load base newCopy.
+	load beforeInsert: copy; base: copy.
+	allocation at: copy put: dest
 ]
 
 { #category : #unclassified }
@@ -149,17 +147,8 @@ OptimizingTwoAddressEnforcer >> visitReturn: instruction [
 ]
 
 { #category : #unclassified }
-OptimizingTwoAddressEnforcer >> visitTernary: instruction [
-	| receiver left right dest |
-	(#(_basicAt:put: _basicULongAt:put: _byteAt:put: _objectAtOffset:put:)
-		includes: instruction name)
-		ifTrue: [^self].
-	receiver := allocation at: instruction receiver.
-	left := allocation at: instruction left.
-	right := allocation at: instruction right.
-	dest := allocation at: instruction.
-	right == dest ifTrue: [^self halt].
-	self insertCopy: instruction rightInto: dest
+OptimizingTwoAddressEnforcer >> visitStore: store [
+	
 ]
 
 { #category : #unclassified }

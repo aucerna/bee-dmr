@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -46,10 +46,15 @@ OOperand >> definition [
 ]
 
 { #category : #unclassified }
-OOperand >> disolveReplacingWith: otherInstruction [
-	self definition removeUse: instruction.
-	instruction atOperand: name put: otherInstruction.
-	otherInstruction addUse: instruction at: name
+OOperand >> duplicateWith: map [
+	| copy |
+	map at: self ifPresent: [:i | ^i].
+	copy := self class new.
+	map at: self put: copy.
+	instruction ifNotNil: [copy instruction: (instruction duplicateWith: map)].
+	copy name: name.
+	nextUse ifNotNil: [copy nextUse: (nextUse duplicateWith: map)].
+	^copy
 ]
 
 { #category : #unclassified }
@@ -78,6 +83,11 @@ OOperand >> nextUse [
 ]
 
 { #category : #unclassified }
+OOperand >> nextUse: anOOperand [
+	nextUse := anOOperand
+]
+
+{ #category : #unclassified }
 OOperand >> printOn: aStream [
 	aStream
 		nextPutAll: '[op #' , name printString , '@' , instruction printString
@@ -85,10 +95,12 @@ OOperand >> printOn: aStream [
 ]
 
 { #category : #unclassified }
-OOperand >> removeUse: anInstruction [
-	nextUse instruction == anInstruction
-		ifTrue: [nextUse := nextUse nextUse]
-		ifFalse: [nextUse removeUse: anInstruction]
+OOperand >> removeUse: anOperand [
+	nextUse instruction == anOperand
+		ifTrue: [
+			nextUse := nextUse nextUse.
+			anOperand nextUse: nil]
+		ifFalse: [nextUse removeUse: anOperand]
 ]
 
 { #category : #unclassified }
@@ -99,15 +111,34 @@ OOperand >> removeUse: anInstruction at: aName [
 ]
 
 { #category : #unclassified }
-OOperand >> replaceAllUsesWith: otherInstruction [
-	self replaceUseWith: otherInstruction.
-	nextUse ifNotNil: [nextUse replaceAllUsesWith: otherInstruction]
+OOperand >> removeUseBy: anInstruction [
+	nextUse instruction == anInstruction
+		ifTrue: [nextUse := nextUse nextUse]
+		ifFalse: [nextUse removeUseBy: anInstruction]
 ]
 
 { #category : #unclassified }
-OOperand >> replaceUseWith: otherInstruction [
+OOperand >> replaceAllUsesWith: otherInstruction [
+	| following |
+	following := nextUse.
+	self transferUseTo: otherInstruction.
+	following ifNotNil: [following replaceAllUsesWith: otherInstruction]
+]
+
+{ #category : #unclassified }
+OOperand >> transferUsesBy: user toUsesOf: otherInstruction [
+	| following |
+	following := nextUse.
+	instruction == user ifTrue: [self transferUseTo: otherInstruction].
+	following transferUsesBy: user toUsesOf: otherInstruction
+]
+
+{ #category : #unclassified }
+OOperand >> transferUseTo: otherInstruction [
 	self DENY: otherInstruction class == OOperand.
-	instruction atOperand: name put: otherInstruction
+	self definition removeUse: self.
+	instruction atOperand: name put: otherInstruction.
+	otherInstruction addUse: self
 ]
 
 { #category : #unclassified }
@@ -119,5 +150,16 @@ OOperand >> user [
 OOperand >> usesDo: aBlock [
 	aBlock value: self.
 	nextUse ifNotNil: [nextUse usesDo: aBlock]
+]
+
+{ #category : #unclassified }
+OOperand >> validate [
+	| set op |
+	set := IdentitySet new.
+	op := self.
+	[op notNil] whileTrue: [
+		(set includes: op) ifTrue: [self error: 'invalid operand'].
+		set add: op.
+		op := op nextUse]
 ]
 

@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -32,13 +32,20 @@ OptimizingCSSATransformer >> firstBlock: block [
 ]
 
 { #category : #accessing }
+OptimizingCSSATransformer >> liftPhi: phi [
+	phi variablesWithBlocksDo: [:var :pred | | copy |
+		copy := var insertCopyBefore: pred lastInstruction.
+		phi atOperand: pred put: copy.
+		var removeUse: phi at: pred; dissolveIfUseless.
+		copy addUse: phi at: pred]
+]
+
+{ #category : #accessing }
 OptimizingCSSATransformer >> liftPhisIn: block [
-	block phisDo: [:phi | 
-		phi variablesWithBlocksDo: [:var :pred | | copy |
-			copy := var insertCopyBefore: pred lastInstruction.
-			phi atOperand: pred put: copy.
-			var removeUse: phi at: pred; dissolveIfUnused.
-			copy addUse: phi at: pred]]
+	block
+		phisDo: [:phi | phi isUsed
+			ifTrue: [self liftPhi: phi]
+			ifFalse: [phi dissolve]]
 ]
 
 { #category : #accessing }

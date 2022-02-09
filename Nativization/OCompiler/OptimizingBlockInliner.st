@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -11,6 +11,18 @@ Class {
 	],
 	#category : #OCompiler
 }
+
+{ #category : #private }
+OptimizingBlockInliner >> closureArgumentsIn: aBasicBlock count: anInteger [
+	| result remaining |
+	result := OrderedCollection new.
+	remaining := anInteger.
+	aBasicBlock instructionsDo: [:i | 
+		remaining = 0 ifTrue: [^result].
+		result add: i.
+		remaining := remaining - 1].
+	^result
+]
 
 { #category : #unclassified }
 OptimizingBlockInliner >> doInline [
@@ -23,7 +35,7 @@ OptimizingBlockInliner >> inline: aMessageSend in: block [
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineAnd: message in: block [
+OptimizingBlockInliner >> inlineAnd_: message in: block [
 	| closure firstSkipped lastSkipped join |
 	closure := message arguments first.
 	firstSkipped := closure firstBlock.
@@ -43,39 +55,43 @@ OptimizingBlockInliner >> inlineAnd: message in: block [
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineIfFalse: message in: block [
-	| closure firstSkipped lastSkipped join |
+OptimizingBlockInliner >> inlineIfFalse_: message in: block [
+	| closure first lastSkipped join nilval |
 	closure := message arguments first.
-	firstSkipped := closure firstBlock.
-	self inlineInnerBlocksOf: firstSkipped.
-	lastSkipped := firstSkipped lastBlock.
+	first := closure firstBlock.
+	self inlineInnerBlocksOf: first.
+	lastSkipped := first lastBlock.
 	join := block splitAfter: message.
-	block endWithJumpTrueTo: join skipping: firstSkipped if: message receiver.
+	nilval := OLoadConstant valued: nil.
+	message afterInsert: nilval.
+	join insertPhiOf: lastSkipped and: block replacing: message.
+	block endWithJumpTrueTo: join skipping: first if: message receiver.
 	lastSkipped endWithJumpTo: join.
-	firstSkipped addPredecessor: block.
+	first addPredecessor: block.
 	join addPredecessor: lastSkipped; addPredecessor: block.
-	message dissolve.
 	^join
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineIfTrue: message in: block [
-	| closure firstSkipped lastSkipped join |
+OptimizingBlockInliner >> inlineIfTrue_: message in: block [
+	| closure firstSkipped lastSkipped join nilval |
 	closure := message arguments first.
 	firstSkipped := closure firstBlock.
 	self inlineInnerBlocksOf: firstSkipped.
 	lastSkipped := firstSkipped lastBlock.
 	join := block splitAfter: message.
+	nilval := OLoadConstant valued: nil.
+	message afterInsert: nilval.
+	join insertPhiOf: lastSkipped and: block replacing: message.
 	block endWithJumpFalseTo: join skipping: firstSkipped if: message receiver.
 	lastSkipped endWithJumpTo: join.
 	firstSkipped addPredecessor: block.
 	join addPredecessor: lastSkipped; addPredecessor: block.
-	message dissolve.
 	^join
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineIfTrueifFalse: message in: block [
+OptimizingBlockInliner >> inlineIfTrue_ifFalse_: message in: block [
 	| positive negative firstTrue firstFalse lastTrue lastFalse join |
 	positive := message arguments first.
 	negative := message arguments second.
@@ -100,11 +116,15 @@ OptimizingBlockInliner >> inlineIfTrueifFalse: message in: block [
 
 { #category : #unclassified }
 OptimizingBlockInliner >> inlineInnerBlocksOf: basicBlock [
-	| currentBlock |
-	currentBlock := basicBlock.
-	basicBlock instructionsDo: [:instruction | 
-		(self shouldInline: instruction)
-			ifTrue: [currentBlock := self inline: instruction in: currentBlock]]
+	"
+	We inline backwards because it is simpler. Going forward would
+	require tracking which is the current basic block after each inlined
+	block closure
+	"
+	basicBlock postOrderDo: [:block | 
+		block
+			instructionsReverseDo: [:instruction | (self shouldInline: instruction)
+				ifTrue: [self inline: instruction in: block]]]
 ]
 
 { #category : #unclassified }
@@ -121,7 +141,7 @@ OptimizingBlockInliner >> inlineInnerBlocksOf: basicBlock1 and: basicBlock2 and:
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineOr: message in: block [
+OptimizingBlockInliner >> inlineOr_: message in: block [
 	| closure firstSkipped lastSkipped join |
 	closure := message arguments first.
 	firstSkipped := closure firstBlock.
@@ -142,11 +162,79 @@ OptimizingBlockInliner >> inlineOr: message in: block [
 
 { #category : #unclassified }
 OptimizingBlockInliner >> inliners [
-	^#(ifTrue: ifFalse: ifTrue:ifFalse: ifFalse:ifTrue: and: or: to:do: whileTrue:)
+	^#(ifTrue: ifFalse: #ifTrue:ifFalse: #ifFalse:ifTrue: and: or: #to:do: value value: whileTrue:)
 ]
 
 { #category : #unclassified }
-OptimizingBlockInliner >> inlineWhileTrue: message in: block [
+OptimizingBlockInliner >> inlineTo_do_: message in: block [
+	| start end closure first last join head phi compare increment |
+	start := message receiver.
+	end := message arguments first.
+	closure := message arguments second.
+	first := closure firstBlock.
+	self inlineInnerBlocksOf: first.
+	last := first lastBlock.
+	join := block splitAfter: message.
+	head := OBasicBlock new.
+	block endWithJumpTo: head.
+	head addPredecessor: block; addPredecessor: last.
+	first addPredecessor: head.
+	join addPredecessor: head.
+	phi := OPhi new addVariable: start from: block.
+	compare := OBinaryVariableOperation left: phi right: end name: #'<='.
+	head
+		add: phi;
+		add: compare;
+		endWithJumpFalseTo: join skipping: first if: compare.
+	increment := OBinaryConstantOperation left: phi right: 1 name: #'+'.
+	last add: increment; endWithJumpTo: head.
+	phi addVariable: increment from: last.
+	message dissolve.
+	^join
+]
+
+{ #category : #unclassified }
+OptimizingBlockInliner >> inlineValue: message in: block [
+	| closure entry exit after |
+	closure := message receiver.
+	closure isBlockClosure ifFalse: [^self].
+	entry := closure firstBlock duplicate.
+	self inlineInnerBlocksOf: entry.
+	exit := entry lastBlock.
+	after := block splitAfter: message.
+	block endWithJumpTo: entry.
+	exit endWithJumpTo: after.
+	entry addPredecessor: block.
+	after addPredecessor: exit.
+	message replaceAllUsesWith: exit lastValue; dissolve.
+	closure isUseless ifTrue: [closure firstBlock dissolveAllInstructions].
+	^after
+]
+
+{ #category : #unclassified }
+OptimizingBlockInliner >> inlineValue_: message in: block [
+	| closure args arg1 entry exit after closureArgs |
+	closure := message receiver.
+	args := message arguments.
+	arg1 := args first.
+	closure isBlockClosure ifFalse: [^self].
+	entry := closure firstBlock duplicate.
+	self inlineInnerBlocksOf: entry.
+	exit := entry lastBlock.
+	closureArgs := self closureArgumentsIn: entry count: 1.
+	closureArgs first replaceAllUsesWith: arg1; dissolve.
+	after := block splitAfter: message.
+	block endWithJumpTo: entry.
+	exit endWithJumpTo: after.
+	entry addPredecessor: block.
+	after addPredecessor: exit.
+	message replaceAllUsesWith: exit lastValue; dissolve.
+	closure isUseless ifTrue: [closure firstBlock dissolveAllInstructions].
+	^after
+]
+
+{ #category : #unclassified }
+OptimizingBlockInliner >> inlineWhileTrue_: message in: block [
 	| antecedent consequent firstAntecedent firstConsequent lastAntecedent lastConsequent join |
 	antecedent := message receiver.
 	consequent := message arguments first.
@@ -177,7 +265,7 @@ OptimizingBlockInliner >> on: block [
 { #category : #private }
 OptimizingBlockInliner >> performInlinerFor: messageSend in: block [
 	| selector inliner |
-	selector := messageSend selector asString copyWithout: $:.
+	selector := messageSend selector asString copy replace: $: with: $_.
 	inliner := #inline , selector capitalized , ':in:'.
 	^self perform: inliner asSymbol with: messageSend with: block
 ]

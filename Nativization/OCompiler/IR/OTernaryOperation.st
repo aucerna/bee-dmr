@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -70,7 +70,8 @@ OTernaryOperation >> left [
 
 { #category : #unclassified }
 OTernaryOperation >> left: value [
-	left := value
+	left := value.
+	left isInstruction ifTrue: [left addUse: self at: #left]
 ]
 
 { #category : #private }
@@ -99,7 +100,8 @@ OTernaryOperation >> receiver [
 
 { #category : #unclassified }
 OTernaryOperation >> receiver: value [
-	receiver := value
+	receiver := value.
+	receiver addUse: self at: #receiver
 ]
 
 { #category : #unclassified }
@@ -109,7 +111,8 @@ OTernaryOperation >> right [
 
 { #category : #unclassified }
 OTernaryOperation >> right: value [
-	right := value
+	right := value.
+	right addUse: self at: #right
 ]
 
 { #category : #unclassified }

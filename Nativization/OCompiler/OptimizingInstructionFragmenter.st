@@ -1,60 +1,40 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
 	#name : #OptimizingInstructionFragmenter,
 	#superclass : #Object,
 	#instVars : [
-		'method',
 		'messages',
-		'firstBlock',
-		'abi'
+		'firstBlock'
 	],
 	#category : #OCompiler
 }
 
-{ #category : #unclassified }
+{ #category : #'instance creation' }
 OptimizingInstructionFragmenter class >> new [
 	^self basicNew initialize
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> abi: anAbi [
-	abi := anAbi
-]
-
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingInstructionFragmenter >> activationRecord [
 	^firstBlock firstInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OptimizingInstructionFragmenter >> doFragment [
+	firstBlock
+		reversePostOrderDo: [:block | self fragmentInstructionsOf: block]
+]
+
+{ #category : #accessing }
 OptimizingInstructionFragmenter >> firstBlock: aBasicBlock [
 	firstBlock := aBasicBlock
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentActivationRecordDeclarationIn: aBasicBlock [
-	| declaration implicit |
-	declaration := aBasicBlock firstInstruction.
-	implicit := OActivationContext named: #activationRecord.
-	implicit source: abi regFP.
-	declaration dissolveReplacingWith: implicit
-]
-
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentArgumentsIn: aBasicBlock with: aCompiledMethod [
-	method := aCompiledMethod.
-	self
-		fragmentActivationRecordDeclarationIn: aBasicBlock;
-		fragmentSelfDeclarationIn: aBasicBlock;
-		fragmentSpecialABIArgumentsIn: aBasicBlock;
-		fragmentNormalArgumentsIn: aBasicBlock
-]
-
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentBinaryCommutative: instruction [
 	| left right |
 	left := instruction receiver.
@@ -66,7 +46,7 @@ OptimizingInstructionFragmenter >> fragmentBinaryCommutative: instruction [
 	self replace: instruction withVariable: left with: right
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentBinaryCompare: instruction [
 	| left right new |
 	left := instruction receiver.
@@ -89,168 +69,209 @@ OptimizingInstructionFragmenter >> fragmentBinaryNonCommutative: instruction [
 	self replace: instruction withVariable: left with: right
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentBitsAt: instruction [
+	| receiver constant stretch and shift |
+	receiver := instruction receiver.
+	constant := instruction arguments first.
+	self _ASSERT: constant isConstant.
+	stretch := constant value.
+	and := OBinaryConstantOperation
+		left: receiver
+		right: stretch mask
+		name: #bitAnd:.
+	shift := OBinaryConstantOperation
+		left: and
+		right: stretch shift
+		name: #bitShift:.
+	instruction beforeInsert: and; dissolveReplacingWith: shift
+]
+
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentCallSite: instruction [
 	| callsite |
-	callsite := OBinaryConstantOperation
-		left: self activationRecord
-		right: 2
-		name: #_basicAt:.
-	self activationRecord addUse: callsite at: #left.
+	callsite := OLoadOperation base: self activationRecord slotAtImm: 2.
 	instruction dissolveReplacingWith: callsite
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentGenericMessage: instruction [
 	| arguments new |
 	arguments := instruction arguments.
 	new := arguments
-		collect: [:argument | self insertPush: argument before: instruction].
+		collect: [:argument | argument insertPushBefore: instruction].
 	instruction arguments: new.
 	arguments
-		do: [:argument | argument removeUse: instruction; dissolveIfUnused].
+		do: [:argument | argument removeUseBy: instruction; dissolveIfUnused].
 	firstBlock activationRecord haveFrame
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentInstructionsFrom: aBasicBlock [
 	self firstBlock: aBasicBlock.
 	aBasicBlock
 		reversePostOrderDo: [:block | self fragmentInstructionsOf: block]
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentInstructionsOf: block [
 	block firstInstruction acceptVisitor: self
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentNormalArgumentsIn: aBasicBlock [
-	| count argument position context |
-	count := 0.
-	context := aBasicBlock firstInstruction.
-	argument := context next next.
-	[argument isDefineArgument] whileTrue: [
-		argument := argument next.
-		count := count + 1].
-	argument := argument prev.
-	position := 0.
-	[position < count] whileTrue: [| new next |
-		argument isUsed
-			ifTrue: [
-				new := OBinaryConstantOperation
-					left: context
-					right: position + 3
-					name: #_basicAt:.
-				context addUse: new at: #left.
-				argument dissolveReplacingWith: new.
-				argument := new prev]
-			ifFalse: [
-				next := argument prev.
-				argument dissolve.
-				argument := next].
-		position := position + 1]
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadByte: instruction [
+	| base index new |
+	base := instruction receiver.
+	index := instruction arguments first.
+	new := index isConstant
+		ifTrue: [OLoadOperation base: base byteAtImm: index value]
+		ifFalse: [OLoadOperation base: base byteAt: index].
+	instruction dissolveReplacingWith: new
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentNot: instruction [
-	| negated |
-	negated := instruction receiver halt shallowCopy.
-	negated negateOperation.
-	negated left addUse: negated at: #left.
-	negated right addUse: negated at: #right.
-	instruction dissolveReplacingWith: negated.
-	instruction receiver dissolveIfUnused
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadFlags: instruction [
+	| base new |
+	base := instruction receiver.
+	new := OLoadOperation base: base byteAtImm: _Flags + 1.
+	instruction dissolveReplacingWith: new
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadLargeSize: instruction [
+	| base new |
+	base := instruction receiver.
+	new := OLoadOperation base: base uLongAtImm: _ExtendedSize.
+	instruction dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadLongSlot: instruction [
+	| base index new |
+	base := instruction receiver.
+	index := instruction arguments first.
+	new := index isConstant
+		ifTrue: [OLoadOperation base: base longSlotAtImm: index value]
+		ifFalse: [OLoadOperation base: base longSlotAt: index].
+	instruction dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadSlot: instruction [
+	| base index new |
+	base := instruction receiver.
+	index := instruction arguments first.
+	new := index isConstant
+		ifTrue: [OLoadOperation base: base slotAtImm: index value]
+		ifFalse: [OLoadOperation base: base slotAt: index].
+	instruction dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadSmallSize: instruction [
+	| base new |
+	base := instruction receiver.
+	new := OLoadOperation base: base byteAtImm: _SmallSize + 1.
+	instruction dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentLoadULong: instruction [
+	| base index new |
+	base := instruction receiver.
+	index := instruction arguments first.
+	new := index isConstant
+		ifTrue: [OLoadOperation base: base uLongAtImm: index value]
+		ifFalse: [OLoadOperation base: base slotAt: index].
+	instruction dissolveReplacingWith: new
+]
+
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentPatchIndirectCallSiteTo: instruction [
 	| nativeCode callsite patch |
 	nativeCode := instruction arguments first.
-	callsite := OBinaryConstantOperation
-		left: self activationRecord
-		right: 2
-		name: #_basicAt:.
-	patch := OTernaryOperation
-		receiver: callsite
-		left: 0
-		right: nativeCode
-		name: #_basicAt:put:.
-	self activationRecord addUse: callsite at: #left.
-	callsite addUse: patch at: #receiver.
-	nativeCode addUse: patch at: #right.
+	callsite := OLoadOperation base: self activationRecord slotAtImm: 2.
+	patch := OStoreOperation base: callsite slotAtImm: 0 put: nativeCode.
 	instruction dissolveReplacingWith: patch.
 	patch beforeInsert: callsite
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentSelfDeclarationIn: aBasicBlock [
-	| declaration implicit |
-	declaration := aBasicBlock firstInstruction next.
-	implicit := OLoadImplicit named: #self.
-	declaration dissolveReplacingWith: implicit
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreByte: instruction [
+	| base index new value |
+	base := instruction receiver.
+	index := instruction arguments first.
+	value := instruction arguments second.
+	new := index isConstant
+		ifTrue: [OStoreOperation base: base byteAtImm: index value put: value]
+		ifFalse: [OStoreOperation base: base byteAt: index put: value].
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
 ]
 
 { #category : #private }
-OptimizingInstructionFragmenter >> fragmentSpecialABIArgumentsIn: aBasicBlock [
-	| literals i actual next load |
-	literals := method literals.
-	literals size = 0 ifTrue: [^self].
-	(literals at: 1) == #savePreviousSelf ifTrue: [
-		aBasicBlock activationRecord doSavePreviousSelf.
-		load := aBasicBlock firstInstruction detect: [:inst | inst isConstant].
-		load dissolve.
-		literals := literals copyFrom: 2].
-	literals size = 0 ifTrue: [^self].
-	(literals at: 1) == #specialABIBegin ifFalse: [^self].
-	i := 2.
-	[(literals at: i) == #specialABIEnd]
-		whileFalse: [| name register implicit argument receiver regname |
-			name := literals at: i.
-			regname := literals at: i + 1.
-			register := self registerNamed: regname.
-			name = #self
-				ifTrue: [
-					receiver := aBasicBlock firstInstruction
-						detect: [:instruction | instruction isLoadImplicit
-							and: [instruction name = #self]].
-					receiver source: register]
-				ifFalse: [
-					implicit := (OLoadImplicit named: name) source: register.
-					argument := aBasicBlock firstInstruction
-						detect: [:instruction | instruction isDefineArgument
-							and: [instruction name = name]].
-					argument dissolveReplacingWith: implicit].
-			i := i + 2].
-	actual := aBasicBlock firstInstruction detect: [:inst | inst isConstant].
-	[
-		next := actual next.
-		actual dissolve.
-		actual isConstant and: [actual value == #specialABIEnd]]
-		whileFalse: [actual := next]
+OptimizingInstructionFragmenter >> fragmentStoreFlags: instruction [
+	| base value new |
+	base := instruction receiver.
+	value := instruction arguments first.
+	new := OStoreOperation base: base byteAtImm: _Flags + 1 put: value.
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> fragmentTernary: instruction [
-	| receiver left right new |
-	receiver := instruction receiver.
-	left := instruction arguments first.
-	right := instruction arguments second.
-	new := OTernaryOperation
-		receiver: receiver
-		left: left
-		right: right
-		name: instruction selector.
-	receiver addUse: new at: #receiver.
-	left addUse: new at: #left.
-	right addUse: new at: #right.
-	self
-		ASSERT: (#(_basicAt:put: _basicULongAt:put:	_byteAt:put: _objectAtOffset:put:)
-			includes: new name).
-	instruction replaceAllUsesWith: right; dissolveReplacingWith: new
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreLargeSize: instruction [
+	| base value new |
+	base := instruction receiver.
+	value := instruction arguments first.
+	new := OStoreOperation base: base uLongAtImm: _ExtendedSize put: value.
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreLongSlot: instruction [
+	| base index new value |
+	base := instruction receiver.
+	index := instruction arguments first.
+	value := instruction arguments second.
+	new := index isConstant
+		ifTrue: [OStoreOperation base: base longSlotAtImm: index value put: value]
+		ifFalse: [OStoreOperation base: base longSlotAt: index put: value].
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreSlot: instruction [
+	| base index new value |
+	base := instruction receiver.
+	index := instruction arguments first.
+	value := instruction arguments second.
+	new := index isConstant
+		ifTrue: [OStoreOperation base: base slotAtImm: index value put: value]
+		ifFalse: [OStoreOperation base: base slotAt: index put: value].
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreSmallSize: instruction [
+	| base value new |
+	base := instruction receiver.
+	value := instruction arguments first.
+	new := OStoreOperation base: base byteAtImm: _SmallSize + 1 put: value.
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
+]
+
+{ #category : #private }
+OptimizingInstructionFragmenter >> fragmentStoreULong: instruction [
+	| base index new value |
+	base := instruction receiver.
+	index := instruction arguments first.
+	value := instruction arguments second.
+	new := index isConstant
+		ifTrue: [OStoreOperation base: base uLongAtImm: index value put: value]
+		ifFalse: [OStoreOperation base: base uLongAt: index put: value].
+	instruction replaceAllUsesWith: value; dissolveReplacingWith: new
+]
+
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentTransferControlTo: instruction [
 	| receiver machine |
 	receiver := instruction receiver.
@@ -258,17 +279,16 @@ OptimizingInstructionFragmenter >> fragmentTransferControlTo: instruction [
 	self replace: instruction withVariable: receiver with: machine
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> fragmentUnary: instruction [
 	| receiver new |
 	receiver := instruction receiver.
 	"	receiver isConstant ifTrue: [self halt]."
 	new := OUnaryOperation new receiver: receiver; name: instruction selector.
-	receiver addUse: new at: #receiver.
 	instruction dissolveReplacingWith: new
 ]
 
-{ #category : #unclassified }
+{ #category : #initialization }
 OptimizingInstructionFragmenter >> initialize [
 	self initializeMessages
 ]
@@ -279,6 +299,7 @@ OptimizingInstructionFragmenter >> initializeMessages [
 		at: #'+' put: #BinaryCommutative:;
 		at: #'-' put: #BinaryNonCommutative:;
 		at: #'*' put: #BinaryCommutative:;
+		at: #'//' put: #BinaryNonCommutative:;
 		at: #'<' put: #BinaryCompare:;
 		at: #'<=' put: #BinaryCompare:;
 		at: #'=' put: #BinaryCompare:;
@@ -295,52 +316,37 @@ OptimizingInstructionFragmenter >> initializeMessages [
 		at: #bitAnd: put: #BinaryCommutative:;
 		at: #bitOr: put: #BinaryCommutative:;
 		at: #bitShift: put: #BinaryNonCommutative:;
-		at: #_byteAt: put: #BinaryNonCommutative:;
-		at: #_basicAt: put: #BinaryNonCommutative:;
-		at: #_basicULongAt: put: #BinaryNonCommutative:;
-		at: #_byteAt:put: put: #Ternary:;
-		at: #_basicAt:put: put: #Ternary:;
-		at: #_basicULongAt:put: put: #Ternary:;
-		at: #_objectAtOffset:put: put: #Ternary:;
-		at: #_basicFlags put: #Unary:;
-		at: #_basicFlags: put: #BinaryNonCommutative:;
-		at: #_smallSize put: #Unary:;
-		at: #_smallSize: put: #BinaryNonCommutative:;
-		at: #_largeSize put: #Unary:;
-		at: #_largeSize: put: #BinaryNonCommutative:;
+		at: #bitsAt: put: #BitsAt:;
+		at: #_byteAt: put: #LoadByte:;
+		at: #_basicAt: put: #LoadSlot:;
+		at: #_longSlotAt: put: #LoadLongSlot:;
+		at: #_byteAt:put: put: #StoreByte:;
+		at: #_basicAt:put: put: #StoreSlot:;
+		at: #_longSlotAt:put: put: #StoreLongSlot:;
+		at: #_objectAtOffset:put: put: #StoreSlotAtOffset:;
+		at: #_basicFlags put: #LoadFlags:;
+		at: #_basicFlags: put: #StoreFlags:;
+		at: #_smallSize put: #LoadSmallSize:;
+		at: #_smallSize: put: #StoreSmallSize:;
+		at: #_largeSize put: #LoadLargeSize:;
+		at: #_largeSize: put: #StoreLargeSize:;
 		at: #_isSmallInteger put: #Unary:;
 		at: #_transferControlTo: put: #TransferControlTo:;
 		at: #_callSite put: #CallSite:;
-		at: #_patchIndirectCallSiteTo: put: #PatchIndirectCallSiteTo:;
+		at: #_patchIndirectCallSiteTo:
+		put: #PatchIndirectCallSiteTo:;
 		at: #not put: #Not:;
 		yourself
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> insertCopyResultAfter: anInstruction [
 	| copy |
 	copy := OUnaryOperation receiver: anInstruction name: #copyResult.
-	anInstruction
-		afterInsert: copy;
-		replaceAllUsesWith: copy;
-		addUse: copy at: #receiver
-]
-
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> insertPush: anInstruction before: instruction [
-	| push |
-	push := OUnaryOperation receiver: anInstruction name: #push.
-	anInstruction addUse: push at: #receiver.
-	instruction beforeInsert: push.
-	^push
+	anInstruction afterInsert: copy; replaceAllUsesWith: copy
 ]
 
 { #category : #private }
-OptimizingInstructionFragmenter >> registerNamed: regname [
-	^abi perform: regname
-]
-
-{ #category : #unclassified }
 OptimizingInstructionFragmenter >> replace: instruction withBinary: left withConstant: right [
 	| constant new |
 	constant := right value.
@@ -348,93 +354,89 @@ OptimizingInstructionFragmenter >> replace: instruction withBinary: left withCon
 		left: left
 		right: constant
 		name: instruction selector.
-	left addUse: new at: #left.
 	instruction dissolveReplacingWith: new.
-	right dissolveIfUnused.
 	^new
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionFragmenter >> replace: instruction withVariable: left with: right [
 	| new |
 	new := OBinaryVariableOperation
 		left: left
 		right: right
 		name: instruction selector.
-	left addUse: new at: #left.
-	right addUse: new at: #right.
 	instruction dissolveReplacingWith: new.
 	^new
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingInstructionFragmenter >> selectorFor: name [
 	^(#fragment , (messages at: name ifAbsent: [#GenericMessage:])) asSymbol
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitBinaryWithConstant: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitBinaryWithVariable: instruction [
 	
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> visitDefineArgument: instruction [
-	
-]
-
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitJump: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitJumpFalse: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitJumpTrue: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
+OptimizingInstructionFragmenter >> visitLoad: instruction [
+	
+]
+
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitLoadConstant: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitLoadImplicit: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitMessageSend: instruction [
 	| selector |
 	selector := self selectorFor: instruction selector.
 	self perform: selector with: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitPhi: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitReturn: instruction [
 	
 ]
 
-{ #category : #unclassified }
-OptimizingInstructionFragmenter >> visitTernary: instruction [
+{ #category : #'visitor protocol' }
+OptimizingInstructionFragmenter >> visitStore: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingInstructionFragmenter >> visitUnary: instruction [
 	
 ]

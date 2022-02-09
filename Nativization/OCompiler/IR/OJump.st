@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -27,6 +27,14 @@ OJump >> basicPrintString [
 	^'[jump to ' , target name , ']'
 ]
 
+{ #category : #private }
+OJump >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy target: (target duplicateWith: map).
+	^copy
+]
+
 { #category : #unclassified }
 OJump >> isJump [
 	^true
@@ -44,7 +52,7 @@ OJump >> primitivePrintString [
 
 { #category : #unclassified }
 OJump >> printStringUsing: names [
-	^'jump to ' , (names at: target)
+	^'jump to ' , (names at: target ifAbsent: ['?'])
 ]
 
 { #category : #unclassified }

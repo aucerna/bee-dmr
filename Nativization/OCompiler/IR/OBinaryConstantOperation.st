@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -31,8 +31,13 @@ OBinaryConstantOperation >> operandsDo: aBlock [
 	aBlock value: left
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBinaryConstantOperation >> printStringUsing: names [
-	^(names at: left ifAbsent: 'missing') , ' ' , name , ' ' , right printString
+	^(names at: left ifAbsent: ['?']) , ' ' , name , ' ' , right printString
+]
+
+{ #category : #accessing }
+OBinaryConstantOperation >> right: anInteger [
+	right := anInteger
 ]
 

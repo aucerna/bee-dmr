@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -291,11 +291,7 @@ OptimizingBraunAllocator >> insertReloadOf: value before: user [
 	| stack index reload |
 	stack := self activationRecord.
 	index := self temporaryIndexOf: value.
-	reload := OBinaryConstantOperation
-		left: stack
-		right: index
-		name: #_basicAt:.
-	stack addUse: reload at: #left.
+	reload := OLoadOperation base: stack slotAtImm: index.
 	user
 		beforeInsert: reload;
 		replaceUsesOf: value with: reload.
@@ -307,13 +303,7 @@ OptimizingBraunAllocator >> insertSpillOf: value [
 	| stack index store |
 	stack := self activationRecord.
 	index := self temporaryIndexOf: value.
-	store := OTernaryOperation
-		receiver: stack
-		left: index
-		right: value
-		name: #_basicAt:put:.
-	stack addUse: store at: #receiver.
-	value addUse: store at: #right.
+	store := OStoreOperation base: stack slotAtImm: index put: value.
 	value lastPhi afterInsert: store.
 	liveness kill: store at: store
 ]

@@ -1,17 +1,16 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
 	#name : #OptimizingNativizer,
 	#superclass : #Object,
 	#instVars : [
+		'environment',
 		'method',
 		'firstBlock',
-		'messageLinker',
-		'inlinedMethods',
-		'abi'
+		'inlinedMethods'
 	],
 	#category : #OCompiler
 }
@@ -26,89 +25,42 @@ OptimizingNativizer class >> on: aCompiledMethod [
 	^self new method: aCompiledMethod
 ]
 
-{ #category : #unclassified }
-OptimizingNativizer >> abi: anAbi [
-	abi := anAbi
-]
-
 { #category : #allocation }
 OptimizingNativizer >> allocate [
 	| allocator |
 	allocator := OptimizingRegisterAllocator new
-		abi: abi;
+		abi: environment abi;
 		firstBlock: firstBlock.
 	^allocator doAllocation
 ]
 
 { #category : #unclassified }
 OptimizingNativizer >> assembleUsing: allocation [
-	| assembler |
-	assembler := OptimizingCodeEmitter new
+	^OptimizingCodeEmitter new
 		method: method;
-		abi: abi;
+		abi: environment abi;
 		allocation: allocation;
-		messageLinker: messageLinker.
-	assembler assembleFrom: firstBlock.
-	^assembler nativeCode
+		messageLinker: environment messageLinker;
+		assembleFrom: firstBlock;
+		nativeCode
 ]
 
-{ #category : #unclassified }
-OptimizingNativizer >> bindVariables [
-	| binder |
-	binder := OptimizingVariableBinder new abi: abi.
-	binder doBindingFrom: firstBlock
-]
-
-{ #category : #unclassified }
+{ #category : #actions }
 OptimizingNativizer >> decompose [
 	self
+		validateAllInstructions;
 		inlineBlocks;
+		validateAllInstructions;
 		verifyPredecessors;
 		inlineMethods;
+		validateAllInstructions;
+		verifyPredecessors;
+		inlineBlocks;
+		validateAllInstructions;
 		verifyPredecessors;
 		unifyReturns;
-		verifyPredecessors;
-		bindVariables
-]
-
-{ #category : #private }
-OptimizingNativizer >> defaultInlinedMethods [
-	^BeeNativizationEnvironment primitiveObjectMethods , ((OrderedCollection new
-		add: Object >> #byteAtValid:;
-		add: Object >> #byteAtValid:put:;
-		add: ProtoObject >> #objectAtValid:;
-		add: ProtoObject >> #objectAtValid:put:;
-		add: Object >> #basicObjectIndexOf:;
-		add: Object >> #primitiveAt:put:;
-		add: ProtoObject >> #behavior;
-		add: ProtoObject >> #class;
-		add: Species >> #instSize;
-		add: Species >> #_instancesAreArrayed;
-		add: Species >> #_instancesHavePointers;
-		add: Species >> #memory;
-		add: Species >> #instanceBehavior;
-		add: Species >> #primitiveNew;
-		add: Species >> #primitiveNew:;
-		add: ProtoObject >> #primitiveAt:;
-		add: ProtoObject >> #_cachedLookup:;
-		add: ProtoObject >> #_cachedLookup:in:;
-		add: CompiledMethod >> #prepareForExecution;
-		add: CompiledMethod >> #isNativized;
-		add: CompiledMethod >> #nativeCode;
-		add: CompiledMethod >> #blockCount;
-		add: CompiledMethod >> #literalIndexFrom:;
-		add: CompiledBlock >> #argumentCount;
-		add: CompiledBlock >> #blockNumber;
-		add: CompiledBlock >> #blockCode;
-		add: CompiledBlock >> #method;
-		add: NativeCode >> #code;
-		add: NativeCode >> #isFresh;
-		add: CharacterArray >> #characterAtValid:;
-		add: GCSpace >> #commitedLimit;
-		add: GCSpace >> #nextFree;
-		add: GCSpace >> #nextFree:;
-		yourself)
-		collect: [:cm | cm dmrVersion ifNil: [cm]])
+		validateAllInstructions;
+		verifyPredecessors
 ]
 
 { #category : #unclassified }
@@ -125,6 +77,11 @@ OptimizingNativizer >> enforceTwoAddressCodeUsing: allocation [
 	^enforcer doEnforce
 ]
 
+{ #category : #accessing }
+OptimizingNativizer >> environment: aNativizationEnvironment [
+	environment := aNativizationEnvironment
+]
+
 { #category : #unclassified }
 OptimizingNativizer >> firstBlock [
 	^firstBlock
@@ -133,15 +90,13 @@ OptimizingNativizer >> firstBlock [
 { #category : #unclassified }
 OptimizingNativizer >> fragmentInstructions [
 	| binder |
-	binder := OptimizingInstructionFragmenter new abi: abi.
-	binder
-		fragmentArgumentsIn: firstBlock with: method;
-		fragmentInstructionsFrom: firstBlock
+	binder := OptimizingInstructionFragmenter new firstBlock: firstBlock.
+	binder doFragment
 ]
 
 { #category : #unclassified }
 OptimizingNativizer >> initialize [
-	inlinedMethods := self defaultInlinedMethods
+	inlinedMethods := OrderedCollection new
 ]
 
 { #category : #unclassified }
@@ -159,34 +114,21 @@ OptimizingNativizer >> inlinedMethods: aCollection [
 	inlinedMethods := aCollection
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingNativizer >> inlineMethods [
-	(OptimizingMethodInliner on: firstBlock)
-		abi: abi;
-		methods: self inlinedMethods;
+	OptimizingMethodInliner new
+		firstBlock: firstBlock;
+		environment: environment;
+		methods: inlinedMethods;
 		inlineAllMessages
 ]
 
 { #category : #unclassified }
-OptimizingNativizer >> irFor: aCompiledMethod [
-	| visitor ir cm |
-	visitor := OptimizingVisitor new.
-	cm := (BeeNativizationEnvironment isUndermethod: aCompiledMethod selector)
-		ifTrue: [ProtoObject >> aCompiledMethod selector]
-		ifFalse: [aCompiledMethod].
-	ir := visitor visit: cm parseTree.
-	^ir
-]
-
-{ #category : #unclassified }
-OptimizingNativizer >> messageLinker: aMessageLinker [
-	messageLinker := aMessageLinker
-]
-
-{ #category : #unclassified }
 OptimizingNativizer >> method: aCompiledMethod [
+	| visitor |
 	method := aCompiledMethod.
-	firstBlock := self irFor: aCompiledMethod
+	visitor := OptimizingVisitor new method: method; abi: environment abi.
+	firstBlock := visitor visit: aCompiledMethod parseTree
 ]
 
 { #category : #unclassified }
@@ -247,7 +189,12 @@ OptimizingNativizer >> unifyReturns [
 ]
 
 { #category : #unclassified }
+OptimizingNativizer >> validateAllInstructions [
+	firstBlock validateAllInstructions
+]
+
+{ #category : #unclassified }
 OptimizingNativizer >> verifyPredecessors [
-	firstBlock verifyAllPredecessorsSanity
+	firstBlock validateCFG
 ]
 

@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -47,7 +47,7 @@ OptimizingCodeEmitter >> assembleAsNative: asNativeSend [
 	| src dst |
 	src := allocation at: asNativeSend receiver.
 	dst := allocation at: asNativeSend.
-	self ASSERT: src == dst.
+	self _ASSERT: src == dst.
 	assembler convertToNativeInteger: src
 ]
 
@@ -56,7 +56,7 @@ OptimizingCodeEmitter >> assembleAsObject: asNativeSend [
 	| src dst |
 	src := allocation at: asNativeSend receiver.
 	dst := allocation at: asNativeSend.
-	self ASSERT: src == dst.
+	self _ASSERT: src == dst.
 	assembler clearIntegerBit: src
 ]
 
@@ -65,7 +65,7 @@ OptimizingCodeEmitter >> assembleAsPointer: asNativeSend [
 	| src dst oop |
 	src := allocation at: asNativeSend receiver.
 	dst := allocation at: asNativeSend.
-	self ASSERT: src == dst.
+	self _ASSERT: src == dst.
 	oop := assembler newLabel.
 	assembler
 		testIntegerBit: src;
@@ -80,15 +80,17 @@ OptimizingCodeEmitter >> assembleAsSmallInteger: asNativeSend [
 	| src dst |
 	src := allocation at: asNativeSend receiver.
 	dst := allocation at: asNativeSend.
-	self ASSERT: src == dst.
+	self _ASSERT: src == dst.
 	assembler convertToSmallInteger: src
 ]
 
 { #category : #private }
 OptimizingCodeEmitter >> assembleBasicAt: instruction [
 	| base index result |
-	base := allocation at: instruction left.
-	index := allocation at: instruction right.
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleBasicAtConstant: instruction].
+	base := allocation at: instruction base.
+	index := allocation at: instruction index.
 	result := allocation at: instruction.
 	assembler
 		convertToNativeInteger: index;
@@ -98,117 +100,32 @@ OptimizingCodeEmitter >> assembleBasicAt: instruction [
 
 { #category : #private }
 OptimizingCodeEmitter >> assembleBasicAtConstant: instruction [
-	| src dst index |
-	src := allocation at: instruction left.
+	| base dst |
+	base := allocation at: instruction base.
 	dst := allocation at: instruction ifAbsent: [^self].
-	index := instruction right.
-	assembler load: dst from: src atIndex: index
+	assembler load: dst from: base atIndex: instruction index value
+]
+
+{ #category : #unclassified }
+OptimizingCodeEmitter >> assembleBasicAtConstantPut: instruction [
+	| base value |
+	base := allocation at: instruction base.
+	value := allocation at: instruction value.
+	assembler store: value in: base index: instruction index value
 ]
 
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleBasicAtPut: instruction [
 	| base value index |
-	index := instruction left value.
-	index isInteger ifTrue: [^self assembleBasicAtPutConstant: instruction].
-	base := allocation at: instruction receiver.
-	value := allocation at: instruction right.
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleBasicAtConstantPut: instruction].
+	base := allocation at: instruction base.
+	value := allocation at: instruction value.
 	index := allocation at: index.
 	assembler
 		convertToNativeInteger: index;
 		store: value in: base indexAt: index;
 		convertToSmallInteger: index
-]
-
-{ #category : #unclassified }
-OptimizingCodeEmitter >> assembleBasicAtPutConstant: instruction [
-	| base value position |
-	base := allocation at: instruction receiver.
-	value := allocation at: instruction right.
-	position := instruction left value.
-	assembler store: value in: base index: position
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicFlags: basicFlagsSend [
-	| base dst |
-	base := allocation at: basicFlagsSend receiver.
-	dst := allocation at: basicFlagsSend.
-	assembler
-		loadZeroExtendByte: dst from: base atOffset: _Flags;
-		convertToSmallInteger: dst
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicFlagsPut: basicFlagsPut [
-	self assembleByteAtOffset: _Flags put: basicFlagsPut
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicSize: basicSizeSend [
-	| base dst |
-	base := allocation at: basicSizeSend receiver.
-	dst := allocation at: basicSizeSend.
-	assembler
-		loadZeroExtendByte: dst from: base atOffset: _SmallSize;
-		convertToSmallInteger: dst
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicSizePut: basicSizePut [
-	self assembleByteAtOffset: _SmallSize put: basicSizePut
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicSizePutConstant: basicFlagsPutSend [
-	| base value |
-	base := allocation at: basicFlagsPutSend left.
-	value := basicFlagsPutSend right.
-	assembler storeByte: value in: base offset: _SmallSize
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicULongAt: instruction [
-	| base index result |
-	base := allocation at: instruction left.
-	index := allocation at: instruction right.
-	result := allocation at: instruction.
-	assembler
-		convertToNativeInteger: index;
-		load: result e from: base atIndexAt: index.
-	result != index ifTrue: [assembler convertToSmallInteger: index]
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicULongAtConstant: instruction [
-	| src dst index |
-	src := allocation at: instruction left.
-	dst := allocation at: instruction ifAbsent: [^self].
-	index := instruction right.
-	assembler load: dst e from: src atIndex: index
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicULongAtPut: instruction [
-	| base value index |
-	index := instruction left value.
-	index isInteger
-		ifTrue: [^self assembleBasicULongAtPutConstant: instruction].
-	base := allocation at: instruction receiver.
-	value := allocation at: instruction right.
-	index := allocation at: index.
-	assembler
-		convertToNativeInteger: index;
-		store: value e in: base indexAt: index;
-		convertToSmallInteger: index
-]
-
-{ #category : #private }
-OptimizingCodeEmitter >> assembleBasicULongAtPutConstant: instruction [
-	| base value position |
-	base := allocation at: instruction receiver.
-	value := allocation at: instruction right.
-	position := instruction left value.
-	assembler store: value e in: base index: position
 ]
 
 { #category : #unclassified }
@@ -279,8 +196,10 @@ OptimizingCodeEmitter >> assembleBitShiftConstant: instruction [
 { #category : #private }
 OptimizingCodeEmitter >> assembleByteAt: instruction [
 	| base index dst |
-	base := allocation at: instruction left.
-	index := allocation at: instruction right.
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleByteAtConstant: instruction].
+	base := allocation at: instruction base.
+	index := allocation at: instruction index.
 	dst := allocation at: instruction.
 	assembler
 		convertToNativeInteger: index;
@@ -289,41 +208,42 @@ OptimizingCodeEmitter >> assembleByteAt: instruction [
 	index != dst ifTrue: [assembler convertToSmallInteger: index]
 ]
 
-{ #category : #unclassified }
-OptimizingCodeEmitter >> assembleByteAt: index put: instruction [
-	self assembleByteAtOffset: index - 1 put: instruction
-]
-
 { #category : #private }
 OptimizingCodeEmitter >> assembleByteAtConstant: instruction [
-	| base index dst |
-	base := allocation at: instruction left.
-	index := instruction right.
+	| base dst |
+	base := allocation at: instruction base.
 	dst := allocation at: instruction.
 	assembler
-		loadZeroExtendByte: dst from: base atIndex: index;
+		loadZeroExtendByte: dst
+		from: base
+		atIndex: instruction index value;
 		convertToSmallInteger: dst
 ]
 
 { #category : #unclassified }
-OptimizingCodeEmitter >> assembleByteAtOffset: offset put: instruction [
+OptimizingCodeEmitter >> assembleByteAtConstantPut: instruction [
 	| base value |
-	base := allocation at: instruction left.
-	value := allocation at: instruction right.
+	base := allocation at: instruction base.
+	value := allocation at: instruction value.
 	assembler
 		convertToNativeInteger: value;
 		renameByteRegisterIfNeeded: value
 		preserving: base
-		during: [:final | assembler storeByte: final byte in: base offset: offset];
+		during: [:final | assembler
+			storeByte: final byte
+			in: base
+			offset: instruction index value - 1];
 		convertToSmallInteger: value
 ]
 
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleByteAtPut: instruction [
 	| index base value |
-	base := allocation at: instruction receiver.
-	index := allocation at: instruction left.
-	value := allocation at: instruction right.
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleByteAtConstantPut: instruction].
+	base := allocation at: instruction base.
+	index := allocation at: instruction index.
+	value := allocation at: instruction value.
 	assembler
 		convertToNativeInteger: index;
 		convertToNativeInteger: value;
@@ -345,16 +265,20 @@ OptimizingCodeEmitter >> assembleCompare: instruction [
 
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleCompareConstant: instruction jumpTrue: trueBlock jumpFalse: falseBlock [
-	| left value |
+	| left |
 	left := allocation at: instruction left.
-	instruction right isSmallInteger
-		ifTrue: [
-			value := instruction right * 2 + 1.
-			assembler compare: left with: value]
-		ifFalse: [
-			value := instruction right.
-			assembler compare: left withPointer: value].
-	self assembleJumpTrue: trueBlock orJumpFalse: falseBlock in: instruction
+	self
+		assembleCompareConstant: left with: instruction right;
+		assembleJumpTrue: trueBlock orJumpFalse: falseBlock in: instruction
+]
+
+{ #category : #unclassified }
+OptimizingCodeEmitter >> assembleCompareConstant: left with: right [
+	right isSmallInteger ifTrue: [^assembler compare: left with: right * 2 + 1].
+	right ifNil: [^assembler compareWithNil: left].
+	right = false ifTrue: [^assembler compareWithFalse: left].
+	right = true ifTrue: [^assembler compareWithTrue: left].
+	assembler compare: left withPointer: right
 ]
 
 { #category : #private }
@@ -414,7 +338,10 @@ OptimizingCodeEmitter >> assembleFrom: aBasicBlock [
 
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleGenericMessageSend: instruction [
-	self assembleLookup: instruction selector
+	| dest |
+	self assembleLookup: instruction selector.
+	dest := allocation at: instruction ifAbsent: [^self].
+	self assembleCopyIfNeeded: abi regR to: dest
 ]
 
 { #category : #unclassified }
@@ -496,20 +423,68 @@ OptimizingCodeEmitter >> assembleJumpTrue: blockJumpTrue orJumpFalse: blockJumpF
 			loadFalse := assembler newLabel.
 			end := assembler newLabel.
 			blockJumpFalse value: loadFalse.
-			self assembleLoadConstant: true to: result.
-			assembler shortJumpTo: end; @ loadFalse.
-			self assembleLoadConstant: false to: result.
-			assembler @ end]
+			assembler
+				load: result withBoolean: true;
+				shortJumpTo: end;
+				@ loadFalse;
+				load: result withBoolean: false;
+				@ end]
 ]
 
 { #category : #private }
 OptimizingCodeEmitter >> assembleLoadConstant: value to: register [
 	| constant |
-	value isSmallInteger
-		ifTrue: [
-			constant := value * 2 + 1.
-			assembler load: register withImmediate: constant]
-		ifFalse: [assembler load: register withPointer: value]
+	value isSmallInteger ifTrue: [
+		constant := value * 2 + 1.
+		^assembler load: register withImmediate: constant].
+	value ifNil: [^assembler loadWithNil: register].
+	value = false ifTrue: [^assembler loadWithFalse: register].
+	value = true ifTrue: [^assembler loadWithTrue: register].
+	assembler load: register withPointer: value
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleLongSlotAt: instruction [
+	| base index result |
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleLongSlotAtConstant: instruction].
+	base := allocation at: instruction base.
+	index := allocation at: index.
+	result := allocation at: instruction.
+	assembler
+		convertToNativeInteger: index;
+		load: result e from: base atIndexAt: index.
+	result != index ifTrue: [assembler convertToSmallInteger: index]
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleLongSlotAtConstant: instruction [
+	| src dst |
+	src := allocation at: instruction base.
+	dst := allocation at: instruction ifAbsent: [^self].
+	assembler load: dst e from: src atIndex: instruction index value
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleLongSlotAtConstantPut: instruction [
+	| base value |
+	base := allocation at: instruction base.
+	value := allocation at: instruction value.
+	assembler store: value e in: base index: instruction index value
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleLongSlotAtPut: instruction [
+	| base value index |
+	index := instruction index value.
+	index isInteger ifTrue: [^self assembleLongSlotAtConstantPut: instruction].
+	base := allocation at: instruction base.
+	value := allocation at: instruction value.
+	index := allocation at: index.
+	assembler
+		convertToNativeInteger: index;
+		store: value e in: base indexAt: index;
+		convertToSmallInteger: index
 ]
 
 { #category : #unclassified }
@@ -575,7 +550,7 @@ OptimizingCodeEmitter >> assembleNegate: instruction [
 	| src dst |
 	src := allocation at: instruction receiver.
 	dst := allocation at: instruction.
-	self ASSERT: dst = src.
+	self _ASSERT: dst = src.
 	assembler
 		negate: src;
 		add: 2 to: dst
@@ -630,18 +605,15 @@ OptimizingCodeEmitter >> assemblePush: instruction [
 	assembler push: register
 ]
 
-{ #category : #unclassified }
-OptimizingCodeEmitter >> assembleRestorePreviousContext: instruction [
-	assembler restoreCallerFrame
-]
-
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleTimesConstant: instruction [
 	| left value shift |
 	left := allocation at: instruction left.
 	value := instruction right.
-	self ASSERT: (value == 4 or: [value == 8]).
-	shift := value == 4 ifTrue: [2] ifFalse: [3].
+	self _ASSERT: (value == 4 or: [value == 8] or: [value == 2]).
+	shift := value == 4
+		ifTrue: [2]
+		ifFalse: [value == 8 ifTrue: [3] ifFalse: [1]].
 	assembler
 		clearIntegerBit: left;
 		shiftLeft: left by: shift;
@@ -650,7 +622,7 @@ OptimizingCodeEmitter >> assembleTimesConstant: instruction [
 
 { #category : #private }
 OptimizingCodeEmitter >> assembleTransferControlTo: instruction [
-	| code receiver |
+	| code receiver activation |
 	receiver := allocation at: instruction left.
 	code := allocation at: instruction right.
 	receiver == assembler regA ifTrue: [
@@ -661,11 +633,29 @@ OptimizingCodeEmitter >> assembleTransferControlTo: instruction [
 			ifFalse: [
 				assembler move: assembler regA to: assembler regT.
 				receiver := assembler regT]].
-	self assembleCopyIfNeeded: code to: assembler regA.
+	self assembleCopyIfNeeded: code to: assembler regM.
 	self assembleCopyIfNeeded: receiver to: assembler regR.
-	self activationRecord savesPreviousSelf
+	activation := self activationRecord.
+	(activation savesPreviousSelf and: [activation hasFrame])
 		ifTrue: [assembler pop: assembler regS].
-	assembler restoreCallerFrame; jumpToReg: assembler regA
+	assembler restoreCallerFrame; jumpToMindex: 1
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleULongAt: instruction [
+	| result |
+	self assembleLongSlotAt: instruction.
+	result := allocation at: instruction.
+	assembler convertToSmallInteger: result
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> assembleULongAtPut: instruction [
+	| value |
+	value := allocation at: instruction value.
+	assembler convertToNativeInteger: value.
+	self assembleLongSlotAtPut: instruction.
+	assembler convertToSmallInteger: value
 ]
 
 { #category : #unclassified }
@@ -714,17 +704,13 @@ OptimizingCodeEmitter >> initializeAssemblers [
 		at: #_asSmallInteger put: #AsSmallInteger;
 		at: #_byteAt: put: #ByteAt;
 		at: #_basicAt: put: #BasicAt;
-		at: #_basicULongAt: put: #BasicULongAt;
+		at: #_longSlotAt: put: #LongSlotAt;
+		at: #_uLongAt: put: #ULongAt;
 		at: #_byteAt:put: put: #ByteAtPut;
 		at: #_basicAt:put: put: #BasicAtPut;
-		at: #_basicULongAt:put: put: #BasicULongAtPut;
+		at: #_longSlotAt:put: put: #LongSlotAtPut;
+		at: #_uLongAt:Put: put: #ULongAtPut;
 		at: #_objectAtOffset:put: put: #ObjectAtOffsetPut;
-		at: #_basicFlags put: #BasicFlags;
-		at: #_basicFlags: put: #BasicFlagsPut;
-		at: #_smallSize put: #BasicSize;
-		at: #_smallSize: put: #BasicSizePut;
-		at: #_largeSize put: #ExtendedSize;
-		at: #_largeSize: put: #ExtendedSizePut;
 		at: #_isSmallInteger put: #IsSmallInteger;
 		at: #_transferControlTo: put: #TransferControlTo;
 		at: #negate put: #Negate;
@@ -737,10 +723,10 @@ OptimizingCodeEmitter >> initializeAssemblers [
 
 { #category : #unclassified }
 OptimizingCodeEmitter >> initializeLowLevelAssembler [
-	assembler := JITAssembler64 on: #[] writeStream
+	assembler := JITAssembler64 new
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> jumpWasAssembledInComparison: aConditionalJump [
 	| prev |
 	prev := aConditionalJump prev.
@@ -748,12 +734,12 @@ OptimizingCodeEmitter >> jumpWasAssembledInComparison: aConditionalJump [
 	prev allUses size != 1 ifTrue: [^false].
 	prev class == OMessageSend ifTrue: [^false].
 	prev class == OPhi ifTrue: [^false].
-	(prev isKindOf: OBinaryOperation) ifTrue: [
-		(#(< <= = == != >= >) includes: prev name) ifTrue: [^true].
-		(#(_basicAt:) includes: prev name) ifTrue: [^false]].
+	prev class == OLoadOperation ifTrue: [^false].
+	(prev isKindOf: OBinaryOperation)
+		ifTrue: [(#(< <= = == != >= >) includes: prev name) ifTrue: [^true]].
 	prev class == OUnaryOperation ifTrue: [
-		(#(_isSmallInteger) includes: prev name) ifTrue: [^true].
-		(#(copy) includes: prev name) ifTrue: [^false]].
+		#_isSmallInteger = prev name ifTrue: [^true].
+		#copy = prev name ifTrue: [^false]].
 	self halt
 ]
 
@@ -762,6 +748,18 @@ OptimizingCodeEmitter >> labelBlocks [
 	blocks do: [:block | | label |
 		label := assembler newLabel.
 		jumpDestinations at: block put: label]
+]
+
+{ #category : #private }
+OptimizingCodeEmitter >> loadMifNeeded [
+	method selector == #_dispatchOn:
+		ifTrue: [^assembler loadMwithGlobal: #Lookup].
+	method selector == #_dispatchOn:startingAt:
+		ifTrue: [^assembler loadMwithGlobal: #LookupSuper].
+	method selector == #_dispatchDebuggableOn:
+		ifTrue: [^assembler loadMwithGlobal: #DebuggableLookup].
+	method selector == #_dispatchDebuggableOn:startingAt:
+		ifTrue: [^assembler loadMwithGlobal: #DebuggableLookupSuper]
 ]
 
 { #category : #unclassified }
@@ -794,48 +792,58 @@ OptimizingCodeEmitter >> selectorFor: instruction [
 	^assemblers at: instruction name
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitBinaryWithConstant: instruction [
 	| selector |
 	selector := #assemble , (self selectorFor: instruction) , #Constant:.
 	self perform: selector asSymbol with: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitBinaryWithVariable: instruction [
-	| selector |
-	selector := #assemble , (self selectorFor: instruction) , #':'.
-	self perform: selector asSymbol with: instruction
+	self visitGeneric: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitBranch: branch comparing: aBoolean [
 	| reg |
 	(self jumpWasAssembledInComparison: branch) ifTrue: [^self].
 	reg := allocation at: branch variable.
-	assembler compare: reg withPointer: aBoolean.
+	assembler compare: reg withBoolean: aBoolean.
 	self assembleJumpIfEqualTo: branch target.
 	branch implicitTarget != self nextBlock
 		ifTrue: [self assembleJumpTo: branch implicitTarget]
 ]
 
 { #category : #unclassified }
+OptimizingCodeEmitter >> visitGeneric: instruction [
+	| selector |
+	selector := #assemble , (self selectorFor: instruction) , #':'.
+	self perform: selector asSymbol with: instruction
+]
+
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitJump: aJump [
 	aJump target == self nextBlock ifTrue: [^self].
 	self assembleJumpTo: aJump target
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitJumpFalse: aJumpFalse [
 	self visitBranch: aJumpFalse comparing: false
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitJumpTrue: aJumpTrue [
 	self visitBranch: aJumpTrue comparing: true
 ]
 
 { #category : #unclassified }
+OptimizingCodeEmitter >> visitLoad: instruction [
+	self visitGeneric: instruction
+]
+
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitLoadConstant: aLoadConstant [
 	| register value |
 	register := allocation
@@ -848,32 +856,32 @@ OptimizingCodeEmitter >> visitLoadConstant: aLoadConstant [
 { #category : #visiting }
 OptimizingCodeEmitter >> visitLoadImplicit: instruction [
 	| frame |
-	instruction name == #activationRecord ifTrue: [^assembler buildFrame].
-	instruction name == #self ifTrue: [
-		frame := instruction prev.
-		^frame hasFrame ifTrue: [
-			assembler
-				reserveStackSlots: frame temporaries + 2;
-				store: assembler regR in: assembler regFP index: 0;
-				loadVwithPointer: method;
-				store: assembler regV in: assembler regFP index: -1.
-			self savesPreviousSelf ifTrue: [assembler push: assembler regS]]]
+	instruction name == #activationRecord ifTrue: [
+		assembler buildFrame.
+		^self loadMifNeeded].
+	instruction name == #self ifFalse: [^self].
+	frame := instruction prev.
+	frame hasFrame ifFalse: [^self].
+	assembler
+		reserveStackSlots: frame temporaries + 2;
+		store: assembler regR in: assembler regFP index: 0;
+		store: assembler regM in: assembler regFP index: -1.
+	self savesPreviousSelf
+		ifTrue: [assembler push: assembler regS; pushM; loadMwithA]
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitMessageSend: aMessageSend [
 	self assembleGenericMessageSend: aMessageSend.
 	firstBlock activationRecord haveFrame
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitNullary: instruction [
-	| selector |
-	selector := #assemble , (self selectorFor: instruction) , #':'.
-	self perform: selector asSymbol with: instruction
+	self visitGeneric: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitPhi: phiInstruction [
 	
 ]
@@ -884,25 +892,22 @@ OptimizingCodeEmitter >> visitReturn: aReturnInstruction [
 	source := allocation at: aReturnInstruction source.
 	self assembleCopyIfNeeded: source to: assembler regR.
 	self savesPreviousSelf
-		ifTrue: [assembler pop: assembler regS; restoreCallerFrame]
+		ifTrue: [assembler popM; popS; restoreCallerFrame]
 		ifFalse: [
 			assembler
 				restoreCallerFrame;
-				load: assembler regS from: assembler regFP atIndex: 0].
+				load: assembler regS from: assembler regFP atIndex: 0;
+				restoreCallerM].
 	assembler return
 ]
 
 { #category : #unclassified }
-OptimizingCodeEmitter >> visitTernary: instruction [
-	| selector |
-	selector := #assemble , (self selectorFor: instruction) , #':'.
-	self perform: selector asSymbol with: instruction
+OptimizingCodeEmitter >> visitStore: instruction [
+	self visitGeneric: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitUnary: instruction [
-	| selector |
-	selector := #assemble , (self selectorFor: instruction) , #':'.
-	self perform: selector asSymbol with: instruction
+	self visitGeneric: instruction
 ]
 

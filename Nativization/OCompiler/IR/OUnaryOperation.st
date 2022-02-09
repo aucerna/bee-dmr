@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -40,6 +40,14 @@ OUnaryOperation >> basicPrintString [
 			ifFalse: [receiver printString]) , ' ' , name , ']'
 ]
 
+{ #category : #accessing }
+OUnaryOperation >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy receiver: (receiver duplicateWith: map).
+	^copy
+]
+
 { #category : #unclassified }
 OUnaryOperation >> isUnaryOperation [
 	^true
@@ -50,10 +58,10 @@ OUnaryOperation >> operandsDo: aBlock [
 	aBlock value: receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OUnaryOperation >> printStringUsing: names [
 	^(receiver isInstruction
-		ifTrue: [names at: receiver]
+		ifTrue: [names at: receiver ifAbsent: ['?']]
 		ifFalse: [receiver printString]) , ' ' , name
 ]
 
@@ -64,7 +72,8 @@ OUnaryOperation >> receiver [
 
 { #category : #unclassified }
 OUnaryOperation >> receiver: operation [
-	receiver := operation
+	receiver := operation.
+	operation addUse: self at: #receiver
 ]
 
 { #category : #unclassified }

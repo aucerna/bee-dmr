@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -15,6 +15,14 @@ Class {
 { #category : #unclassified }
 OPrimitiveOperation >> basicPrintString [
 	^self primitivePrintString
+]
+
+{ #category : #accessing }
+OPrimitiveOperation >> doDuplicateWith: map [
+	| copy |
+	copy := super doDuplicateWith: map.
+	copy name: name.
+	^copy
 ]
 
 { #category : #testing }

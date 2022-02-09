@@ -1,6 +1,6 @@
 "
-    Copyright (c) 2020 Aucerna.
-    See (MIT) license in root directory.
+	Copyright (c) 2020-2022 Quorum Software.
+	See (MIT) license in root directory.
 "
 
 Class {
@@ -37,11 +37,11 @@ OJumpFalse >> primitivePrintString [
 	^'{jump false}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OJumpFalse >> printStringUsing: names [
-	^'jump false ' , (names at: variable ifAbsent: ['missing']) , ' to '
-		, (names at: target ifAbsent: 'missing')
+	^'jump false ' , (names at: variable ifAbsent: ['?']) , ' to '
+		, (names at: target ifAbsent: ['?'])
 		, ' or fall to '
-		, (names at: implicitTarget ifAbsent: 'missing')
+		, (names at: implicitTarget ifAbsent: ['?'])
 ]
 
