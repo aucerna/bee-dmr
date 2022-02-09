@@ -26,6 +26,29 @@ MemoryMeter >> initialize [
 ]
 
 { #category : #accessing }
+MemoryMeter >> measure: aBlock [
+	| eden from old remembered milliseconds tenured cradled run ephemerons |
+	eden := memory eden usedBytes.
+	from := memory from usedBytes.
+	old := memory old usedBytes.
+	remembered := memory rememberedSet size.
+	ephemerons := memory unreachableEphemerons size.
+	milliseconds := Time millisecondsToRun: aBlock.
+	tenured := memory old usedBytes - old.
+	cradled := memory from usedBytes.
+	run := GenGCPass new
+		time: milliseconds;
+		oldSize: old;
+		youngSize: eden + from;
+		cradled: cradled;
+		tenured: tenured;
+		rememberedBefore: remembered;
+		rememberedAfter: memory rememberedSet size;
+		rescued: memory unreachableEphemerons size - ephemerons.
+	runs add: run
+]
+
+{ #category : #accessing }
 MemoryMeter >> memory: aMemory [
 	memory := aMemory
 ]

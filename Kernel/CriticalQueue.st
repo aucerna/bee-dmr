@@ -32,6 +32,11 @@ CriticalQueue >> addBuffer: size [
 		push: address // 2
 ]
 
+{ #category : #actions }
+CriticalQueue >> at: anInteger [
+	^self errorNotIndexable
+]
+
 { #category : #accessing }
 CriticalQueue >> buffers: aCriticalArray initialSize: anInteger [
 	buffers := aCriticalArray.
@@ -67,8 +72,8 @@ CriticalQueue >> pop [
 
 { #category : #'adding/removing' }
 CriticalQueue >> push: anObject [
+	top = limit ifTrue: [self grow].
 	top := top + 1.
-	top > limit ifTrue: [self grow].
 	^head _asObject _basicAt: top put: anObject
 ]
 

@@ -116,6 +116,42 @@ ExternalMemory >> at: index put: byte [
 ]
 
 { #category : #accessing }
+ExternalMemory >> basicReplaceBytesFrom: start
+to: stop
+with: collection
+startingAt: position [
+	^collection
+		basicReplaceBytesOfAddress: address
+		from: start
+		to: stop
+		startingAt: position
+]
+
+{ #category : #accessing }
+ExternalMemory >> basicReplaceBytesOf: anObject
+from: start
+to: stop
+startingAt: position [
+	^anObject
+		_replaceBytesFrom: start
+		to: stop
+		with: (address _basicAt: 1)
+		startingAt: position
+]
+
+{ #category : #accessing }
+ExternalMemory >> basicReplaceBytesOfAddress: aByteArray
+from: start
+to: stop
+startingAt: position [
+	^(aByteArray _basicAt: 1)
+		_replaceBytesFrom: start
+		to: stop
+		with: (address _basicAt: 1)
+		startingAt: position
+]
+
+{ #category : #accessing }
 ExternalMemory >> byteAt: anInteger [
 	^self byteAtOffset: anInteger - 1
 ]
@@ -138,6 +174,13 @@ ExternalMemory >> byteAtOffset: offset put: byte [
 { #category : #services }
 ExternalMemory >> bytes [
 	self subclassResponsibility
+]
+
+{ #category : #accessing }
+ExternalMemory >> checkBounds: start to: end [
+	start < 1 ifTrue: [self outOfBoundsIndex: end].
+	(address _size = WordSize and: [address _isBytes])
+		ifFalse: [self error: 'bad address']
 ]
 
 { #category : #services }
@@ -186,6 +229,11 @@ ExternalMemory >> finalize [
 { #category : #finalization }
 ExternalMemory >> free [
 	self release; ignoreFinalization
+]
+
+{ #category : #comparing }
+ExternalMemory >> hasBytes [
+	^true
 ]
 
 { #category : #comparing }

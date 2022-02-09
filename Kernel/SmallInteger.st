@@ -183,9 +183,44 @@ SmallInteger >> basicAt: index [
 	^self _smallIntegerByteAt: index
 ]
 
+{ #category : #accessing }
+SmallInteger >> basicAt: index put: anObject [
+	^self shouldNotImplement
+]
+
 { #category : #private }
 SmallInteger >> basicHash [
 	^self
+]
+
+{ #category : #arithmetic }
+SmallInteger >> basicReplaceBytesOf: anObject
+from: start
+to: stop
+startingAt: position [
+	| i j |
+	i := start.
+	j := position.
+	[i <= stop] whileTrue: [
+		anObject _byteAt: i put: (self _smallIntegerByteAt: j).
+		i := i + 1.
+		j := j + 1].
+	^anObject
+]
+
+{ #category : #arithmetic }
+SmallInteger >> basicReplaceBytesOfAddress: anObject
+from: start
+to: stop
+startingAt: position [
+	| i j |
+	i := start.
+	j := position.
+	[i <= stop] whileTrue: [
+		(anObject _basicAt: 1) _byteAt: i put: (self _smallIntegerByteAt: j).
+		i := i + 1.
+		j := j + 1].
+	^anObject
 ]
 
 { #category : #'meta accessing' }
@@ -275,6 +310,12 @@ SmallInteger >> byteAt: anInteger put: byte [
 ]
 
 { #category : #arithmetic }
+SmallInteger >> checkBounds: start to: end [
+	(start < 1 or: [end < start or: end > WordSize])
+		ifTrue: [self outOfBoundsIndex: start]
+]
+
+{ #category : #arithmetic }
 SmallInteger >> gcd: anInteger [
 	| n m |
 	n := self.
@@ -327,6 +368,16 @@ SmallInteger >> highWideDigit [
 	highest := self sizeInBytes.
 	(highest bitAnd: 1) = 1 ifTrue: [highest := highest + 1].
 	^((self at: highest) bitShift: 8) + (self at: highest - 1)
+]
+
+{ #category : #arithmetic }
+SmallInteger >> instVarAt: i [
+	^self shouldNotImplement
+]
+
+{ #category : #arithmetic }
+SmallInteger >> instVarAt: i put: anObject [
+	^self shouldNotImplement
 ]
 
 { #category : #testing }

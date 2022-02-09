@@ -166,7 +166,7 @@ SmalltalkSystem >> closeExternalResources [
 
 { #category : #services }
 SmalltalkSystem >> collectGarbage [
-	memory forceCompact
+	memory collect
 ]
 
 { #category : #accessing }
@@ -204,6 +204,12 @@ SmalltalkSystem >> exit [
 { #category : #accessing }
 SmalltalkSystem >> finalizer [
 	^finalizer
+]
+
+{ #category : #services }
+SmalltalkSystem >> flushDispatchCaches [
+	GlobalDispatchCache current flush.
+	SendSite flushInstances; flush
 ]
 
 { #category : #accessing }
@@ -246,7 +252,19 @@ SmalltalkSystem >> includesKey: aSymbol [
 
 { #category : #initialization }
 SmalltalkSystem >> initialize [
-	globals := Dictionary new
+	globals := Dictionary new.
+	self initializeDMRMemory
+]
+
+{ #category : #initialization }
+SmalltalkSystem >> initializeDMRMemory [
+	| kernel |
+	kernel := GCSpace new.
+	kernel name: 'Kernel'.
+	memory := Memory new
+		addKernelSpace: kernel;
+		fromSpace: kernel;
+		eden: kernel
 ]
 
 { #category : #initialization }
@@ -295,7 +313,7 @@ SmalltalkSystem >> initializeWeakRegistries [
 ]
 
 { #category : #testing }
-SmalltalkSystem >> isBee [
+SmalltalkSystem >> isDMR [
 	^true
 ]
 
@@ -383,9 +401,7 @@ SmalltalkSystem >> propertiesFor: anObject [
 
 { #category : #accessing }
 SmalltalkSystem >> put: aCompiledMethod at: aSymbol in: aMethodDictionary [
-	| current |
-	current := aMethodDictionary at: aSymbol ifAbsent: nil.
-	(current notNil and: [current isNativized])
+	(aMethodDictionary shouldNativizeBeforeInstalling: aSymbol)
 		ifTrue: [aCompiledMethod prepareForExecution].
 	self put: aCompiledMethod withoutFlushing: aSymbol in: aMethodDictionary.
 	aMethodDictionary flushCache: aSymbol.
@@ -425,6 +441,11 @@ SmalltalkSystem >> rehashWeakRegistries [
 	finalizer rehash.
 	properties rehash.
 	registeredEvents rehash
+]
+
+{ #category : #accessing }
+SmalltalkSystem >> releasePropertiesFor: anObject [
+	properties removeKey: anObject ifAbsent: nil
 ]
 
 { #category : #accessing }
@@ -517,11 +538,11 @@ SmalltalkSystem >> showBacktraceOf: aProcess label: aString [
 
 { #category : #'startup/shutdown' }
 SmalltalkSystem >> startUp [
-	self transcript initialize.
 	self
+		initializeTranscript;
 		initializeFinalizationBlocks;
 		ephemeronsDo: [:e | e activate];
-		initializeExternals	self initializeExternals
+		initializeExternals
 ]
 
 { #category : #'startup/shutdown' }

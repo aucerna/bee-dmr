@@ -423,12 +423,33 @@ ProtoObject >> == anObject [
 
 { #category : #system }
 ProtoObject >> allReferences [
-	^Memory current collectAndCompactOldSpace; referencesTo: self
+	^Smalltalk memory referencesTo: self
 ]
 
 { #category : #accessing }
 ProtoObject >> basicAt: anInteger [
 	^self primitiveAt: anInteger
+]
+
+{ #category : #private }
+ProtoObject >> basicAt: anInteger put: anObject [
+	^self primitiveAt: anInteger put: anObject
+]
+
+{ #category : #unclassified }
+ProtoObject >> basicByteAt: index [
+	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
+	(1 <= index and: [index <= self _size])
+		ifFalse: [self outOfBoundsIndex: index].
+	^self _byteAt: index
+]
+
+{ #category : #unclassified }
+ProtoObject >> basicByteAt: index put: value [
+	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
+	(1 <= index and: [index <= self _size])
+		ifFalse: [self outOfBoundsIndex: index].
+	^self byteAtValid: index put: value
 ]
 
 { #category : #system }
@@ -454,27 +475,46 @@ ProtoObject >> basicHash: anInteger [
 ]
 
 { #category : #private }
-ProtoObject >> basicInstVarAt: index [
-	| max |
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
-	max := self _size
-		+ ((self _hasNamedSlots and: [self _isArrayed])
-			ifTrue: [self class instSize]
-			ifFalse: [0]).
-	(1 <= index and: [index <= max]) ifFalse: [^self outOfBoundsIndex: index].
-	^self objectAtValid: index
+ProtoObject >> basicInstVarAt: i [
+	i _isSmallInteger ifFalse: [^self outOfBoundsIndex: i].
+	(1 <= i and: [i <= self _size]) ifFalse: [^self outOfBoundsIndex: i].
+	^self _isBytes ifTrue: [self _byteAt: i] ifFalse: [self objectAtValid: i]
 ]
 
 { #category : #private }
-ProtoObject >> basicInstVarAt: index put: anObject [
-	| max |
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
-	max := self _size
-		+ ((self _hasNamedSlots and: [self _isArrayed])
-			ifTrue: [self class instSize]
-			ifFalse: [0]).
-	(1 <= index and: [index <= max]) ifFalse: [^self outOfBoundsIndex: index].
+ProtoObject >> basicInstVarAt: i put: anObject [
+	i _isSmallInteger ifFalse: [^self outOfBoundsIndex: i].
+	(1 <= i and: [i <= self _size]) ifFalse: [self outOfBoundsIndex: i].
+	^self _isBytes
+		ifTrue: [self byteAtValid: i put: anObject]
+		ifFalse: [self objectAtValid: i put: anObject]
+]
+
+{ #category : #unclassified }
+ProtoObject >> basicObjectAt: grossIndex [
+	| index |
+	index := self basicObjectIndexOf: grossIndex.
+	^self _basicAt: index
+]
+
+{ #category : #unclassified }
+ProtoObject >> basicObjectAt: grossIndex put: anObject [
+	| index |
+	index := self basicObjectIndexOf: grossIndex.
 	^self objectAtValid: index put: anObject
+]
+
+{ #category : #unclassified }
+ProtoObject >> basicObjectIndexOf: grossIndex [
+	| instVars index |
+	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].
+	instVars := (self _hasNamedSlots and: [self _isArrayed])
+		ifTrue: [self class instSize]
+		ifFalse: [0].
+	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])
+		ifFalse: [^self outOfBoundsIndex: grossIndex].
+	index := grossIndex + instVars.
+	^index
 ]
 
 { #category : #private }
@@ -503,6 +543,16 @@ ProtoObject >> behavior: aBehavior [
 			self _longSlotAt: 0 put: aBehavior]
 ]
 
+{ #category : #unclassified }
+ProtoObject >> byteAtValid: index put: value [
+	value _isSmallInteger
+		ifFalse: [^self error: 'value does not fit in a byte'].
+	(0 <= value and: [value < 256])
+		ifFalse: [^self error: 'value does not fit in a byte'].
+	^self _byteAt: index put: value
+]
+
+{ #category : #system }
 ProtoObject >> class [
 	^self behavior classBinding
 ]
@@ -622,18 +672,12 @@ ProtoObject >> initializeExtended: aBoolean contentSize: size [
 
 { #category : #system }
 ProtoObject >> instVarAt: i [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
-	^self _isBytes
-		ifTrue: [self basicByteAt: i]
-		ifFalse: [self basicInstVarAt: i]
+	^self basicInstVarAt: i
 ]
 
 { #category : #system }
 ProtoObject >> instVarAt: i put: anObject [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
-	^self _isBytes
-		ifTrue: [self basicByteAt: i put: anObject]
-		ifFalse: [self basicInstVarAt: i put: anObject]
+	^self basicInstVarAt: i put: anObject
 ]
 
 { #category : #system }
@@ -698,10 +742,16 @@ ProtoObject >> perform: aSymbol withArguments: anArray [
 
 { #category : #accessing }
 ProtoObject >> primitiveAt: i [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
 	^self _isBytes
 		ifTrue: [self basicByteAt: i]
 		ifFalse: [self basicObjectAt: i]
+]
+
+{ #category : #private }
+ProtoObject >> primitiveAt: i put: anObject [
+	^self _isBytes
+		ifTrue: [self basicByteAt: i put: anObject]
+		ifFalse: [self basicObjectAt: i put: anObject]
 ]
 
 { #category : #underprimitives }

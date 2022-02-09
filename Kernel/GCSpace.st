@@ -57,9 +57,6 @@ GCSpace >> addMarkedInstancesOf: aSpecies into: result [
 
 { #category : #enumeration }
 GCSpace >> addMarkedReferencesTo: anObject into: aCollection [
-	"
-	remember not to create ANY objects here
-	"
 	| next object end |
 	next := base.
 	end := nextFree.
@@ -152,6 +149,11 @@ GCSpace >> commitAtLeast: bytes [
 ]
 
 { #category : #accessing }
+GCSpace >> commitedBytes [
+	^commitedLimit - base * 2
+]
+
+{ #category : #accessing }
 GCSpace >> commitedLimit [
 	^commitedLimit
 ]
@@ -159,8 +161,8 @@ GCSpace >> commitedLimit [
 { #category : #accessing }
 GCSpace >> commitedLimit: anInteger [
 	commitedLimit := anInteger.
-	reservedLimit isNil ifTrue: [self reservedLimit: anInteger].
-	softLimit isNil ifTrue: [self leaveDispenseSpace]
+	reservedLimit isNil ifTrue: [reservedLimit := anInteger].
+	softLimit isNil ifTrue: [softLimit := anInteger]
 ]
 
 { #category : #inquiries }
@@ -181,16 +183,16 @@ GCSpace >> commitMoreMemory: anInteger [
 	critical := CRITICAL.
 	CRITICAL := true.
 	padded := new bitAnd: -16r1000 _asPointer.
-	original := memory eden.
+	original := memory allocator.
 	original available < 16r1000 _asPointer ifTrue: [
 		old := memory old.
 		self == old ifTrue: [self dispenseReservedSpace].
-		memory eden: old].
+		memory allocator: old].
 	(self commitSized: padded - base) == base
 		ifFalse: [self _error: 'GC space could not commit as requested'].
 	softLimit := padded - 16r4000 _asPointer.
 	commitedLimit := padded.
-	memory eden: original.
+	memory allocator: original.
 	CRITICAL := critical
 ]
 
@@ -293,6 +295,15 @@ GCSpace >> includesAddress: anInteger [
 	^anInteger between: base and: commitedLimit
 ]
 
+{ #category : #actions }
+GCSpace >> increaseSoftLimit: anInteger [
+	| available |
+	available := commitedLimit - softLimit.
+	available <= 0x8000 _asPointer ifTrue: [^false].
+	softLimit := softLimit + (anInteger min: available - 0x4000 _asPointer).
+	^true
+]
+
 { #category : #testing }
 GCSpace >> isReferredBy: object [
 	| max |
@@ -302,13 +313,6 @@ GCSpace >> isReferredBy: object [
 		slot := object _basicAt: i.
 		(slot _isSmallInteger not and: [self includes: slot]) ifTrue: [^true]].
 	^false
-]
-
-{ #category : #actions }
-GCSpace >> leaveDispenseSpace [
-	| dispensed |
-	dispensed := self commitedSize // 20 _asPointer min: 512 * 1024.
-	self leaveDispenseSpace: dispensed
 ]
 
 { #category : #actions }
@@ -498,6 +502,11 @@ GCSpace >> reservedSize [
 { #category : #actions }
 GCSpace >> reset [
 	nextFree := base
+]
+
+{ #category : #actions }
+GCSpace >> resetSoftLimit: anInteger [
+	softLimit := nextFree + anInteger min: commitedLimit
 ]
 
 { #category : #actions }

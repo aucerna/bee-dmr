@@ -39,7 +39,7 @@ GenGCPass >> oldSize: anInteger [
 	oldSize := anInteger
 ]
 
-{ #category : #accessing }
+{ #category : #printing }
 GenGCPass >> printCSVOn: aStream [
 	aStream
 		print: time;
@@ -61,7 +61,7 @@ GenGCPass >> printCSVOn: aStream [
 		print: rescued
 ]
 
-{ #category : #accessing }
+{ #category : #printing }
 GenGCPass >> printOn: aStream [
 	aStream
 		nextPutAll: 'GC run took ';
@@ -129,7 +129,7 @@ GenGCPass >> rescued: anInteger [
 	rescued := anInteger
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 GenGCPass >> survivalRate [
 	^cradled + tenured / youngSize asFloat
 ]
@@ -144,7 +144,7 @@ GenGCPass >> tenured: anInteger [
 	tenured := anInteger
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 GenGCPass >> throughput [
 	"
 	in MBs per second

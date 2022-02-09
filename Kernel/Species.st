@@ -176,7 +176,7 @@ Species >> browse [
 ]
 
 { #category : #services }
-Species >> buildBehavior
+Species >> buildBehavior [
 	| behavior |
 	behavior := Behavior with: self methodDictionary copy.
 	superclass ifNotNil: [behavior next: superclass instanceBehavior].

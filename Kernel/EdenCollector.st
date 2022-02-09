@@ -17,6 +17,16 @@ Class {
 	#category : #Kernel
 }
 
+{ #category : #ephemerons }
+EdenCollector >> copyRescuedEphemerons [
+	| copy contents |
+	copy := toSpace shallowCopyCommiting: rescuedEphemerons.
+	copy ifNil: [copy := oldZone shallowCopyCommiting: rescuedEphemerons].
+	rescuedEphemerons := copy.
+	contents := toSpace shallowCopyCommiting: rescuedEphemerons contents.
+	^contents ifNil: [oldZone shallowCopyCommiting: rescuedEphemerons contents]
+]
+
 { #category : #cleaning }
 EdenCollector >> copyToOld: object [
 	| copy |
@@ -68,6 +78,16 @@ EdenCollector >> forwardersSize [
 { #category : #cleaning }
 EdenCollector >> forwardingIndexOf: anObject [
 	^(anObject _asPointer - youngBase bitShift: 0 - WordSizeShift + 1) + 1
+]
+
+{ #category : #cleaning }
+EdenCollector >> hasToPurge: object [
+	| class |
+	class := object class.
+	(class == StackWrapper and: [self newspaceIsRefererredByStack: object])
+		ifTrue: [^false].
+	^(self newspaceIncludes: object)
+		or: [(self newspaceIsReferredBy: object) not]
 ]
 
 { #category : #cleaning }
@@ -170,8 +190,7 @@ EdenCollector >> purgeCurrentRememberedSet [
 	current := memory rememberedSet.
 	1 to: current size do: [:i | | remembered |
 		remembered := current at: i.
-		(workSpace includes: remembered) ifFalse: [rememberedSet add: remembered].
-		current at: i put: nil].
+		(workSpace includes: remembered) ifFalse: [rememberedSet add: remembered]].
 	current size: 0
 ]
 
@@ -204,6 +223,12 @@ EdenCollector >> releaseLocals [
 EdenCollector >> remember: anObject [
 	anObject _beRemembered.
 	rememberedSet add: anObject
+]
+
+{ #category : #cleaning }
+EdenCollector >> rememberOldStacks [
+	StackWrapper registeredInstances
+		do: [:stack | self rememberStackIfNeeded: stack]
 ]
 
 { #category : #cleaning }
@@ -281,29 +306,12 @@ EdenCollector >> scanThreadLocalStorage: thread [
 			thread tlsAt: index put: moved]]
 ]
 
-{ #category : #ephemerons }
-EdenCollector >> strenghtenAndMigrateEphemerons [
-	| copy contents |
-	copy := toSpace shallowCopyCommiting: rescuedEphemerons.
-	copy ifNil: [copy := oldZone shallowCopyCommiting: rescuedEphemerons].
-	rescuedEphemerons := copy.
-	contents := toSpace shallowCopyCommiting: rescuedEphemerons contents.
-	contents ifNil: [
-		contents := oldZone shallowCopyCommiting: rescuedEphemerons contents.
-		contents
-			ifNil: [^self
-				_error: 'could not copy rescued ephemerons out of GC work space'].
-		self remember: contents].
-	rescuedEphemerons contents: contents.
-	rescuedEphemerons do: [:ephemeron | ephemeron _beNotSpecial]
-]
-
 { #category : #cleaning }
 EdenCollector >> swapMemoryFromAndTo [
 	"
 	self validate.
 	"
-	edenSpace wipeOut; reset; leaveDispenseSpace.
+	edenSpace wipeOut; reset; leaveDispenseSpace: 0x4000 _asPointer.
 	memory from wipeOut; copyFrom: toSpace.
 	memory to copyFrom: fromSpace; reset
 ]

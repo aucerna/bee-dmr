@@ -10,7 +10,8 @@ Class {
 		'stack',
 		'limit',
 		'index',
-		'scanned'
+		'scanned',
+		'largeSize'
 	],
 	#category : #Kernel
 }
@@ -25,6 +26,13 @@ NonMovingCollector >> checkReachablePropertyOf: ephemeron [
 { #category : #cleaning }
 NonMovingCollector >> copyOf: object [
 	self error: 'non-moving collector should not copy'
+]
+
+{ #category : #cleaning }
+NonMovingCollector >> copyRescuedEphemerons [
+	rescuedEphemerons := memory oldSpace
+		shallowCopyCommiting: rescuedEphemerons.
+	^memory oldSpace shallowCopyCommiting: rescuedEphemerons contents
 ]
 
 { #category : #cleaning }
@@ -69,6 +77,7 @@ NonMovingCollector >> initialContainerCapacity [
 { #category : #initialization }
 NonMovingCollector >> initializeLocals [
 	stack := CriticalQueue emptyReserving: 64 kbytes.
+	largeSize := memory largeSpaces size.
 	memory old resetOccupancy.
 	super initializeLocals
 ]
@@ -198,30 +207,13 @@ NonMovingCollector >> scanTopSlot: stackWrapper [
 	self queue: stackWrapper sp _asObject from: 1 to: 1
 ]
 
-{ #category : #cleaning }
-NonMovingCollector >> strenghtenAndMigrateEphemerons [
-	| contents |
-	rescuedEphemerons := memory oldSpace
-		shallowCopyCommiting: rescuedEphemerons.
-	contents := memory oldSpace
-		shallowCopyCommiting: rescuedEphemerons contents.
-	contents ifNil: [
-		^self
-			_error: 'rescued ephemerons could not be copied outside of GC work space'].
-	memory remember: contents.
-	rescuedEphemerons
-		contents: contents;
-		do: [:ephemeron | ephemeron _beNotSpecial]
-]
-
 { #category : #ephemerons }
 NonMovingCollector >> sweepLargeSpaces [
-	| used large total registered |
+	| used large registered |
 	used := 0.
 	large := memory largeSpaces.
-	total := large size.
 	registered := memory spaces.
-	1 to: total do: [:i | | s |
+	1 to: largeSize do: [:i | | s |
 		s := large at: i.
 		s firstObject _hasBeenSeen
 			ifTrue: [
@@ -230,7 +222,11 @@ NonMovingCollector >> sweepLargeSpaces [
 			ifFalse: [
 				OS release: s base * 2.
 				registered remove: s]].
-	used + 1 to: total do: [:i | large at: i put: nil].
+	largeSize + 1 to: large size do: [:i | | s |
+		s := large at: i.
+		used := used + 1.
+		large at: used put: s].
+	used + 1 to: large size do: [:i | large at: i put: nil].
 	large size: used
 ]
 

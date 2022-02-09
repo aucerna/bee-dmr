@@ -142,7 +142,7 @@ LargeInteger >> | anInteger [
 { #category : #arithmetic }
 LargeInteger >> + aNumber [
 	aNumber isInteger ifFalse: [^aNumber + self].
-	aNumber = 0 ifTrue: [^self].
+	aNumber = 0 ifTrue: [^self reduced].
 	^self addDigits: aNumber
 ]
 

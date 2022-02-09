@@ -1,5 +1,5 @@
 "
-	Copyright (c) 2021 Quorum Software.
+	Copyright (c) 2020-2022 Quorum Software.
 	See (MIT) license in root directory.
 "
 

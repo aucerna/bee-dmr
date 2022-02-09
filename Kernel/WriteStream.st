@@ -91,11 +91,6 @@ WriteStream >> nextBytesPut: aByteArray [
 	^aByteArray
 ]
 
-{ #category : #'chunk format' }
-WriteStream >> nextChunkPut: aString [
-	aString printChunkOn: self
-]
-
 { #category : #marshalling }
 WriteStream >> nextFloatPut: aFloat [
 	^self nextPutAll: aFloat asByteArray

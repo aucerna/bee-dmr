@@ -72,6 +72,30 @@ ByteArraySegment >> at: anInteger put: byte [
 ]
 
 { #category : #accessing }
+ByteArraySegment >> basicReplaceBytesOf: anObject
+from: start
+to: stop
+startingAt: position [
+	^contents
+		basicReplaceBytesOf: anObject
+		from: start
+		to: stop
+		startingAt: position + offset
+]
+
+{ #category : #accessing }
+ByteArraySegment >> basicReplaceBytesOfAddress: anObject
+from: start
+to: stop
+startingAt: position [
+	^contents
+		basicReplaceBytesOfAddress: anObject
+		from: start
+		to: stop
+		startingAt: position + offset
+]
+
+{ #category : #accessing }
 ByteArraySegment >> byteAt: index [
 	self validateIndex: index.
 	^contents at: offset + index

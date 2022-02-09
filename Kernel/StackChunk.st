@@ -37,6 +37,7 @@ StackChunk >> bp [
 
 { #category : #accessing }
 StackChunk >> bp: anInteger [
+	(sp <= anInteger and: [anInteger <= base]) ifFalse: [self _halt].
 	bp := anInteger
 ]
 
@@ -71,13 +72,17 @@ StackChunk >> prev: aCallbackStackLink [
 
 { #category : #initialization }
 StackChunk >> recordStackPointers [
+	"
+	Not sent for performance reasons, see _recordStackPointers.
+	Unlike the underprimitive version, we subtract 2 slots because
+	the current stack has been pushed previous BP and retaddr
+	"
 	| frame dropped |
 	frame := StackFrameCursor top.
 	dropped := 1.
 	dropped timesRepeat: [frame moveNext].
-	bp := frame current.
-	sp := frame previous + 8 _asPointer
-		- 8 _asPointer "is going to push 2 arguments for ffiCall:withArguments"
+	sp := frame previous + 8 _asPointer - 8 _asPointer.
+	self bp: frame current
 ]
 
 { #category : #actions }

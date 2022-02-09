@@ -52,9 +52,14 @@ GarbageCollector >> collect [
 		resetWorkspace;
 		currentSpace: workSpace;
 		initializeLocals;
-		doCollect;
+		updateStackAndDoCollect;
 		currentSpace: eden;
 		releaseLocals
+]
+
+{ #category : #cleaning }
+GarbageCollector >> copyRescuedEphemerons [
+	self subclassResponsibility
 ]
 
 { #category : #cleaning }
@@ -64,10 +69,7 @@ GarbageCollector >> currentSpace: aSpace [
 
 { #category : #cleaning }
 GarbageCollector >> doCollect [
-	self
-		saveEnvironmentAndFollowRoots;
-		strenghtenAndMigrateEphemerons;
-		scanWeakContainers
+	self followRoots; strenghtenAndMigrateEphemerons; scanWeakContainers
 ]
 
 { #category : #cleaning }
@@ -116,8 +118,7 @@ GarbageCollector >> initializeLocals [
 	uncheckedEphemerons := CriticalArray new growTo: size; ignoreWriteBarrier.
 	unreachedEphemerons := CriticalArray new growTo: size; ignoreWriteBarrier.
 	rescuedEphemerons := CriticalArray new growTo: size; ignoreWriteBarrier.
-	stacks := CriticalArray new growTo: size; ignoreWriteBarrier.
-	ActiveProcess stack lock
+	stacks := CriticalArray new growTo: size; ignoreWriteBarrier
 ]
 
 { #category : #accessing }
@@ -157,6 +158,16 @@ GarbageCollector >> releaseLocals [
 ]
 
 { #category : #ephemerons }
+GarbageCollector >> rememberSpecial: object [
+	| collection class |
+	class := object class.
+	collection := class == Ephemeron
+		ifTrue: [uncheckedEphemerons]
+		ifFalse: [class == StackWrapper ifTrue: [stacks] ifFalse: [weakContainers]].
+	collection unsafeAdd: object
+]
+
+{ #category : #ephemerons }
 GarbageCollector >> rescueEphemeron: ephemeron [
 	self followEphemeronWeaks: ephemeron.
 	rescuedEphemerons unsafeAdd: ephemeron
@@ -175,16 +186,6 @@ GarbageCollector >> rescueUnreacheableEphemerons [
 { #category : #cleaning }
 GarbageCollector >> resetWorkspace [
 	workSpace reset
-]
-
-{ #category : #cleaning }
-GarbageCollector >> saveEnvironmentAndFollowRoots [
-	"
-	Here we assure that the current environment, stored
-	in E register, is saved in the stack, so that it is seen
-	when tracing the active process stack.
-	"
-	[self updateActiveStack; followRoots] value
 ]
 
 { #category : #cleaning }
@@ -255,6 +256,12 @@ GarbageCollector >> scanThreadLocalStorage: thread [
 ]
 
 { #category : #cleaning }
+GarbageCollector >> scanThreadLocalStorages [
+	Thread registeredInstances
+		do: [:thread | self scanThreadLocalStorage: thread]
+]
+
+{ #category : #cleaning }
 GarbageCollector >> scanTopSlot: stackWrapper [
 	self subclassResponsibility
 ]
@@ -268,7 +275,23 @@ GarbageCollector >> scanWeakContainers [
 
 { #category : #cleaning }
 GarbageCollector >> strenghtenAndMigrateEphemerons [
-	self subclassResponsibility
+	"
+	Hereby the rescued critical array contents is moved to the old region. 
+	As it may have grown after being traced, the contents could be unmarked.
+	If that happened, and the contents was copied to a large space, the memory
+	area would be incorrectly freed. 
+	To avoid that from happening, we mark the contents as seen.
+	"
+	| contents |
+	contents := self copyRescuedEphemerons.
+	contents ifNil: [
+		^self
+			_error: 'rescued ephemerons could not be copied outside of GC work space'].
+	contents _beSeen.
+	memory rememberIfNeeded: contents.
+	rescuedEphemerons
+		contents: contents;
+		do: [:ephemeron | ephemeron _beNotSpecial]
 ]
 
 { #category : #ephemerons }
@@ -288,8 +311,19 @@ GarbageCollector >> updateActiveStack [
 	it while collecting
 	"
 	| stack |
-	stack := ActiveProcess stack updateBack: 1.
+	stack := ActiveProcess stack lock; updateBack: 1.
 	currentSP := stack sp
+]
+
+{ #category : #cleaning }
+GarbageCollector >> updateStackAndDoCollect [
+	"
+	Here we assure that the current environment, stored in E register,
+	is saved in the stack. Then we update the stack pointers of the
+	stack wrapper. This assures that the environment is seen and
+	updated when tracing the active process stack.
+	"
+	[self updateActiveStack; doCollect] value
 ]
 
 { #category : #cleaning }

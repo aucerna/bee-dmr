@@ -25,8 +25,12 @@ Float class >> basicErrorOn: aSymbol status: status for: aNumber [
 
 { #category : #errors }
 Float class >> clearStatusFlags [
-	Status at: 1 put: 0x80.
-	self _status: Status
+	"
+	We initialize MXCSR to clean all sticky bits (0-5), mask all exceptions (7-12),
+	and to treat denormal arguments of operations as zero (bit 6).
+	We don't flush denormal results to zero (bit 15), but should think about it.
+	"
+	self _floatStatus: self initialControlAndStatusFlags
 ]
 
 { #category : #constants }
@@ -61,15 +65,16 @@ Float class >> from: aNumber [
 
 { #category : #'instance creation' }
 Float class >> fromByteArray: aByteArray [
-	| float size |
-	float := self new.
-	size := float size.
-	float
-		replaceBytesFrom: 1
-		to: size
-		with: aByteArray
-		startingAt: 1.
-	^float
+	^self new initializeWith: aByteArray
+]
+
+{ #category : #'instance creation' }
+Float class >> fromBytes: anObject [
+	| float |
+	^anObject isByteArray ifTrue: [self fromByteArray: anObject] ifFalse: [
+		float := self new.
+		float replaceBytesFrom: 1 to: 8 with: anObject startingAt: 1.
+		^float]
 ]
 
 { #category : #'instance creation' }
@@ -77,7 +82,6 @@ Float class >> fromInteger: anInteger [
 	| result |
 	result := Float new.
 	anInteger _isSmallInteger ifTrue: [
-		Float clearStatusFlags.
 		anInteger _asNative _asFloatInto: result.
 		^result].
 	anInteger isInteger
@@ -204,6 +208,16 @@ Float class >> infinity [
 	^Infinity
 ]
 
+{ #category : #errors }
+Float class >> initialControlAndStatusFlags [
+	"
+	We initialize MXCSR with all sticky bits clean (0-5), all exceptions masked (7-12),
+	and denormal arguments of operations treated as zero (bit 6).
+	We don't flush denormal results to zero (bit 15), but should think about it.
+	"
+	^0x1FC0
+]
+
 { #category : #initialization }
 Float class >> initializeConstants [
 	"
@@ -241,12 +255,6 @@ Float class >> initializePi [
 { #category : #initialization }
 Float class >> initializeRadiansPerDegree [
 	RadiansPerDegree := Pi / 180.0
-]
-
-{ #category : #initialization }
-Float class >> initializeStatus [
-	Status isNil ifTrue: [Status := ByteArray new: 4].
-	self _readStatusOn: Status
 ]
 
 { #category : #constants }
@@ -357,17 +365,12 @@ Float class >> sizeInBytes [
 
 { #category : #accessing }
 Float class >> status [
-	^Status uLongAtOffset: 0
-]
-
-{ #category : #accessing }
-Float class >> statusVar [
-	^Status
+	^self _floatStatus
 ]
 
 { #category : #'instance creation' }
 Float class >> usingBytes: aByteArray [
-	^self fromByteArray: aByteArray
+	^self new initializeWith: aByteArray
 ]
 
 { #category : #constants }
@@ -377,44 +380,32 @@ Float class >> zero [
 
 { #category : #arithmetic }
 Float >> - aNumber [
-	| result status |
+	| new result |
 	aNumber isFloat ifFalse: [^self - aNumber asFloat].
-	result := Float new.
-	Float clearStatusFlags.
-	self _floatMinus: aNumber into: result.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized - aNumber asNormalized]
-		ifFalse: [self errorOn: #'-' status: status]
+	new := Float new.
+	result := self _floatMinus: aNumber into: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #'-' status: result
 ]
 
 { #category : #arithmetic }
 Float >> * aNumber [
-	| result status |
+	| new result |
 	aNumber isFloat ifFalse: [^self * aNumber asFloat].
-	result := Float new.
-	Float clearStatusFlags.
-	self _floatMultiply: aNumber into: result.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized * aNumber asNormalized]
-		ifFalse: [self errorOn: #'*' status: status]
+	new := Float new.
+	result := self _floatMultiply: aNumber into: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #'*' status: result
 ]
 
 { #category : #arithmetic }
 Float >> / aNumber [
-	| result status |
+	| new result |
 	aNumber isFloat ifFalse: [^self / aNumber asFloat].
-	result := Float new.
-	Float clearStatusFlags.
-	self _floatQuotient: aNumber into: result.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized / aNumber asNormalized]
-		ifFalse: [self errorOn: #'/' status: status]
+	new := Float new.
+	result := self _floatQuotient: aNumber into: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #'/' status: result
 ]
 
 { #category : #arithmetic }
@@ -442,29 +433,21 @@ Float >> ~ aFloat [
 
 { #category : #arithmetic }
 Float >> + aNumber [
-	| result status |
+	| new result |
 	aNumber isFloat ifFalse: [^aNumber addTo: self].
-	result := Float new.
-	Float clearStatusFlags.
-	self _floatPlus: aNumber into: result.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized + aNumber asNormalized]
-		ifFalse: [self errorOn: #'+' status: status]
+	new := Float new.
+	result := self _floatPlus: aNumber into: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #'+' status: result
 ]
 
 { #category : #comparing }
 Float >> < aNumber [
-	| result status |
+	| result |
 	aNumber isFloat ifFalse: [^self < aNumber asFloat].
-	Float clearStatusFlags.
-	result := 0 == (self _floatLessThan: aNumber).
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	(Float hasDenormalizedOperandFlag: status) ifTrue: [^result].
-	(self isSpecialValue or: [aNumber isSpecialValue]) ifTrue: [^result].
-	self errorOn: #'<' status: status
+	result := self _floatLessThan: aNumber.
+	result _isSmallInteger ifFalse: [^result].
+	self errorOn: #'<' status: result
 ]
 
 { #category : #comparing }
@@ -481,21 +464,18 @@ Float >> <= aNumber [
 
 { #category : #comparing }
 Float >> = aNumber [
-	| result status nan equal |
+	| result nan equal |
 	aNumber isFloat
 		ifFalse: [^aNumber isNumber
 			ifTrue: [self = aNumber asFloat]
 			ifFalse: [false]].
-	Float clearStatusFlags.
-	result := 0 == (self _floatEquals: aNumber).
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	(Float hasDenormalizedOperandFlag: status) ifTrue: [^result].
+	result := self _floatEquals: aNumber.
+	result _isSmallInteger ifFalse: [^result].
 	nan := self isNaN.
 	equal := nan == aNumber isNaN.
 	equal ifFalse: [^false].
 	nan ifTrue: [^true].
-	self errorOn: #'=' status: status
+	self errorOn: #'=' status: result
 ]
 
 { #category : #comparing }
@@ -581,6 +561,19 @@ Float >> asTrueFraction [
 	^numerator / denominator
 ]
 
+{ #category : #testing }
+Float >> at: index [
+	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
+	(1 <= index and: [index <= self _size])
+		ifFalse: [self outOfBoundsIndex: index].
+	^self _byteAt: index
+]
+
+{ #category : #testing }
+Float >> basicAt: anInteger [
+	^self basicByteAt: anInteger
+]
+
 { #category : #arithmetic }
 Float >> ceiling [
 	^self isNaN ifTrue: [self] ifFalse: [super ceiling]
@@ -608,7 +601,13 @@ Float >> errorOn: aSymbol status: anInteger [
 
 { #category : #logarithms }
 Float >> exp [
-	^OS libc exp: self
+	| result float status |
+	float := self class.
+	float clearStatusFlags.
+	result := OS libc exp: self.
+	status := self _floatStatus.
+	(float hasErrorFlag: status) ifTrue: [self errorOn: #exp status: status].
+	^result
 ]
 
 { #category : #accessing }
@@ -617,7 +616,12 @@ Float >> exponent [
 	bits := (self at: 8) * 256 + (self at: 7).
 	bits := bits // 16 bitAnd: 2r11111111111.
 	^bits > 0
-		ifTrue: [bits < 2047 ifTrue: [bits - 1023] ifFalse: [self]]
+		ifTrue: [
+			bits < 2047
+				ifTrue: [bits - 1023]
+				ifFalse: [self isMinusInfinity
+					ifTrue: [self class plusInfinity]
+					ifFalse: [self]]]
 		ifFalse: [self asNormalized exponent]
 ]
 
@@ -633,15 +637,11 @@ Float >> floor [
 
 { #category : #random }
 Float >> fractionPart [
-	| fraction status |
-	fraction := Float new.
-	Float clearStatusFlags.
-	self _floatFractionPartInto: fraction.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^fraction].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized fractionPart]
-		ifFalse: [self errorOn: #fractionPart status: status]
+	| new result |
+	new := Float new.
+	result := self _floatFractionPartInto: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #fractionPart status: result
 ]
 
 { #category : #testing }
@@ -684,6 +684,16 @@ Float >> hasZeroMantissa [
 ]
 
 { #category : #testing }
+Float >> initializeWith: bytes [
+	bytes _primitiveULargeAtOffset: 0 into: self
+]
+
+{ #category : #testing }
+Float >> initializeWith: bytes at: index [
+	bytes _primitiveULargeAtOffset: index - 1 * 8 into: self
+]
+
+{ #category : #testing }
 Float >> isDenormalizedValue [
 	^self hasZeroExponent and: [self hasZeroMantissa not]
 ]
@@ -720,9 +730,16 @@ Float >> isSpecialValue [
 
 { #category : #logarithms }
 Float >> ln [
-	self > 0
-		ifFalse: [^self error: 'ln is not defined for ' , self printString].
+	self <= 0 ifTrue: [
+		self = 0.0
+			ifTrue: [self zeroDivisorOn: #ln]
+			ifFalse: [^(ArithmeticError on: self) signal]].
 	^OS libc log: self
+]
+
+{ #category : #private }
+Float >> loadFromFloat: aByteArray [
+	^self _floatFromFloat: aByteArray
 ]
 
 { #category : #accessing }
@@ -732,7 +749,7 @@ Float >> mantissa [
 
 { #category : #private }
 Float >> marshalOn: aStream [
-	aStream putBytesFrom: self from: 1 to: 8
+	aStream _nextDoublePut: self
 ]
 
 { #category : #arithmetic }
@@ -874,11 +891,11 @@ Float >> sign [
 
 { #category : #accessing }
 Float >> significand [
-	| status |
-	status := Float status.
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized significand]
-		ifFalse: [self errorOn: #significand status: status]
+	| result new |
+	new := Float new.
+	result := self _floatSignificandInto: new.
+	result == new ifTrue: [^result].
+	^self errorOn: #significand status: result
 ]
 
 { #category : #trigonometry }
@@ -893,15 +910,16 @@ Float >> sizeInBytes [
 
 { #category : #functions }
 Float >> sqrt [
-	| result status |
-	result := Float new.
-	Float clearStatusFlags.
-	self _floatSqrtInto: result.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	^(Float hasDenormalizedOperandFlag: status)
-		ifTrue: [self asNormalized sqrt]
-		ifFalse: [self errorOn: #sqrt status: status]
+	| sqrt result |
+	sqrt := Float new.
+	result := self _floatSqrtInto: sqrt.
+	result == sqrt ifTrue: [^result].
+	^self errorOn: #sqrt status: result
+]
+
+{ #category : #arithmetic }
+Float >> storeAsFloatInto: aByteArray [
+	^self _floatAsFloatInto: aByteArray
 ]
 
 { #category : #printing }
@@ -916,22 +934,18 @@ Float >> tan [
 
 { #category : #arithmetic }
 Float >> timesTwoPower: anInteger [
-	| result status |
-	result := self copy.
-	result _timesTwoPower: anInteger asFloat.
-	status := Float status.
-	(Float hasErrorFlag: status) ifFalse: [^result].
-	self errorOn: #timesTwoPower status: status
+	| new result |
+	new := self copy.
+	result := new _timesTwoPower: anInteger asFloat.
+	result == new ifTrue: [^result].
+	self errorOn: #timesTwoPower status: result
 ]
 
 { #category : #arithmetic }
 Float >> truncated [
-	| result status |
-	Float clearStatusFlags.
+	| result |
 	result := self _floatTruncated.
-	status := Float status.
-	((Float hasErrorFlag: status) not
-		and: [result = 0 or: [result sign = self sign]])
+	(result notNil and: [result = 0 or: [result sign = self sign]])
 		ifTrue: [^result].
 	self isSpecialValue ifTrue: [^self].
 	^self abs < 2.0e16
@@ -945,15 +959,17 @@ Float >> truncated [
 
 { #category : #private }
 Float >> uLongAtOffset: offset [
-	| low high |
-	low := self uShortAtOffset: offset.
-	high := self uShortAtOffset: offset + 2.
-	high := high bitShift: 16.
-	^high + low
+	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
+	(0 <= offset and: [offset + 3 <= self _size])
+		ifFalse: [^self outOfBoundsIndex: offset].
+	^self _primitiveULongAtOffset: offset
 ]
 
 { #category : #private }
 Float >> uShortAtOffset: offset [
-	^(self at: offset + 1) + ((self at: offset + 2) bitShift: 8)
+	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
+	(0 <= offset and: [offset + 1 <= self _size])
+		ifFalse: [^self outOfBoundsIndex: offset].
+	^self _primitiveUShortAtOffset: offset
 ]
 

@@ -1,23 +1,23 @@
 "
-	Copyright (c) 2021 Quorum Software.
+	Copyright (c) 2020-2022 Quorum Software.
 	See (MIT) license in root directory.
 "
 
 Class {
-	#name : #DirectCallback, 
-	#superclass : #Callback, 
+	#name : #DirectCallback,
+	#superclass : #Callback,
 	#instVars : [
 		'method'
-	], 
-	#category : #DirectCallback
+	],
+	#category : #Kernel
 }
 
-{#category : #private}
+{ #category : #private }
 DirectCallback >> asParameter [
 	^method nativeCodeAddress
 ]
 
-{#category : #initialization}
+{ #category : #initialization }
 DirectCallback >> initialize [
 	| pinned offset |
 	super initialize.
@@ -31,7 +31,7 @@ DirectCallback >> initialize [
 	method nativeCode: pinned
 ]
 
-{#category : #private}
+{ #category : #private }
 DirectCallback >> reenterWith: argsAddress [
 	| result array |
 	<callback>

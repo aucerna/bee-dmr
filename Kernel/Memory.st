@@ -22,7 +22,8 @@ Class {
 		'inGC',
 		'fullCollector',
 		'unreachableEphemerons',
-		'largeSpaces'
+		'largeSpaces',
+		'allocator'
 	],
 	#classVars : [
 		'Current',
@@ -44,6 +45,16 @@ Memory class >> current: current [
 { #category : #initialization }
 Memory class >> initializeConstants [
 	LargeThreshold := 100000
+]
+
+{ #category : #initialization }
+Memory class >> largeThreshold [
+	^LargeThreshold
+]
+
+{ #category : #'instance creation' }
+Memory class >> new [
+	^self basicNew initialize
 ]
 
 { #category : #copying }
@@ -91,10 +102,11 @@ Memory >> adjustSpaces [
 		ifTrue: [
 			delta := committed * (rate * 4 + 1).
 			limit := limit + delta asInteger.
-			^edenSpace commitMoreMemory: limit]
+			edenSpace commitMoreMemory: limit]
 		ifFalse: [
 			delta := committed * (0.8 - rate / 2).
-			edenSpace decommitIfPossible: delta asInteger]
+			edenSpace decommitIfPossible: delta asInteger].
+	edenSpace resetSoftLimit: 256 kbytes _asPointer
 ]
 
 { #category : #private }
@@ -143,14 +155,14 @@ Memory >> allocate: size [
 	oop := edenSpace allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
 	size > LargeThreshold ifTrue: [^self allocateLarge: size].
-	CRITICAL ifFalse: [self collectIfTime].
+	CRITICAL ifFalse: [self collectIfTime; updateUI].
 	^self allocateCommitting: size
 ]
 
 { #category : #allocation }
 Memory >> allocateCommitting: size [
 	| oop |
-	oop := edenSpace allocateCommittingIfNeeded: size.
+	oop := allocator allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
 	^oldZone allocate: size
 ]
@@ -162,6 +174,16 @@ Memory >> allocateLarge: size [
 	oop := space allocateIfPossible: size.
 	oop _isSmallInteger ifFalse: [self error: 'allocation failed'].
 	^oop
+]
+
+{ #category : #allocation }
+Memory >> allocator [
+	^allocator
+]
+
+{ #category : #allocation }
+Memory >> allocator: anObject [
+	allocator := anObject
 ]
 
 { #category : #services }
@@ -224,21 +246,11 @@ Memory >> collect [
 	self collectYoung; collectOld
 ]
 
-{ #category : #services }
-Memory >> collectAndCompactOldSpace [
-	"
-	nothing for now
-	"
-	
-]
-
 { #category : #allocation }
 Memory >> collectIfTime [
-	| total |
-	total := edenSpace commitedSize.
-	total - edenSpace used < (total // 10) ifTrue: [
-		self collectYoung.
-		meter runs size \\ 300 = 0 ifTrue: [self collectOld]]
+	(edenSpace increaseSoftLimit: 256 kbytes _asPointer) ifTrue: [^self].
+	self collectYoung.
+	fullCollector reachedCountdown ifTrue: [self collectOld]
 ]
 
 { #category : #allocation }
@@ -257,8 +269,7 @@ Memory >> collectYoung [
 	CRITICAL := inGC := true.
 	self collectYoungMeasuring.
 	CRITICAL := inGC := false.
-	self freshenFinalizable; rescueEphemerons; adjustSpaces.
-	Smalltalk eventDispatcher ifNotNil: [:dispatcher | dispatcher checkEvents]
+	self freshenFinalizable; rescueEphemerons; adjustSpaces
 ]
 
 { #category : #private }
@@ -267,7 +278,8 @@ Memory >> collectYoungMeasuring [
 		measure: [[
 			self verifyMemory.
 			genCollector collect.
-			self verifyMemory] evaluateAtomically]
+			self verifyMemory] evaluateAtomically].
+	fullCollector tenured: meter runs last tenured
 ]
 
 { #category : #private }
@@ -328,7 +340,7 @@ Memory >> createSpaces [
 	youngLimit := eden reservedLimit.
 	self addSpace: fromSpace; addSpace: eden.
 	oldZone := self reserveZoneSized: 12 * 1024 * 1024 * 1024 near: 0x100000000.
-	edenSpace := eden.
+	allocator := edenSpace := eden.
 	largeSpaces := CriticalArray new usePinnedAllocation; growTo: 1000.
 	unreachableEphemerons := CriticalArray new growTo: 1000
 ]
@@ -355,7 +367,7 @@ Memory >> eden [
 
 { #category : #accessing }
 Memory >> eden: aSpace [
-	edenSpace := aSpace
+	allocator := edenSpace := aSpace
 ]
 
 { #category : #system }
@@ -413,18 +425,19 @@ Memory >> hasMarkedReferencesTo: aGCSpace in: aCollection [
 ]
 
 { #category : #inquiries }
-Memory >> hasReferencesToLibrary: aCodeLibrary [
-	| target searched |
-	target := aCodeLibrary space.
-	searched := spaces copyWithout: target.
-	^self markedEvaluate: [self hasMarkedReferencesTo: target in: searched]
+Memory >> hasReferencesToSpace: aGCSpace [
+	| searched |
+	searched := spaces copyWithout: aGCSpace.
+	^self markedEvaluate: [self hasMarkedReferencesTo: aGCSpace in: searched]
 ]
 
 { #category : #statistics }
 Memory >> histogram [
 	| sizes |
 	sizes := Dictionary new: 3000.
-	spaces do: [:space | space histogramInto: sizes].
+	self critical: [| original |
+		original := spaces asOrderedCollection collect: #copy.
+		original do: [:space | space histogramInto: sizes]].
 	^sizes associations asArray sortBy: [:a :b | a value > b value]
 ]
 
@@ -437,7 +450,12 @@ Memory >> inGC [
 Memory >> initialize [
 	"
 	initialization of the spaces array is done manually because
-	this code is executed during bootstrap
+	this code is executed during bootstrap.
+	youngLimit is set to a high watermark so that all objects are
+	initially considered young. Until the young spaces are created
+	and this variable is reset, 	no object will be added to the
+	remembered set (specially closures, which are added just in
+	case when not young)
 	"
 	| empty |
 	super initialize.
@@ -447,7 +465,7 @@ Memory >> initialize [
 	spaces allocator memory: self.
 	collectedSpaces := OrderedCollection new.
 	youngBase := 0.
-	youngLimit := 0.
+	youngLimit := 0xFFFFFFFFFFFFFFF.
 	meter := MemoryMeter new memory: self
 ]
 
@@ -483,6 +501,24 @@ Memory >> largeSpaces [
 	^largeSpaces
 ]
 
+{ #category : #services }
+Memory >> make: anObject become: anotherObject [
+	"
+	We cannot use anObject from a closure here: the become action might
+	be applied to the closure elements before finishing and after that
+	point we wouldn't find anObject anymore
+	"
+	| prev |
+	prev := CRITICAL.
+	CRITICAL := true.
+	1 to: spaces size do: [:i | | space |
+		space := spaces at: i.
+		space make: anObject become: anotherObject].
+	self rememberAfterBecome: anObject.
+	Processor activeProcess make: anObject become: anotherObject.
+	CRITICAL := prev
+]
+
 { #category : #allocation }
 Memory >> markedEvaluate: aClosure [
 	"
@@ -508,6 +544,26 @@ Memory >> markedEvaluate: aClosure [
 	^result
 ]
 
+{ #category : #inquiries }
+Memory >> meterRuns [
+	^meter runs
+]
+
+{ #category : #copying }
+Memory >> newLargeArray: size [
+	| headerSize bodySize totalSize buffer object |
+	#atomic.
+	headerSize := 16.
+	bodySize := size * WordSize.
+	totalSize := headerSize + bodySize.
+	buffer := self allocateLarge: totalSize.
+	object := (buffer + headerSize _asPointer) _asObject.
+	object
+		_longSlotAt: _Behavior put: Array instanceBehavior;
+		initializeExtended: true contentSize: size.
+	^object _beArrayed; _nilSlots: size; yourself
+]
+
 { #category : #private }
 Memory >> newSpace [
 	| space |
@@ -530,19 +586,22 @@ Memory >> newSpaceAt: base size: size [
 
 { #category : #inquiries }
 Memory >> objectsReferencing: targetSpace [
-	| collection |
-	collection := LinkedCollection new: 10000.
-	self markedEvaluate: [
-		spaces do: [:space | 
-			space markedDo: [:object | | index slots |
-				(targetSpace includes: object behavior) ifTrue: [collection add: object].
-				index := 1.
-				slots := object _pointersSize.
-				[index <= slots] whileTrue: [| reference |
-					reference := object _basicAt: index.
-					(targetSpace includes: reference) ifTrue: [collection add: object].
-					index := index + 1]]]].
-	^collection
+	| marked result prev |
+	marked := spaces asOrderedCollection.
+	marked remove: edenSpace; remove: fromSpace.
+	prev := CRITICAL.
+	CRITICAL := true.
+	[| tracer |
+		marked do: [:space | space unmarkAll].
+		tracer := SpaceReferencesTracer new.
+		result := tracer
+			space: targetSpace;
+			updateAndFollow: ActiveProcess;
+			result.
+		edenSpace unmarkAll.
+		fromSpace unmarkAll] evaluateAtomically.
+	CRITICAL := prev.
+	^result
 ]
 
 { #category : #inquiries }
@@ -695,10 +754,15 @@ Memory >> recyclableSimpleHistogram [
 
 { #category : #allocation }
 Memory >> referencesTo: anObject [
-	| references |
-	references := LinkedCollection new: 1024.
-	self
-		markedEvaluate: [self addMarkedReferencesTo: anObject into: references].
+	"
+	The closure used for markedEvaluate: captures anObject, thus it
+	will be added to the reference list. We remove it from the result.
+	"
+	| references closure |
+	references := OrderedCollection new.
+	closure := [self addMarkedReferencesTo: anObject into: references].
+	self markedEvaluate: closure.
+	references remove: closure.
 	^references
 ]
 
@@ -739,6 +803,11 @@ Memory >> rememberIfNeeded: anObject [
 ]
 
 { #category : #services }
+Memory >> rememberIfNotYoung: anObject [
+	(self isYoung: anObject) ifFalse: [self remember: anObject]
+]
+
+{ #category : #services }
 Memory >> removeSpace: aCodeImageSegment [
 	spaces remove: aCodeImageSegment space
 ]
@@ -755,7 +824,7 @@ Memory >> reserveSpaceSized: reserved commiting: commited [
 	| space address |
 	address := OS reserve: reserved.
 	space := self newSpace address: address size: reserved.
-	^space commit: commited; leaveDispenseSpace
+	^space commit: commited
 ]
 
 { #category : #private }
@@ -819,6 +888,31 @@ Memory >> to [
 { #category : #system }
 Memory >> unreachableEphemerons [
 	^unreachableEphemerons
+]
+
+{ #category : #allocation }
+Memory >> updateUI [
+	Processor areInterruptsEnabled ifFalse: [^self].
+	Smalltalk eventDispatcher ifNotNil: [:dispatcher | dispatcher checkEvents]
+]
+
+{ #category : #allocation }
+Memory >> verifyMemory [
+	| stacks |
+	self debugMode ifFalse: [^self].
+	stacks := LinkedCollection new: 100.
+	self markedEvaluate: [
+		spaces do: [:space | 
+			space markedDo: [:object | | index slots |
+				(toSpace includes: object behavior) ifTrue: [self _halt].
+				index := 1.
+				slots := object _strongPointersSize.
+				[index <= slots] whileTrue: [| reference |
+					reference := object _basicAt: index.
+					(toSpace includes: reference) ifTrue: [self _halt].
+					index := index + 1].
+				object class == StackWrapper ifTrue: [stacks add: object]]]].
+	^stacks
 ]
 
 { #category : #accessing }

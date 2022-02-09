@@ -670,8 +670,7 @@ String >> replaceFrom: start
 to: stop
 with: aString
 startingAt: position [
-	(aString class isBytes
-		or: [aString isExternalMemory or: [aString isMemoryBuffer]])
+	aString hasBytes
 		ifTrue: [self
 			replaceBytesFrom: start
 			to: stop

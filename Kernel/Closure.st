@@ -29,11 +29,12 @@ Closure class >> initializeIndexes [
 Closure class >> newFrom: aBlock [
 	| size closure |
 	#atomic.
-	size := aBlock size + self instSize.
+	size := aBlock _size.
 	closure := self allocate: size * WordSize size: size.
 	closure _beNamed; _beArrayed.
 	self nil: size slotsOf: closure.
 	closure _basicAt: 1 put: aBlock.
+	Smalltalk memory rememberIfNotYoung: closure.
 	^closure
 ]
 

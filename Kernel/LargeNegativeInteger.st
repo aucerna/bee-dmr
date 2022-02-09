@@ -47,7 +47,7 @@ LargeNegativeInteger >> at: index [
 	(index _isSmallInteger and: [index >= 1])
 		ifFalse: [^self outOfBoundsIndex: index].
 	index > self _size ifTrue: [^16rFF].
-	^self byteAtValid: index
+	^self _byteAt: index
 ]
 
 { #category : #bits }

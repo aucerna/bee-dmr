@@ -29,53 +29,38 @@ Class {
 }
 
 { #category : #initialization }
-SendSite class >> allocateCaches: amount lookup: aNativeCode [
-	| mics pics array |
-	mics := amount.
-	pics := amount // 4.
-	array := Array new: mics.
-	1 to: mics do: [:i | array basicAt: i put: (Array new: 2)].
-	MICs := array.
-	NextMIC := 1.
-	array := Array new: pics.
-	1 to: pics do: [:i | array basicAt: i put: (self newPICUsing: aNativeCode)].
-	PICs := array.
-	NextPIC := 1
-]
-
-{ #category : #initialization }
-SendSite class >> allocateInitialCachesUsing: aNativeCode [
-	self allocateCaches: 3000 lookup: aNativeCode
-]
-
-{ #category : #initialization }
-SendSite class >> allocateMoreCaches [
-	self beeAllocateCaches: 140000 lookup: (Smalltalk at: #Lookup)
-]
-
-{ #category : #initialization }
-SendSite class >> beeAllocateCaches: amount lookup: aNativeCode [
-	| mics pics array mic pic memory |
-	mics := amount.
-	pics := amount // 5.
-	array := Array new: mics.
+SendSite class >> allocateMICs: amount [
+	| memory array mic |
+	memory := Smalltalk memory.
+	array := memory newLargeArray: amount.
 	mic := Array new: 2.
+	1 to: amount do: [:i | array basicAt: i put: (memory pinnedCopy: mic)].
+	MICs := array.
+	NextMIC := 1
+]
+
+{ #category : #initialization }
+SendSite class >> allocatePICs: amount [
+	self allocatePICs: amount lookup: (Smalltalk at: #Lookup)
+]
+
+{ #category : #initialization }
+SendSite class >> allocatePICs: amount lookup: aNativeCode [
+	| memory array pic |
+	memory := Smalltalk memory.
+	array := memory newLargeArray: amount.
 	pic := (Array new: 15)
 		at: 15 put: aNativeCode;
 		yourself.
-	memory := Memory current.
-	1 to: mics do: [:i | array basicAt: i put: (memory pinnedCopy: mic)].
-	MICs := array.
-	NextMIC := 1.
-	array := Array new: pics.
-	1 to: pics do: [:i | array basicAt: i put: (memory pinnedCopy: pic)].
+	1 to: amount do: [:i | array basicAt: i put: (memory pinnedCopy: pic)].
 	PICs := array.
 	NextPIC := 1
 ]
 
 { #category : #private }
 SendSite class >> flush [
-	Instances := nil
+	self instances do: [:sites | sites do: [:s | s flush]].
+	self allocateMICs: 3000; allocatePICs: 3000
 ]
 
 { #category : #initialization }
@@ -99,6 +84,11 @@ SendSite class >> flush: selector [
 ]
 
 { #category : #private }
+SendSite class >> flushInstances [
+	Instances := nil
+]
+
+{ #category : #private }
 SendSite class >> initializeFormatFlags [
 	"
 	SendSite initializeFormatFlags
@@ -112,6 +102,16 @@ SendSite class >> initializeFormatFlags [
 ]
 
 { #category : #initialization }
+SendSite class >> initializeFrom: aNativizationEnvironment [
+	self
+		allocateMICs: 3000;
+		allocatePICs: 3000 lookup: aNativizationEnvironment lookup;
+		initializeMICStubFor: aNativizationEnvironment abi;
+		initializePICStubFor: aNativizationEnvironment abi.
+	Invoke := aNativizationEnvironment invokeStub
+]
+
+{ #category : #initialization }
 SendSite class >> instances [
 	Instances ifNil: [
 		Instances := IdentityDictionary new.
@@ -121,7 +121,8 @@ SendSite class >> instances [
 
 { #category : #private }
 SendSite class >> invoking: aCompiledMethod using: instructions [
-	^self new beInvoke: aCompiledMethod using: instructions
+	^self new beStaticSend; beInvoke: aCompiledMethod
+	using: instructions
 ]
 
 { #category : #accessing }
@@ -145,11 +146,6 @@ SendSite class >> newPICUsing: aNativeCode [
 { #category : #private }
 SendSite class >> sending: aSelector with: instructions [
 	^self new selector: aSelector; instructions: instructions
-]
-
-{ #category : #initialization }
-SendSite class >> startUp [
-	Instances := nil
 ]
 
 { #category : #'meta accessing' }
@@ -262,6 +258,7 @@ SendSite >> cache [
 
 { #category : #private }
 SendSite >> flush [
+	self isStaticSend ifTrue: [^self].
 	instructions := self isSuperSend
 		ifTrue: [Smalltalk at: #LookupSuperCode]
 		ifFalse: [Smalltalk at: #LookupCode].
@@ -324,8 +321,8 @@ SendSite >> isPolymorphic [
 
 { #category : #testing }
 SendSite >> isStaticSelector [
-	(#(#basicByteAt: #basicByteAt:put: #byteAtValid: #byteAtValid:put:
-		#basicObjectAt: #basicObjectAt:put: #behavior #class #allocate:size:
+	(#(#basicByteAt: #basicByteAt:put: #basicInstVarAt: #basicInstVarAt:put:
+		#behavior #class #allocate:size:
 		 #memory #instanceBehavior
 		#_instancesAreArrayed #_instancesHavePointers #nil:slotsOf:
 		#initializeExtended:contentSize: #primitiveNew
@@ -352,10 +349,11 @@ SendSite >> maxSize [
 
 { #category : #private }
 SendSite >> monomorphicMap: aBehavior to: code [
+	cache := self takeNextFreeMIC ifNil: [^self].
 	instructions := self monomorphicStub.
-	cache := self takeNextFreeMIC.
-	cache objectAtValid: 1 put: aBehavior.
-	cache objectAtValid: 2 put: code
+	cache
+		objectAtValid: 1 put: aBehavior;
+		objectAtValid: 2 put: code
 ]
 
 { #category : #private }
@@ -366,8 +364,8 @@ SendSite >> monomorphicStub [
 { #category : #private }
 SendSite >> polymorphicMap: aBehavior to: code [
 	cache _size == 2 ifTrue: [
+		cache := self takeNextFreePIC ifNil: [^self].
 		instructions := self polymorphicStub.
-		cache := self takeNextFreePIC.
 		self bePolymorphic].
 	aBehavior == SmallInteger instanceBehavior
 		ifTrue: [cache objectAtValid: self maxSize + 1 put: code]
@@ -473,20 +471,28 @@ SendSite >> sentSelector [
 
 { #category : #private }
 SendSite >> takeNextFreeMIC [
-	| position |
+	| position size |
 	position := NextMIC.
 	NextMIC := NextMIC + 1.
-	position + 50 = MICs _size ifTrue: [self class allocateMoreCaches].
-	^MICs _basicAt: position
+	size := MICs _size.
+	^position >= size
+		ifTrue: [
+			position = size ifTrue: [self class allocateMICs: 3000].
+			nil]
+		ifFalse: [MICs _basicAt: position]
 ]
 
 { #category : #private }
 SendSite >> takeNextFreePIC [
-	| position |
+	| position size |
 	position := NextPIC.
 	NextPIC := NextPIC + 1.
-	NextPIC + 50 = PICs _size ifTrue: [self class allocateMoreCaches].
-	^PICs _basicAt: position
+	size := PICs _size.
+	^position >= size
+		ifTrue: [
+			position = size ifTrue: [self class allocatePICs: 3000].
+			nil]
+		ifFalse: [PICs _basicAt: position]
 ]
 
 { #category : #private }

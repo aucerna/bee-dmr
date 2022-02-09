@@ -9,7 +9,7 @@ Class {
 	#instVars : [
 		'base',
 		'tally',
-		'size'
+		'maxSize'
 	],
 	#category : #Kernel
 }
@@ -22,10 +22,10 @@ RememberedSet >> add: anObject [
 	the remembered set it could cause an infinite recursion
 	"
 	| grow |
-	grow := tally + 10 = size.
+	grow := tally + 10 = maxSize.
 	tally := tally + 1.
 	base _asObject _basicAt: tally put: anObject.
-	grow ifTrue: [self grow: size * 2]
+	grow ifTrue: [self grow: maxSize * 2]
 ]
 
 { #category : #private }
@@ -49,11 +49,6 @@ RememberedSet >> base: anInteger [
 ]
 
 { #category : #private }
-RememberedSet >> bufferSize [
-	^size
-]
-
-{ #category : #private }
 RememberedSet >> grow: anInteger [
 	| new old |
 	new := (OS reserveAndCommit: anInteger * WordSize) // 2.
@@ -62,13 +57,13 @@ RememberedSet >> grow: anInteger [
 		do: [:i | new _asObject _basicAt: i put: (base _asObject _basicAt: i)].
 	old := base.
 	base := new.
-	size := anInteger.
+	maxSize := anInteger.
 	OS release: old * 2
 ]
 
 { #category : #private }
 RememberedSet >> includesIdentical: anObject [
-	1 to: size do: [:i | anObject == (self at: i) ifTrue: [^true]].
+	1 to: maxSize do: [:i | anObject == (self at: i) ifTrue: [^true]].
 	^false
 ]
 
@@ -76,14 +71,19 @@ RememberedSet >> includesIdentical: anObject [
 RememberedSet >> initialize: anInteger [
 	tally := 0.
 	base := (OS reserveAndCommit: anInteger * WordSize) // 2.
-	size := anInteger
+	maxSize := anInteger
+]
+
+{ #category : #private }
+RememberedSet >> maxSize [
+	^maxSize
 ]
 
 { #category : #private }
 RememberedSet >> release [
 	OS release: base * 2.
 	base := nil.
-	tally := size := 0
+	tally := maxSize := 0
 ]
 
 { #category : #private }

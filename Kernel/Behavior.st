@@ -15,13 +15,20 @@ Class {
 }
 
 { #category : #'instance creation' }
+Behavior class >> basicNew [
+	^Smalltalk memory pinnedCopy: super basicNew
+]
+
+{ #category : #'instance creation' }
 Behavior class >> fromClass: aClass [
 	^self new fromClass: aClass
 ]
 
 { #category : #'instance creation' }
 Behavior class >> new [
-	^super new basicHash; yourself
+	| instance |
+	instance := super new basicHash; yourself.
+	^Smalltalk memory pinnedCopy: instance
 ]
 
 { #category : #'instance creation' }

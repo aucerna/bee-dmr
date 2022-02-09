@@ -17,6 +17,11 @@ Class {
 }
 
 { #category : #accessing }
+GlobalDispatchCache class >> current [
+	^Thread currentGlobalLookup ifNil: [Current]
+]
+
+{ #category : #accessing }
 GlobalDispatchCache class >> current: aCache [
 	Current := aCache
 ]
@@ -38,6 +43,11 @@ GlobalDispatchCache >> at: aSymbol for: aBehavior put: aCompiledMethod [
 	| index |
 	index := self indexOf: aSymbol with: aBehavior.
 	^self startingAt: index for: aBehavior put: aCompiledMethod
+]
+
+{ #category : #services }
+GlobalDispatchCache >> flush [
+	1 to: contents _size do: [:i | contents _basicAt: i put: nil]
 ]
 
 { #category : #accessing }

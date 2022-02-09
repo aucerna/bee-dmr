@@ -147,7 +147,10 @@ CompiledMethod >> classBinding [
 
 { #category : #accessing }
 CompiledMethod >> classBinding: aClass [
-	class := aClass
+	| old |
+	old := class.
+	class := aClass.
+	old ifNotNil: [self updatedClass: old]
 ]
 
 { #category : #queries }
@@ -356,15 +359,6 @@ CompiledMethod >> printOn: aStream [
 		print: selector
 ]
 
-{ #category : #unclassified }
-CompiledMethod >> refreshBlocks [
-	| blocks |
-	blocks := self blocks.
-	1 to: blocks size do: [:index | | block |
-		block := blocks at: index.
-		block nativeCode refresh]
-]
-
 { #category : #accessing }
 CompiledMethod >> selector [
 	^selector
@@ -420,6 +414,18 @@ CompiledMethod >> type: anInteger [
 	format := format bitsAt: TypeField put: anInteger.
 	anInteger > 3
 		ifTrue: [format := (format negated bitAnd: 16r7FFFFFFF) negated]
+]
+
+{ #category : #copying }
+CompiledMethod >> updatedClass: aClass [
+	"
+	when changing the class, cleanup the references to superclass behavior in
+	native code (they exist only when the method does super send)
+	"
+	nativeCode ifNil: [^self].
+	nativeCode
+		replace: aClass instanceBehavior next
+		with: class instanceBehavior next
 ]
 
 { #category : #accessing }

@@ -122,56 +122,36 @@ Object >> atValid: anInteger [
 	^self at: anInteger
 ]
 
-{ #category : #private }
-Object >> basicAt: anInteger put: anObject [
-	^self primitiveAt: anInteger put: anObject
+{ #category : #replacing }
+Object >> basicReplaceBytesFrom: start
+to: stop
+with: collection
+startingAt: position [
+	collection
+		basicReplaceBytesOf: self
+		from: start
+		to: stop
+		startingAt: position
 ]
 
-{ #category : #unclassified }
-Object >> basicByteAt: index [
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
-	(1 <= index and: [index <= self _size])
-		ifFalse: [self outOfBoundsIndex: index].
-	^self byteAtValid: index
+{ #category : #replacing }
+Object >> basicReplaceBytesOf: anObject
+from: start
+to: stop
+startingAt: position [
+	anObject _replaceBytesFrom: start to: stop with: self startingAt: position
 ]
 
-{ #category : #unclassified }
-Object >> basicByteAt: index put: value [
-	index _isSmallInteger ifFalse: [^self outOfBoundsIndex: index].
-	(1 <= index and: [index <= self _size])
-		ifFalse: [self outOfBoundsIndex: index].
-	value _isSmallInteger
-		ifFalse: [^self error: 'value does not fit in a byte'].
-	(0 <= value and: [value < 256])
-		ifFalse: [^self error: 'value does not fit in a byte'].
-	^self byteAtValid: index put: value
-]
-
-{ #category : #unclassified }
-Object >> basicObjectAt: grossIndex [
-	| index |
-	index := self basicObjectIndexOf: grossIndex.
-	^self _basicAt: index
-]
-
-{ #category : #unclassified }
-Object >> basicObjectAt: grossIndex put: anObject [
-	| index |
-	index := self basicObjectIndexOf: grossIndex.
-	^self objectAtValid: index put: anObject
-]
-
-{ #category : #unclassified }
-Object >> basicObjectIndexOf: grossIndex [
-	| instVars index |
-	grossIndex _isSmallInteger ifFalse: [^self outOfBoundsIndex: grossIndex].
-	instVars := (self _hasNamedSlots and: [self _isArrayed])
-		ifTrue: [self class instSize]
-		ifFalse: [0].
-	(1 <= grossIndex and: [grossIndex <= (self _size - instVars)])
-		ifFalse: [^self outOfBoundsIndex: grossIndex].
-	index := grossIndex + instVars.
-	^index
+{ #category : #replacing }
+Object >> basicReplaceBytesOfAddress: aByteArray
+from: start
+to: stop
+startingAt: position [
+	(aByteArray _basicAt: 1)
+		_replaceBytesFrom: start
+		to: stop
+		with: self
+		startingAt: position
 ]
 
 { #category : #private }
@@ -199,16 +179,6 @@ Object >> byteAt: anInteger put: byte [
 	^self basicAt: anInteger put: byte
 ]
 
-{ #category : #unclassified }
-Object >> byteAtValid: anInteger [
-	^self _byteAt: anInteger
-]
-
-{ #category : #unclassified }
-Object >> byteAtValid: anInteger put: value [
-	^self _byteAt: anInteger put: value
-]
-
 { #category : #testing }
 Object >> canBePrintedAsLiteral [
 	^false
@@ -232,6 +202,11 @@ Object >> changed [
 { #category : #'event handling' }
 Object >> changed: argument [
 	self triggerEvent: #changed: with: argument
+]
+
+{ #category : #replacing }
+Object >> checkBounds: start to: end [
+	(start < 1 or: [end > self _size]) ifTrue: [self outOfBoundsIndex: end]
 ]
 
 { #category : #copying }
@@ -324,6 +299,11 @@ Object >> hasActionForEvent: aSymbol [
 	| table |
 	table := self eventTable ifNil: [^false].
 	^table includesKey: aSymbol asSymbol
+]
+
+{ #category : #comparing }
+Object >> hasBytes [
+	^self _isBytes
 ]
 
 { #category : #testing }
@@ -443,6 +423,13 @@ with: f [
 		with: e
 		with: f
 		count: 7
+]
+
+{ #category : #testing }
+Object >> hasProperties [
+	| table |
+	table := Smalltalk propertiesFor: self.
+	^table notNil and: [table notEmpty]
 ]
 
 { #category : #testing }
@@ -697,6 +684,11 @@ Object >> isTimestamp [
 ]
 
 { #category : #testing }
+Object >> isUndefinedValue [
+	^false
+]
+
+{ #category : #testing }
 Object >> isUnicodeString [
 	^false
 ]
@@ -781,6 +773,11 @@ Object >> oop [
 	^self _oop
 ]
 
+{ #category : #errors }
+Object >> outOfBoundsIndex: anInteger [
+	^self error: 'index: ' , anInteger printString , ' is outside of bounds'
+]
+
 { #category : #services }
 Object >> perform: aSymbol with: firstObject with: secondObject [
 	^self perform: aSymbol withArguments: {firstObject. secondObject}
@@ -797,14 +794,6 @@ with: arg3 [
 { #category : #copying }
 Object >> postCopy [
 	
-]
-
-{ #category : #unclassified }
-Object >> primitiveAt: i put: anObject [
-	self _isSmallInteger ifTrue: [^self shouldNotImplement].
-	^self _isBytes
-		ifTrue: [self basicByteAt: i put: anObject]
-		ifFalse: [self basicObjectAt: i put: anObject]
 ]
 
 { #category : #printing }
@@ -852,6 +841,11 @@ Object >> release [
 { #category : #'event handling' }
 Object >> releaseEventTable [
 	self bindEventTable: nil
+]
+
+{ #category : #'accessing-properties' }
+Object >> releaseProperties [
+	Smalltalk releasePropertiesFor: self
 ]
 
 { #category : #'event handling' }
@@ -917,54 +911,32 @@ Object >> removeProperty: aSymbol ifAbsent: aBlock [
 ]
 
 { #category : #replacing }
-Object >> replaceBytesBackwardFrom: stop
-to: start
-with: aCollection
-startingAt: position [
-	| i j |
-	i := stop.
-	j := position.
-	[start <= i] whileTrue: [
-		self byteAt: i put: (aCollection byteAt: j).
-		i := i - 1.
-		j := j - 1]
-]
-
-{ #category : #replacing }
-Object >> replaceBytesForwardFrom: start
-to: stop
-with: aCollection
-startingAt: position [
-	| i j |
-	i := start.
-	j := position.
-	[i <= stop] whileTrue: [
-		self byteAt: i put: (aCollection byteAt: j).
-		i := i + 1.
-		j := j + 1]
-]
-
-{ #category : #replacing }
 Object >> replaceBytesFrom: start
 to: stop
-with: aCollection
+with: collection
 startingAt: position [
-	| end |
-	(self == aCollection and: [
-		end := position + stop - start.
-		start between: position and: end])
+	| count split right delta end |
+	count := stop - start + 1.
+	count > 0 ifFalse: [^self].
+	end := position + stop - start.
+	self checkBounds: start to: stop.
+	collection checkBounds: position to: end.
+	split := collection == self and: [start between: position and: end].
+	right := split
 		ifTrue: [
+			delta := start - position.
 			self
-				replaceBytesBackwardFrom: stop
-				to: start
-				with: aCollection
-				startingAt: end]
-		ifFalse: [
-			self
-				replaceBytesForwardFrom: start
+				basicReplaceBytesFrom: start + delta
 				to: stop
-				with: aCollection
-				startingAt: position]
+				with: collection
+				startingAt: position + delta.
+			start + delta - 1]
+		ifFalse: [stop].
+	self
+		basicReplaceBytesFrom: start
+		to: right
+		with: collection
+		startingAt: position
 ]
 
 { #category : #services }
@@ -1000,19 +972,17 @@ Object >> shallowCopy [
 { #category : #copying }
 Object >> shallowCopyTo: anObject [
 	| n |
-	self class isBytes ifTrue: [
-		anObject class isBytes ifFalse: [self error: 'cannot copy'].
-		n := self sizeInBytes min: anObject sizeInBytes.
-		1 to: n do: [:i | | byte |
-			byte := self byteAt: i.
-			anObject byteAt: i put: byte].
+	self _isBytes ifTrue: [
+		anObject _isBytes ifFalse: [self error: 'cannot copy'].
+		n := self _size min: anObject _size.
+		anObject basicReplaceBytesFrom: 1 to: n with: self startingAt: 1.
 		^anObject].
-	anObject class isBytes ifTrue: [self error: 'cannot copy'].
-	n := self class instSize min: anObject class instSize.
+	anObject _isBytes ifTrue: [self error: 'cannot copy'].
+	n := self class basicInstSize min: anObject class basicInstSize.
 	1 to: n do: [:index | | slot |
-		slot := self instVarAt: index.
-		anObject instVarAt: index put: slot].
-	self class instancesAreArrayed ifTrue: [
+		slot := self basicInstVarAt: index.
+		anObject basicInstVarAt: index put: slot].
+	self _isArrayed ifTrue: [
 		n := self basicSize min: anObject basicSize.
 		1 to: n do: [:index | | slot |
 			slot := self basicAt: index.
@@ -1050,7 +1020,7 @@ Object >> storeOn: aStream [
 			nextPutAll: '((';
 			nextPutAll: class name;
 			nextPutAll: ' basicNew'.
-		class _instancesAreArrayed ifTrue: [
+		class instancesAreArrayed ifTrue: [
 			aStream nextPut: $:.
 			self basicSize printOn: aStream].
 		aStream nextPut: $).

@@ -9,7 +9,8 @@ Class {
 	#instVars : [
 		'oldZone',
 		'evacuated',
-		'forwarderOffset'
+		'forwarderOffset',
+		'countdown'
 	],
 	#category : #Kernel
 }
@@ -38,6 +39,12 @@ GarbageFirstCollector >> haveToEvacuate: anObject [
 ]
 
 { #category : #cleaning }
+GarbageFirstCollector >> initialize [
+	countdown := 25 mbytes.
+	super initialize
+]
+
+{ #category : #cleaning }
 GarbageFirstCollector >> initializeLocals [
 	| threshold occupancy first max current |
 	first := oldZone == nil.
@@ -61,10 +68,29 @@ GarbageFirstCollector >> initializeLocals [
 ]
 
 { #category : #cleaning }
+GarbageFirstCollector >> reachedCountdown [
+	^countdown <= 0
+]
+
+{ #category : #cleaning }
 GarbageFirstCollector >> releaseLocals [
 	oldZone releaseEvacuated: evacuated.
 	forwarderOffset := evacuated := nil.
+	self resetCountdown.
 	super releaseLocals
+]
+
+{ #category : #cleaning }
+GarbageFirstCollector >> resetCountdown [
+	| garbage bytes |
+	garbage := oldZone commitedBytes - oldZone occupiedBytes.
+	bytes := (oldZone usedBytes * 0.25) asInteger - garbage.
+	countdown := 25 mbytes max: bytes
+]
+
+{ #category : #cleaning }
+GarbageFirstCollector >> tenured: anInteger [
+	countdown := countdown - anInteger
 ]
 
 { #category : #cleaning }

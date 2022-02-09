@@ -164,7 +164,6 @@ Fraction >> asFloat [
 	q := a quo: b.
 	r := a - (q * b).
 	hq := q highBit.
-	"Squeak does gradual underflow. VSE does not use denormalized floats. "
 	floatExponent := exponent + hq - 1.
 	floatExponent > -1023
 		ifFalse: [^(ArithmeticError on: #asFloat) signalUnderflow].

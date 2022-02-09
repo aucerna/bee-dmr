@@ -13,6 +13,7 @@ Class {
 		'limit',
 		'spaces',
 		'current',
+		'next',
 		'emptySpaces',
 		'occupancy',
 		'spaceSize',
@@ -35,22 +36,7 @@ AllocationZone >> allocateIfPossible: size [
 	oop := current allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
 	self bumpSpace.
-	oop := current allocateIfPossible: size.
-	oop _isSmallInteger ifTrue: [^oop]
-]
-
-{ #category : #private }
-AllocationZone >> assureEmptySpace [
-	"
-	the invariant to maintain is that always at the end of the empty
-	space list there is a space ready to be used (committed). Anyone
-	who takes or adds a space to the list has to send this message
-	"
-	| space |
-	emptySpaces isEmpty ifTrue: [self createEmptySpace].
-	space := emptySpaces last.
-	space commitedLimit == space reservedLimit
-		ifFalse: [space commit: space reservedSize * 2]
+	^current allocateIfPossible: size
 ]
 
 { #category : #services }
@@ -76,8 +62,7 @@ AllocationZone >> build [
 	occupancy := Array new: max withAll: 0.
 	spaces := CriticalArray new usePinnedAllocation; growTo: 1000.
 	emptySpaces := CriticalArray new usePinnedAllocation; growTo: 20.
-	current := memory eden.
-	self assureEmptySpace; bumpSpace
+	self bumpSpace; bumpSpace
 ]
 
 { #category : #private }
@@ -86,18 +71,21 @@ AllocationZone >> bumpSpace [
 	We first assign a new space, so that we don't get out of memory,
 	then we assure leaving another empty one for the next call
 	"
-	current := self takeEmptySpace.
-	self assureEmptySpace
+	current := next.
+	emptySpaces isEmpty ifTrue: [self createEmptySpace].
+	next := emptySpaces pop.
+	next commit: next reservedSize * 2.
+	self markAsFull: next.
+	^next
+]
+
+{ #category : #inquiries }
+AllocationZone >> commitedBytes [
+	^spaces sum: [:s | s commitedBytes]
 ]
 
 { #category : #private }
 AllocationZone >> createEmptySpace [
-	"
-	Because we might be in GC, the space could be created in GC work space,
-	which would cause the space to be released after GC is done. To assure it
-	survives, we deep copy it it to our own zone. This method must only be
-	called after assuring there is enough free space in our current space.
-	"
 	| start s end |
 	nextFree == limit ifTrue: [self error: 'out of space'].
 	start := nextFree.
@@ -175,6 +163,11 @@ AllocationZone >> occupancy [
 	^occupancy
 ]
 
+{ #category : #inquiries }
+AllocationZone >> occupiedBytes [
+	^occupancy sum
+]
+
 { #category : #private }
 AllocationZone >> recycleSpace: aGCSpace [
 	emptySpaces add: aGCSpace
@@ -201,7 +194,6 @@ AllocationZone >> regionSize [
 
 { #category : #private }
 AllocationZone >> releaseEvacuated: evacuated [
-	emptySpaces do: [:s | self markAsFull: s].
 	1 to: spaces size do: [:i | | space used recycle base size |
 		space := spaces at: i.
 		used := occupancy at: i.
@@ -215,8 +207,7 @@ AllocationZone >> releaseEvacuated: evacuated [
 				commitedLimit: base;
 				softLimit: base.
 			OS decommit: base * 2 size: size * 2 * 2.
-			self recycleSpace: space]].
-	self assureEmptySpace
+			self recycleSpace: space]]
 ]
 
 { #category : #services }
@@ -229,7 +220,7 @@ AllocationZone >> relocate: anInteger [
 { #category : #private }
 AllocationZone >> resetOccupancy [
 	occupancy atAllPut: 0.
-	self markAsFull: current
+	self markAsFull: current; markAsFull: next
 ]
 
 { #category : #services }
@@ -238,7 +229,7 @@ AllocationZone >> shallowCopyCommiting: object [
 	copy := current shallowCopyCommiting: object.
 	copy == nil ifFalse: [^copy].
 	size := object _sizeInBytes.
-	size > 100000 ifTrue: [
+	size > Memory largeThreshold ifTrue: [
 		space := memory createLargeSpace: size.
 		^space shallowCopyCommiting: object].
 	self bumpSpace.
@@ -253,14 +244,6 @@ AllocationZone >> size [
 { #category : #initialization }
 AllocationZone >> spaces [
 	^spaces
-]
-
-{ #category : #private }
-AllocationZone >> takeEmptySpace [
-	| space |
-	space := emptySpaces pop.
-	self markAsFull: space.
-	^space
 ]
 
 { #category : #services }

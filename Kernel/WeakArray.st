@@ -17,3 +17,4 @@ WeakArray class >> new: anInteger [
 	array beWeak.
 	^array
 ]
+

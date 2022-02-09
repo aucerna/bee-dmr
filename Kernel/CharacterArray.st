@@ -685,22 +685,7 @@ CharacterArray >> trimTail: aString [
 	^(self endsWith: aString)
 		ifTrue: [self allButLast: aString size]
 		ifFalse: [self]
-]
 
-{ #category : #accessing }
-CharacterArray >> uLongAtOffset: offset [
-	| low high |
-	low := self uShortAtOffset: offset.
-	high := self uShortAtOffset: offset + 2.
-	high := high bitShift: 16.
-	^high + low
-]
-
-{ #category : #converting }
-CharacterArray >> uLongAtOffset: offset put: anInteger [
-	anInteger < 0
-		ifTrue: [self uLongAtOffset: offset put: 16r100000000 + anInteger]
-		ifFalse: [self primitiveFailed]
 ]
 
 { #category : #converting }

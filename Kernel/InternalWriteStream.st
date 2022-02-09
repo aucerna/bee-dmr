@@ -22,6 +22,12 @@ InternalWriteStream class >> with: aCollection [
 ]
 
 { #category : #services }
+InternalWriteStream >> _nextDoublePut: anObject [
+	contents _primitiveULargeAtOffset: position put: anObject.
+	position := position + WordSize
+]
+
+{ #category : #services }
 InternalWriteStream >> _nextNativePut: anObject [
 	| object |
 	object := anObject isSmallInteger
@@ -290,6 +296,11 @@ InternalWriteStream >> reset [
 { #category : #positioning }
 InternalWriteStream >> setToEnd [
 	position := size
+]
+
+{ #category : #positioning }
+InternalWriteStream >> setToStart [
+	position := 0
 ]
 
 { #category : #accessing }
