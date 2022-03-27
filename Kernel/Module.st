@@ -27,6 +27,7 @@ Module >> initialize [
 
 { #category : #private }
 Module >> justDefined: aSymbol [
+	| lookups |
 	lookups := cachedLookups at: aSymbol ifAbsent: [^nil].
 	lookups do: [:lookup | lookup flush]
 ]

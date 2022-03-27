@@ -21,15 +21,15 @@ ProtoObject class >> initializeBitMasks [
 	"
 	ObjectBitsMasks := PoolDictionary new.
 	ObjectBitsMasks
-		add: 'IsBytes' -> 16r1;
-		add: 'IsArrayed' -> 16r2;
-		add: 'IsNamed' -> 16r4;
-		add: 'IsRemembered' -> 16r8;
-		add: 'IsSpecial' -> 16r10;
-		add: 'Bit1' -> 16r20;
-		add: 'IsSecondGeneration' -> 16r40;
-		add: 'IsSmall' -> 16r80;
-		add: 'HasBeenSeen' -> 16r20.
+		at: 'IsBytes' put: 16r1;
+		at: 'IsArrayed' put: 16r2;
+		at: 'IsNamed' put: 16r4;
+		at: 'IsRemembered' put: 16r8;
+		at: 'IsSpecial' put: 16r10;
+		at: 'Bit1' put: 16r20;
+		at: 'IsSecondGeneration' put: 16r40;
+		at: 'IsSmall' put: 16r80;
+		at: 'HasBeenSeen' put: 16r20.
 	ObjectBitsMasks keys
 		do: [:key | ObjectBitsMasks
 			at: key , 'Mask'

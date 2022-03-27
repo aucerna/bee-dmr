@@ -10,10 +10,28 @@ Class {
 		'name',
 		'subclasses',
 		'classVariables',
-		'sharedPools'
+		'sharedPools',
+		'module'
 	],
 	#category : #Kernel
 }
+
+
+{ #category : #lookup }
+Class >> _lookupName: aSymbol [
+	| current vars result |
+	current := self.
+	[ 
+		vars := current classVariables.
+		vars == nil ifFalse: [
+			result := vars _namespaceLookup: aSymbol.
+			result == nil ifFalse: [^result].
+		].
+		current := current superclass.
+		current == nil] whileFalse.
+	^module _namespaceLookup: aSymbol.
+]
+
 
 { #category : #services }
 Class >> beDeleted [

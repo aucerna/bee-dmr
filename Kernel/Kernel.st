@@ -8,15 +8,16 @@ Class {
 	#name : #Kernel,
 	#superclass : #Module,
 	#instVars : [
-		'memory'
+		'memory',
+		'entrypoint'
 	],
 	#category : #Kernel
 }
 
 
 { #category : #initializing }
-Kernel >> initialize [
-	WordSizeShift := WordSize = 8 ifTrue: [3] ifFalse: [2].
+Kernel >> bootstrap [
+	| shift |
 	CompiledBlock initializeFormatFlags.
 	CompiledMethod initializeFormatFlags.
 	SendSite initializeFormatFlags.
@@ -33,9 +34,16 @@ Kernel >> initialize [
 	LargeNegativeInteger initializeConstants.
 	SmallInteger initializeConstants.
 	GlobalDispatchCache initialize.
+	cachedLookups := Dictionary new.
+	shift := WordSize = 8 ifTrue: [3] ifFalse: [2].
+	namespace 
+		at: #WordSize put: WordSize;
+		at: #WordSizeShift put: shift;
+		at: #ActiveProcess put: Process new.
 	StarToken initializeCurrent.
 	Unicode allSubclasses do: [:c | c initializeCurrent].
 	self initializeMemory.
+	Symbol initializeSymbolTable
 ]
 
 

@@ -63,6 +63,11 @@ Metaclass >> name [
 ]
 
 { #category : #accessing }
+Metaclass >> namespace [
+	^class namespace
+]
+
+{ #category : #accessing }
 Metaclass >> sharedPools [
 	^class sharedPools
 ]
