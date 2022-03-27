@@ -30,7 +30,7 @@ Symbol class >> fromBytes: aByteArray [
 
 { #category : #initialization }
 Symbol class >> initializeSymbolTable [
-	| set |
+	| policy set |
 	self == Symbol ifFalse: [^self].
 	policy := HashTablePolicy new
 		storesAssociations: false;

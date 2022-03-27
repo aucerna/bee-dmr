@@ -32,3 +32,8 @@ Module >> justDefined: aSymbol [
 	lookups do: [:lookup | lookup flush]
 ]
 
+{ #category : #accessing }
+Module >> namespace [
+	^namespace
+]
+

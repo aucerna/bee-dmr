@@ -9,16 +9,14 @@ Class {
 	#instVars : [
 		'value'
 	],
+	#classVars : [
+		'ByteCharacters'
+	],
 	#pools : [
 		'CharacterConstants'
 	],
 	#category : #Kernel
 }
-
-{ #category : #unclassified }
-Character class >> allCharacters [
-	^ByteCharacters
-]
 
 { #category : #'named characters' }
 Character class >> ampersand [
@@ -166,9 +164,11 @@ Character class >> initializeCharacterConstants [
 	"
 	Character initializeCharacterConstants
 	"
-	
-	CharacterConstants := PoolDictionary new beConstantPool.
-	CharacterConstants
+	| constants |
+	constants := PoolDictionary new beConstantPool.
+	module namespace at: #CharacterConstants put: constants.
+
+	constants
 		at: 'Bell' put: 7 asCharacter;
 		at: 'Bs' put: 8 asCharacter;
 		at: 'Tab' put: 9 asCharacter;
