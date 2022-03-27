@@ -10,7 +10,7 @@ Class {
 	#type : #variable,
 	#instVars : [
 		'format',
-		'nativeCode',
+		'optimizedCode',
 		'method'
 	],
 	#classVars : [
@@ -109,16 +109,16 @@ CompiledBlock >> bindMethod: aCompiledMethod [
 
 { #category : #accessing }
 CompiledBlock >> blockCode [
-	^nativeCode code
+	^optimizedCode code
 ]
 
 { #category : #accessing }
-CompiledBlock >> blockNativeCode [
+CompiledBlock >> blockOptimizedCode [
 	"
 	required to let the optimizing compiler inline this code
-	without confusing with CompiledMethod>>#nativeCode
+	without confusing with CompiledMethod>>#optimizedCode
 	"
-	^nativeCode
+	^optimizedCode
 ]
 
 { #category : #accessing }
@@ -160,8 +160,8 @@ CompiledBlock >> initialize [
 ]
 
 { #category : #accessing }
-CompiledBlock >> invalidateNativeCode [
-	nativeCode := nil
+CompiledBlock >> invalidateOptimizedCode [
+	optimizedCode := nil
 ]
 
 { #category : #testing }
@@ -208,20 +208,20 @@ CompiledBlock >> method: aCompiledMethod [
 	method := aCompiledMethod
 ]
 
-{ #category : #comparing }
-CompiledBlock >> nativeCode [
-	^nativeCode
-]
-
-{ #category : #comparing }
-CompiledBlock >> nativeCode: code [
-	code block: self.
-	nativeCode := code
-]
-
 { #category : #services }
 CompiledBlock >> newClosure [
 	^Closure newFrom: self
+]
+
+{ #category : #comparing }
+CompiledBlock >> optimizedCode [
+	^optimizedCode
+]
+
+{ #category : #comparing }
+CompiledBlock >> optimizedCode: anObject [
+	anObject block: self.
+	optimizedCode := anObject
 ]
 
 { #category : #comparing }
