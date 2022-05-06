@@ -19,7 +19,7 @@ Class {
 
 { #category : #initialization }
 Closure class >> initializeIndexes [
-	Indexes := PoolDictionary newConstantPool
+	Indexes := self addNamespace
 		at: 'ReceiverIndex' put: 1;
 		at: 'ParentEnvironmentIndex' put: 2;
 		yourself
@@ -390,7 +390,9 @@ Closure >> whileFalse [
 
 { #category : #handling }
 Closure >> whileFalse: aBlock [
-	[self value] whileFalse: [aBlock value]
+	self value ifTrue: [^nil].
+	aBlock value.
+	self _restart
 ]
 
 { #category : #handling }
@@ -400,6 +402,8 @@ Closure >> whileTrue [
 
 { #category : #handling }
 Closure >> whileTrue: aBlock [
-	[self value] whileTrue: [aBlock value]
+	self value ifFalse: [^nil].
+	aBlock value.
+	self _restart
 ]
 

@@ -29,16 +29,16 @@ CompiledMethod class >> aspects [
 
 { #category : #initialization }
 CompiledMethod class >> initializeFormatFlags [
-	Flags := PoolDictionary newConstantPool.
+	Flags := self addNamespace.
 	Flags
-		at: 'ArgCount' put: (1 thru: 6);
-		at: 'BlockCount' put: (7 thru: 13);
-		at: 'TempCount' put: (14 thru: 21);
-		at: 'CapturesSelf' put: (1 bitShift: 22 - 1);
-		at: 'HasEnvironment' put: (1 bitShift: 23 - 1);
-		at: 'HasFrame' put: (1 bitShift: 24 - 1);
-		at: 'Debuggable' put: (1 bitShift: 25 - 1);
-		at: 'EnvCount' put: (26 thru: 31)
+		at: #ArgCount put: (1 thru: 6);
+		at: #BlockCount put: (7 thru: 13);
+		at: #TempCount put: (14 thru: 21);
+		at: #CapturesSelf put: (1 bitShift: 22 - 1);
+		at: #HasEnvironment put: (1 bitShift: 23 - 1);
+		at: #HasFrame put: (1 bitShift: 24 - 1);
+		at: #Debuggable put: (1 bitShift: 25 - 1);
+		at: #EnvCount put: (26 thru: 31)
 ]
 
 { #category : #initialization }

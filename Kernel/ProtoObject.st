@@ -19,17 +19,17 @@ ProtoObject class >> initializeBitMasks [
 	"
 	self initializeBitMasks
 	"
-	ObjectBitsMasks := PoolDictionary new.
+	ObjectBitsMasks := self addNamespace.
 	ObjectBitsMasks
-		at: 'IsBytes' put: 16r1;
-		at: 'IsArrayed' put: 16r2;
-		at: 'IsNamed' put: 16r4;
-		at: 'IsRemembered' put: 16r8;
-		at: 'IsSpecial' put: 16r10;
-		at: 'Bit1' put: 16r20;
-		at: 'IsSecondGeneration' put: 16r40;
-		at: 'IsSmall' put: 16r80;
-		at: 'HasBeenSeen' put: 16r20.
+		at: #IsBytes put: 16r1;
+		at: #IsArrayed put: 16r2;
+		at: #IsNamed put: 16r4;
+		at: #IsRemembered put: 16r8;
+		at: #IsSpecial put: 16r10;
+		at: #Bit1 put: 16r20;
+		at: #IsSecondGeneration put: 16r40;
+		at: #IsSmall put: 16r80;
+		at: #HasBeenSeen put: 16r20.
 	ObjectBitsMasks keys
 		do: [:key | ObjectBitsMasks
 			at: key , 'Mask'
@@ -41,14 +41,14 @@ ProtoObject class >> initializeConstants [
 	"
 	ProtoObject initializeConstants
 	"
-	ObjectFieldsOffset := PoolDictionary new.
+	ObjectFieldsOffset := self addNamespace.
 	ObjectFieldsOffset
-		at: '_Behavior' put: 0;
-		at: '_Reserved' put: -2;
-		at: '_ExtendedSize' put: -3;
-		at: '_Flags' put: -5;
-		at: '_SmallSize' put: -6;
-		at: '_Hash' put: -8
+		at: #_Behavior put: 0;
+		at: #_Reserved put: -2;
+		at: #_ExtendedSize put: -3;
+		at: #_Flags put: -5;
+		at: #_SmallSize put: -6;
+		at: #_Hash put: -8
 ]
 
 { #category : #testing }
@@ -381,7 +381,7 @@ ProtoObject >> = other [
 
 { #category : #system }
 ProtoObject >> == anObject [
-	^self == anObject
+	^self _identityEquals: anObject
 ]
 
 { #category : #system }
