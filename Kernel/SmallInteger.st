@@ -36,9 +36,8 @@ SmallInteger class >> minimum [
 
 { #category : #arithmetic }
 SmallInteger >> - aNumber [
-	^aNumber _isSmallInteger
-		ifTrue: [self asLargeInteger - aNumber]
-		ifFalse: [(aNumber - self) negated]
+	aNumber _isSmallInteger ifFalse: [^(aNumber - self) negated].	
+	^(self _smiMinus: aNumber) ifNil: [self asLargeInteger - aNumber]
 ]
 
 { #category : #comparing }
@@ -58,14 +57,8 @@ SmallInteger >> & anInteger [
 
 { #category : #arithmetic }
 SmallInteger >> * aNumber [
-	| result size |
-	aNumber isInteger ifFalse: [^aNumber * self].
-	aNumber isLargeInteger ifTrue: [^aNumber * self].
-	size := self sizeInBytes + aNumber sizeInBytes.
-	result := self positive = aNumber positive
-		ifTrue: [LargePositiveInteger new: size]
-		ifFalse: [LargeNegativeInteger new: size].
-	^(self _integerMultiplyBy: aNumber into: result) reduced
+	aNumber _isSmallInteger ifFalse: [^aNumber * self].
+	^(self _smiTimes: aNumber) ifNil: [self asLargeInteger * aNumber]
 ]
 
 { #category : #arithmetic }
@@ -118,34 +111,43 @@ SmallInteger >> ~= aNumber [
 
 { #category : #arithmetic }
 SmallInteger >> + aNumber [
-	^aNumber _isSmallInteger
-		ifTrue: [self asLargeInteger + aNumber]
-		ifFalse: [aNumber + self]
+	aNumber _isSmallInteger ifFalse: [^aNumber + self].
+	^(self _smiPlus: aNumber) ifNil: [self asLargeInteger + aNumber].
 ]
 
 { #category : #arithmetic }
 SmallInteger >> < aNumber [
-	^aNumber > self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smiLowerThan: aNumber] 
+		ifFalse: [aNumber > self]
 ]
 
 { #category : #comparing }
 SmallInteger >> <= aNumber [
-	^aNumber >= self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smiLowerEqualThan: aNumber] 
+		ifFalse: [aNumber >= self]
 ]
 
 { #category : #comparing }
 SmallInteger >> = aNumber [
-	^aNumber = self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smiEquals: aNumber] 
+		ifFalse: [aNumber = self]
 ]
 
 { #category : #comparing }
 SmallInteger >> > aNumber [
-	^aNumber < self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smiGreaterThan: aNumber] 
+		ifFalse: [aNumber < self]
 ]
 
 { #category : #comparing }
 SmallInteger >> >= aNumber [
-	^aNumber <= self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smiGreaterEqualThan: aNumber] 
+		ifFalse: [aNumber <= self]
 ]
 
 { #category : #arithmetic }
@@ -194,15 +196,8 @@ SmallInteger >> behavior: aBehavior [
 
 { #category : #bits }
 SmallInteger >> bitAnd: anInteger [
-	| sum |
-	anInteger isInteger ifFalse: [^anInteger bitAnd: self].
-	(self < 0 and: [anInteger < 0]) ifTrue: [^anInteger bitAnd: self].
-	sum := 0.
-	WordSize to: 1 by: -1 do: [:i | | ai si |
-		ai := anInteger at: i.
-		si := self at: i.
-		sum := (sum bitShift: 8) + (si bitAnd: ai)].
-	^sum
+	anInteger _isSmallInteger ifFalse: [^anInteger bitAnd: self].
+	^self _smiBitAnd: anInteger
 ]
 
 { #category : #bits }
@@ -214,7 +209,8 @@ SmallInteger >> bitAt: anInteger [
 
 { #category : #bits }
 SmallInteger >> bitOr: anInteger [
-	^anInteger bitOr: self
+	anInteger _isSmallInteger ifFalse: [^anInteger bitOr: self].
+	^self _smiBitOr: self
 ]
 
 { #category : #bits }
