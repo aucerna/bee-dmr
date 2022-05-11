@@ -316,20 +316,7 @@ Float class >> nan [
 
 { #category : #'instance creation' }
 Float class >> new [
-	| byteSize object headerSize totalSize buffer |
-	byteSize := 8.
-	headerSize := 8.
-	totalSize := headerSize + byteSize.
-	buffer := self memory allocate: totalSize.
-	object := (buffer + headerSize _asPointer) _asObject.
-	object
-		_basicULongAt: _Behavior put: self instanceBehavior;
-		initializeExtended: false contentSize: byteSize;
-		_beArrayed;
-		_beBytes;
-		_basicULongAt: 1 put: 0 _asNative;
-		_basicULongAt: 2 put: 0 _asNative.
-	^object
+	^self errorVMSpecific
 ]
 
 { #category : #constants }

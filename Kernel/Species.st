@@ -488,17 +488,7 @@ Species >> organization: aClassOrganizer [
 
 { #category : #unclassified }
 Species >> primitiveNew [
-	| size byteSize headerSize totalSize buffer object |
-	size := self instSize.
-	byteSize := size * WordSize.
-	headerSize := 8.
-	totalSize := headerSize + byteSize.
-	buffer := self memory allocate: totalSize.
-	object := (buffer + headerSize _asPointer) _asObject.
-	object _basicULongAt: _Behavior put: self instanceBehavior.
-	object initializeExtended: false contentSize: size; _beNamed.
-	self nil: size slotsOf: object.
-	^object
+	^self memory newPointers: instanceBehavior size: self instSize
 ]
 
 { #category : #unclassified }
@@ -512,22 +502,15 @@ Species >> primitiveNew: size [
 
 { #category : #unclassified }
 Species >> primitiveNewBytes: size [
-	| object padded |
-	padded := size + WordSize - 1 bitAnd: 0 - WordSize.
-	object := self allocate: padded size: size.
-	object _beBytes; _beArrayed.
-	self zero: padded bytesOf: object.
-	^object
+	^self memory newArrayedBytes: instanceBehavior size: size
 ]
 
 { #category : #unclassified }
 Species >> primitiveNewPointers: size [
-	| object |
-	object := self allocate: size * WordSize size: size.
-	object _beArrayed.
-	self instSize > 0 ifTrue: [object _beNamed].
-	self nil: size slotsOf: object.
-	^object
+	^self memory
+		newArrayedPointers: instanceBehavior
+		size: size
+		named: self instSize > 0
 ]
 
 { #category : #printing }
