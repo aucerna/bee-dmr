@@ -328,23 +328,6 @@ SmalltalkSystem >> propertiesFor: anObject [
 	^properties at: anObject ifAbsent: nil
 ]
 
-{ #category : #accessing }
-SmalltalkSystem >> put: aCompiledMethod at: aSymbol in: aMethodDictionary [
-	| current |
-	current := aMethodDictionary at: aSymbol ifAbsent: nil.
-	(current notNil and: [current isNativized])
-		ifTrue: [aCompiledMethod prepareForExecution].
-	self put: aCompiledMethod withoutFlushing: aSymbol in: aMethodDictionary.
-	aMethodDictionary flushCache: aSymbol.
-	^aCompiledMethod
-]
-
-{ #category : #accessing }
-SmalltalkSystem >> put: aCompiledMethod withoutFlushing: aSymbol in: aMethodDictionary [
-	aCompiledMethod canBeInstalled
-		ifTrue: [aMethodDictionary basicAt: aSymbol put: aCompiledMethod]
-]
-
 { #category : #services }
 SmalltalkSystem >> recursiveBacktrace: aString [
 	Smalltalk exit

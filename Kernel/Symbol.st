@@ -195,6 +195,11 @@ Symbol >> existingSymbol [
 	^self
 ]
 
+{ #category : #services }
+Symbol >> flushCacheFor: species [
+	self errorVMspecific
+]
+
 { #category : #private }
 Symbol >> hash [
 	| pseudoindex first second third begin middle end current new |

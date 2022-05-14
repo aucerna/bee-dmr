@@ -27,7 +27,19 @@ MethodDictionary class >> reserveSlot [
 
 { #category : #accessing }
 MethodDictionary >> at: aSymbol put: aCompiledMethod [
-	^Smalltalk put: aCompiledMethod at: aSymbol in: self
+	| current |
+	current := self at: aSymbol ifAbsent: nil.
+	(current notNil and: [current isNativized])
+		ifTrue: [aCompiledMethod prepareForExecution].
+	self at: aSymbol putWithoutFlushing: aCompiledMethod.
+	aSymbol flushCacheFor: self classBinding.
+	^aCompiledMethod
+]
+
+{ #category : #accessing }
+MethodDictionary >> at: aSymbol putWithoutFlushing: aCompiledMethod [
+	aCompiledMethod canBeInstalled
+		ifTrue: [self basicAt: aSymbol put: aCompiledMethod]
 ]
 
 { #category : #private }
@@ -42,7 +54,7 @@ MethodDictionary >> basicAt: aSymbol put: aCompiledMethod [
 MethodDictionary >> basicRemoveKey: aSymbol ifAbsent: aBlock [
 	| copy |
 	(self includesKey: aSymbol) ifFalse: [^aBlock value].
-	self flushCache: aSymbol.
+	aSymbol flushCacheFor: self classBinding.
 	copy := MethodDictionary new.
 	self
 		keysAndValuesDo: [:selector :cm | selector == aSymbol
@@ -53,6 +65,11 @@ MethodDictionary >> basicRemoveKey: aSymbol ifAbsent: aBlock [
 	^aSymbol
 ]
 
+{ #category : #private }
+MethodDictionary >> classBinding [
+	^self isEmpty ifFalse: [self anyone classBinding].
+]
+	
 { #category : #private }
 MethodDictionary >> contentOfSize: anInteger [
 	| modulo |
@@ -67,15 +84,9 @@ MethodDictionary >> copy [
 
 { #category : #private }
 MethodDictionary >> flushCache [
-	self keysDo: [:selector | self flushCache: selector]
-]
-
-{ #category : #private }
-MethodDictionary >> flushCache: aSymbol [
-	| class |
-	class := self isEmpty ifFalse: [self anyone classBinding].
-	GlobalDispatchCache current flush: aSymbol forSpecies: class.
-	SendSite flush: aSymbol
+	| class | 
+	class := self classBinding.
+	self keysDo: [:selector | selector flushCacheFor: class]
 ]
 
 { #category : #private }
