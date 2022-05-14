@@ -16,7 +16,7 @@ Class {
 { #category : #accessing }
 Symbol class >> findInterned: aString [
 	| symbol |
-	symbol := aString asByteArray changeClassTo: Symbol.
+	symbol := aString bytes changeClassTo: Symbol.
 	^SymbolTable lookup: symbol
 ]
 
@@ -44,8 +44,7 @@ Symbol class >> initializeSymbolTable [
 Symbol class >> intern: aString [
 	| symbol existing |
 	aString isUnicode ifTrue: [^WideSymbol intern: aString].
-	symbol := aString asByteArray.
-	symbol changeClassTo: self.
+	symbol := aString bytes changeClassTo: self.
 	existing := SymbolTable lookup: symbol.
 	existing == nil ifTrue: [
 		existing := symbol.

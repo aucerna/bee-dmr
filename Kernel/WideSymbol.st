@@ -15,7 +15,7 @@ WideSymbol class >> findInterned: aString [
 	| symbol string |
 	string := aString reduced.
 	string == aString ifFalse: [^super findInterned: string].
-	symbol := aString asByteArray changeClassTo: self.
+	symbol := aString bytes changeClassTo: self.
 	^SymbolTable lookup: symbol
 ]
 
@@ -23,8 +23,7 @@ WideSymbol class >> findInterned: aString [
 WideSymbol class >> intern: aString [
 	| symbol canonical |
 	aString isAnsiCompliant ifTrue: [^Symbol intern: aString reduced].
-	symbol := aString asByteArray.
-	symbol changeClassTo: self.
+	symbol := aString bytes changeClassTo: self.
 	canonical := SymbolTable lookup: symbol.
 	canonical == nil ifTrue: [^SymbolTable add: symbol].
 	^canonical

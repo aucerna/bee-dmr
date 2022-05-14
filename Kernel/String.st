@@ -511,6 +511,17 @@ String >> byteAt: position put: asciiValue [
 	^self _byteAt: position put: asciiValue
 ]
 
+{ #category : #converting }
+String >> bytes [
+	| array |
+	array := ByteArray new: self _size.
+	^array
+		replaceBytesFrom: 1
+		to: self sizeInBytes
+		with: self
+		startingAt: 1
+]
+
 { #category : #accessing }
 String >> characterSize [
 	^1
