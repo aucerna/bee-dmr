@@ -329,7 +329,7 @@ ProtoObject >> initializeExtended: aBoolean contentSize: size [
 		ifFalse: [self _smallSize: size; _beSmall]
 ]
 
- #category : #'*system' }
+{ #category : #'*system' }
 ProtoObject >> primitiveSize [
 	| size |
 	self _isSmallInteger ifTrue: [^0].
