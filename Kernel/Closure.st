@@ -308,11 +308,6 @@ Closure >> repeatUntil: aBlock [
 		aBlock value] whileFalse
 ]
 
-{ #category : #services }
-Closure >> saveHomeFrame [
-	homeFrame := StackFrameCursor caller
-]
-
 { #category : #handling }
 Closure >> spawnAndWait [
 	| s result |
