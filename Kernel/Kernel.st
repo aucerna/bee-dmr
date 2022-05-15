@@ -9,13 +9,13 @@ Class {
 	#superclass : #Module,
 	#instVars : [
 		'memory',
-		'entrypoint'
+		'entrypoint',
+		'loadedModules'
 	],
 	#category : #Kernel
 }
 
-
-{ #category : #initializing }
+{ #category : #bootstrapping }
 Kernel >> bootstrap [
 	| shift |
 	CompiledBlock initializeFormatFlags.
@@ -55,6 +55,12 @@ Kernel >> entry: argc argv: argv [
 ]
 
 { #category : #initialization }
+Kernel >> initialize [
+	loadedModules := Dictionary new.
+	loadedModules at: #Kernel put: self.
+]
+
+{ #category : #initialization }
 Kernel >> initializeMemory [
 	| kernel rs |
 	kernel := GCSpace new.
@@ -66,8 +72,17 @@ Kernel >> initializeMemory [
 		rememberedSet: rs.
 ]
 
+{ #category : #services }
+Kernel >> loadModule: aSymbol [
+	| filename |
+	loadedModules at: aSymbol ifPresent: [:module | ^module].
+	filename := self findModulePath: aSymbol.
+	(self loadFromImageSegment: filename) ifNotNil: [:module | ^module].
+	^self loadFromSources: filename
+]
+
 { #category : #accessing }
-SmalltalkSystem >> memory [
+Kernel >> memory [
 	^memory
 ]
 
