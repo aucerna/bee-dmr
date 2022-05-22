@@ -19,9 +19,9 @@ Class {
 }
 
 { #category : #'instance creation' }
-SExpressionNativizer class >> assemblyFor: anSCompiledMethod [
-	^ NativizationEnvironment forTesting newExpressionNativizer nativize:
-		  anSCompiledMethod
+SExpressionNativizer class >> assemblyFor: aCompiledMethod [
+	^ NativizationEnvironment forTesting
+		newExpressionNativizer nativize: aCompiledMethod
 ]
 
 { #category : #'instance creation' }
@@ -156,14 +156,6 @@ SExpressionNativizer class >> nativize: aCompiledMethod [
 
 	^ NativizationEnvironment forTesting newExpressionNativizer
 		nativize: aCompiledMethod
-]
-
-{ #category : #'instance creation' }
-SExpressionNativizer class >> new [
-	"return an initialized instance"
-
-	^ self basicNew initialize.
-
 ]
 
 { #category : #services }
@@ -403,7 +395,7 @@ SExpressionNativizer >> emitWriteBarrier [
 { #category : #accessing }
 SExpressionNativizer >> environment: aNativizationEnvironment [
 	environment := aNativizationEnvironment.
-	ir := environment target newNativizer
+	ir := environment platform newAssembler
 ]
 
 { #category : #services }

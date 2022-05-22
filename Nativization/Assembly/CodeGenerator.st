@@ -9,19 +9,6 @@ Class {
 	#category : #'Powerlang-Core-Assembly'
 }
 
-{ #category : #'instance creation' }
-CodeGenerator class >> forTarget: aNativizationTarget [
-	^ self basicNew
-		initialize;
-		target: aNativizationTarget;
-		yourself
-]
-
-{ #category : #'instance creation' }
-CodeGenerator class >> new [
-	self shouldNotImplement."Use #forTarget: instead"
-]
-
 { #category : #basic }
 CodeGenerator >> add: source1 to: source2andDest [
 	self subclassResponsibility
@@ -633,9 +620,9 @@ CodeGenerator >> subImm: imm from: srcAndDst [
 ]
 
 { #category : #initialization }
-CodeGenerator >> target: aNativizationTarget [
-	abi := aNativizationTarget abi.
-	wordSize := aNativizationTarget wordSize.
+CodeGenerator >> platform: aNativizationPlatform [
+	abi := aNativizationPlatform abi.
+	wordSize := aNativizationPlatform wordSize.
 ]
 
 { #category : #basic }

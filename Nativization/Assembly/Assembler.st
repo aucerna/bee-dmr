@@ -16,14 +16,6 @@ Class {
 	#category : #'Powerlang-Core-Assembly'
 }
 
-{ #category : #'instance creation' }
-Assembler class >> forTarget: aNativizationTarger [
-	^self basicNew 
-		initialize;
-		target: aNativizationTarger;
-		yourself.
-]
-
 { #category : #initialization }
 Assembler class >> growIndexedLabelsTo: anInteger [
 	| new |
@@ -42,11 +34,6 @@ Assembler class >> initialize [
 Assembler class >> initializeIndexedLabels [
 	IndexedLabels := #().
 	self growIndexedLabelsTo: 100
-]
-
-{ #category : #'instance creation' }
-Assembler class >> new [
-	^self shouldNotImplement."Use #forTaget: instead"
 ]
 
 { #category : #labels }
@@ -2130,8 +2117,8 @@ Assembler >> subTslotsToSP [
 ]
 
 { #category : #initialization }
-Assembler >> target: aNativizationTarget [
-	codegen := aNativizationTarget newCodeGenerator.
+Assembler >> platform: aNativizationPlatform [
+	codegen := aNativizationPlatform newCodeGenerator.
 	self reset
 ]
 

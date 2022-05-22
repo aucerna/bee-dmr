@@ -1229,9 +1229,9 @@ AMD64TemplateAssembler >> subTslotsToSP [
 ]
 
 { #category : #initialization }
-AMD64TemplateAssembler >> target: aNativizationTarget [
-	super target: aNativizationTarget.
-	wordSize := aNativizationTarget wordSize.
+AMD64TemplateAssembler >> platform: aNativizationPlatform [
+	super platform: aNativizationPlatform.
+	wordSize := aNativizationPlatform wordSize.
 ]
 
 { #category : #integers }
