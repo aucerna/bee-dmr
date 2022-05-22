@@ -86,7 +86,7 @@ NativizationEnvironment >> abi [
 	^platform abi
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> addLinker: aLinker [
 	messageLinker add: aLinker
 ]
@@ -96,14 +96,14 @@ NativizationEnvironment >> completeInitialization [
 	cachedNativizer := self newExpressionNativizer 
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> globalNamed: aSymbol [
 	| index |
 	index := self class indexOfGlobal: aSymbol.
 	^globals at: index
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> globalNamed: aSymbol put: anObject [
 	| index |
 	index := self class indexOfGlobal: aSymbol.
@@ -136,7 +136,7 @@ NativizationEnvironment >> initialize [
 		optimizedMethods: self class optimizedMethods
 ]
 
-{ #category : #initialization }
+{ #category : #bootstrapping }
 NativizationEnvironment >> initializeForBootstrap [
 	self
 		nativizeInvoke;
@@ -145,7 +145,7 @@ NativizationEnvironment >> initializeForBootstrap [
 		setupMessageLinkers.
 ]
 
-{ #category : #initialization }
+{ #category : #bootstrapping }
 NativizationEnvironment >> initializeGlobals [
 	| items |
 	self globalNamed: #SmallIntegerBehavior put: SmallInteger instanceBehavior.
@@ -161,17 +161,17 @@ NativizationEnvironment >> initializeGlobals [
 		keysAndValuesDo: [ :key :placeholder | self globalNamed: key put: placeholder ]
 ]
 
-{ #category : #initialization }
+{ #category : #bootstrapping }
 NativizationEnvironment >> initializeOptimizedMethods [
 	
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> inlinedMethods [
 	^inlinedMethods
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> inlinedMethods: aCollection [
 	inlinedMethods := aCollection
 ]
@@ -183,12 +183,12 @@ NativizationEnvironment >> invokeStub [
 	^(globals at: index) code
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> invokedMethods [
 	^invokedMethods
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> invokedMethods: aCollection [
 	invokedMethods := aCollection asOrderedCollection 
 ]
@@ -235,12 +235,20 @@ NativizationEnvironment >> lookupSuperStub [
 	^(globals at: index) code
 ]
 
+{ #category : #private }
+NativizationEnvironment >> mapGlobal: aSymbol to: nativeCode [
+	placeholder := self globalNamed: aSymbol.
+	placeholder code become: nativeCode code.
+	placeholder become: nativeCode.
+	Kernel namespace at: aSymbol put: nativeCode
+]
+
 { #category : #accessing }
 NativizationEnvironment >> messageLinker [
 	^messageLinker
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> messageLinker: aLinker [
 	messageLinker := aLinker 
 ]
@@ -280,6 +288,28 @@ NativizationEnvironment >> nativize: aCompiledMethod [
 		  ifFalse: [ self nativizeWithoutOptimizing: aCompiledMethod ] 
 ]
 
+{ #category : #bootstrapping }
+NativizationEnvironment >> nativizeInvoke [
+	| invoke |
+	invoke := SendSite >> #_invokeOn:.
+	self 
+		nativizeOptimizing: invoke;
+		mapGlobal: #Invoke to: invoke
+]
+
+{ #category : #bootstrapping }
+NativizationEnvironment >> nativizeLookup [
+	| nativizer transferred species lookup lookupSuper |
+	nativizer := LookupNativizer new
+		bootstrapper: self;
+		nativizeMethods.
+	lookup := nativizer methodFor: #_dispatchOn:.
+	lookupSuper := nativizer methodFor: #_dispatchOn:startingAt:.
+	self
+		mapGlobal: #Lookup to: lookup nativeCode;
+		mapGlobal: #LookupSuper to: lookupSuper nativeCode
+]
+
 { #category : #services }
 NativizationEnvironment >> nativizeOptimizing: aCompiledMethod [
 	self optimizingNativizer
@@ -295,7 +325,32 @@ NativizationEnvironment >> nativizeWithoutOptimizing: aCompiledMethod [
 	^method
 ]
 
-{ #category : #initialization }
+{ #category : #bootstrapping }
+NativizationEnvironment >> nativizeWriteBarrier [
+	| map inlined dispatcher barrier |
+	map := {('Memory class' -> #(current)).
+	(#Memory -> #(isYoung: isYoungSafe: remember:)).
+	(#CriticalArray -> #(unsafeAdd: #unsafeAt:put:)).
+	(#Magnitude -> #(#between:and:))}.
+	inlined := builder methodSubset: map.
+	inlined addAll: builder undermethods.
+	inlined := inlined collect: [ :m | builder compile: m ].
+	barrier := builder
+		compile: builder => #ProtoObject >> #holdRefererIfNeeded:.
+	dispatcher := LookupLinker new initializeFrom: nativizer.
+	(NativizationEnvironment forTarget: target)
+		globals: nativizer globals;
+		inlinedMethods: inlined;
+		messageLinker: dispatcher;
+		completeInitialization;
+		nativizeOptimizing: barrier.
+	self
+		transfer: barrier
+		in: #ProtoObject
+		asNativizerGlobal: #WriteBarrier
+]
+
+{ #category : #services }
 NativizationEnvironment >> nativizerDuring: aBlock [
 	^busy
 		  ifFalse: [ 
@@ -309,22 +364,22 @@ NativizationEnvironment >> nativizerDuring: aBlock [
 			  aBlock value: cachedNativizer ] ensure: [ cachedNativizer := old ] ]
 ]
 
-{ #category : #initialization }
+{ #category : #services }
 NativizationEnvironment >> newExpressionNativizer [
 	^SExpressionNativizer new environment: self
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> optimizedMethods [
 	^optimizedMethods
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> optimizedMethods: aCollection [
 	optimizedMethods := aCollection
 ]
 
-{ #category : #initialization }
+{ #category : #services }
 NativizationEnvironment >> optimizingNativizer [
 	^OptimizingNativizer new environment: self
 ]
@@ -416,12 +471,12 @@ NativizationEnvironment >> safepoint [
 	^(globals at: index) code
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> safepointCheck: anObject [
 	safepointCheck := anObject 
 ]
 
-{ #category : #initialization }
+{ #category : #bootstrapping }
 NativizationEnvironment >> setupMessageLinkers [
 	| invoker dispatcher |
 	invoker := InvokeLinker new invoker: self invokeStub; addMethods: invokedMethods.
@@ -432,7 +487,7 @@ NativizationEnvironment >> setupMessageLinkers [
 		completeInitialization
 ]
 
-{ #category : #initialization }
+{ #category : #services }
 NativizationEnvironment >> sexpressionOffsetsOf: code [
 	| method |
 	method := code method.
@@ -443,7 +498,7 @@ NativizationEnvironment >> sexpressionOffsetsOf: code [
 		  nativizer sexpressionOffsetsOf: code ]
 ]
 
-{ #category : #initialization }
+{ #category : #queries }
 NativizationEnvironment >> shouldInline: aSymbol [
 	^inlinedMethods anySatisfy: [ :m | m selector = aSymbol ]
 ]
@@ -456,22 +511,22 @@ NativizationEnvironment >> shouldOptimize: method [
 	^optimizedMethods anySatisfy: [:m | m selector = selector and: [ m classBinding name = classname ]  ]
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> wordSize [
 	^self abi wordSize
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> wordSizeShift [
 	^self abi wordSizeShift
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> writeBarrier [
 	^writeBarrier
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 NativizationEnvironment >> writeBarrier: aCompiledMethod [
 	writeBarrier := aCompiledMethod.
 	invokedMethods add: writeBarrier 
