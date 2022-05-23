@@ -136,36 +136,6 @@ NativizationEnvironment >> initialize [
 		optimizedMethods: self class optimizedMethods
 ]
 
-{ #category : #bootstrapping }
-NativizationEnvironment >> initializeForBootstrap [
-	self
-		nativizeInvoke;
-		nativizeWriteBarrier;
-		nativizeLookup;
-		setupMessageLinkers.
-]
-
-{ #category : #bootstrapping }
-NativizationEnvironment >> initializeGlobals [
-	| items |
-	self globalNamed: #SmallIntegerBehavior put: SmallInteger instanceBehavior.
-	items := Dictionary newFromPairs: {
-		#Lookup .           (NativeCode new code: 'Lookup Placeholder').
-		#LookupSuper .      (NativeCode new code: 'LookupSuper Placeholder').
-		#DebuggableLookup . (NativeCode new code: 'DebuggableLookup placeholder').
-		#DebuggableLookupSuper. (NativeCode new code: 'DebuggableLookupSuper placholder').
-		#Invoke .           (NativeCode new code: 'Invoke placeholder').
-		#Safepoint .        (NativeCode new code: 'SafepointCheck placeholder').
-		#WriteBarrier .     (NativeCode new code: 'Write Barrier placeholder')}.
-	items
-		keysAndValuesDo: [ :key :placeholder | self globalNamed: key put: placeholder ]
-]
-
-{ #category : #bootstrapping }
-NativizationEnvironment >> initializeOptimizedMethods [
-	
-]
-
 { #category : #accessing }
 NativizationEnvironment >> inlinedMethods [
 	^inlinedMethods
@@ -235,14 +205,6 @@ NativizationEnvironment >> lookupSuperStub [
 	^(globals at: index) code
 ]
 
-{ #category : #private }
-NativizationEnvironment >> mapGlobal: aSymbol to: nativeCode [
-	placeholder := self globalNamed: aSymbol.
-	placeholder code become: nativeCode code.
-	placeholder become: nativeCode.
-	Kernel namespace at: aSymbol put: nativeCode
-]
-
 { #category : #accessing }
 NativizationEnvironment >> messageLinker [
 	^messageLinker
@@ -288,28 +250,6 @@ NativizationEnvironment >> nativize: aCompiledMethod [
 		  ifFalse: [ self nativizeWithoutOptimizing: aCompiledMethod ] 
 ]
 
-{ #category : #bootstrapping }
-NativizationEnvironment >> nativizeInvoke [
-	| invoke |
-	invoke := SendSite >> #_invokeOn:.
-	self 
-		nativizeOptimizing: invoke;
-		mapGlobal: #Invoke to: invoke
-]
-
-{ #category : #bootstrapping }
-NativizationEnvironment >> nativizeLookup [
-	| nativizer transferred species lookup lookupSuper |
-	nativizer := LookupNativizer new
-		bootstrapper: self;
-		nativizeMethods.
-	lookup := nativizer methodFor: #_dispatchOn:.
-	lookupSuper := nativizer methodFor: #_dispatchOn:startingAt:.
-	self
-		mapGlobal: #Lookup to: lookup nativeCode;
-		mapGlobal: #LookupSuper to: lookupSuper nativeCode
-]
-
 { #category : #services }
 NativizationEnvironment >> nativizeOptimizing: aCompiledMethod [
 	self optimizingNativizer
@@ -323,31 +263,6 @@ NativizationEnvironment >> nativizeWithoutOptimizing: aCompiledMethod [
 	method := self
 		nativizerDuring: [ :nativizer | nativizer nativize: aCompiledMethod ].
 	^method
-]
-
-{ #category : #bootstrapping }
-NativizationEnvironment >> nativizeWriteBarrier [
-	| map inlined dispatcher barrier |
-	map := {('Memory class' -> #(current)).
-	(#Memory -> #(isYoung: isYoungSafe: remember:)).
-	(#CriticalArray -> #(unsafeAdd: #unsafeAt:put:)).
-	(#Magnitude -> #(#between:and:))}.
-	inlined := builder methodSubset: map.
-	inlined addAll: builder undermethods.
-	inlined := inlined collect: [ :m | builder compile: m ].
-	barrier := builder
-		compile: builder => #ProtoObject >> #holdRefererIfNeeded:.
-	dispatcher := LookupLinker new initializeFrom: nativizer.
-	(NativizationEnvironment forTarget: target)
-		globals: nativizer globals;
-		inlinedMethods: inlined;
-		messageLinker: dispatcher;
-		completeInitialization;
-		nativizeOptimizing: barrier.
-	self
-		transfer: barrier
-		in: #ProtoObject
-		asNativizerGlobal: #WriteBarrier
 ]
 
 { #category : #services }
@@ -476,7 +391,7 @@ NativizationEnvironment >> safepointCheck: anObject [
 	safepointCheck := anObject 
 ]
 
-{ #category : #bootstrapping }
+{ #category : #initialization }
 NativizationEnvironment >> setupMessageLinkers [
 	| invoker dispatcher |
 	invoker := InvokeLinker new invoker: self invokeStub; addMethods: invokedMethods.
@@ -492,8 +407,8 @@ NativizationEnvironment >> sexpressionOffsetsOf: code [
 	| method |
 	method := code method.
 	(self shouldOptimize: method) ifTrue: [ ^#(  ) ].
-	^self nativizerDuring: [ :nativizer | 
-		  method nativeCode ifNotNil: [ method := method copy ]. 
+	^self nativizerDuring: [ :nativizer |
+		  method nativeCode ifNotNil: [ method := method copy ].
 		  nativizer compile: method.
 		  nativizer sexpressionOffsetsOf: code ]
 ]
