@@ -61,6 +61,4 @@ RISCCodeGenerator >> subImm: anInteger from: srcAndDstReg [
 	self addImm: anInteger negated to: srcAndDstReg
 
 ]
-eg
 
-]

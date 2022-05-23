@@ -190,5 +190,3 @@ RelocatableBuffer >> writeLong: long at: location [
 		nextLongPut: long;
 		position: previous
 ]
-ous
-]

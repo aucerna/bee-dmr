@@ -650,5 +650,4 @@ CodeGenerator >> wordSize: anInteger [
 CodeGenerator >> wordSizeShift [
 	^wordSize = 8 ifTrue: [3] ifFalse: [2]
 ]
-[2]
-]
+

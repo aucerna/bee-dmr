@@ -106,5 +106,4 @@ ABI >> regX0 [
 ABI >> regX1 [
 	^ self subclassResponsibility
 ]
-ity
-]
+

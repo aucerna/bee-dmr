@@ -77,5 +77,3 @@ NativeCodeReference >> target [
 NativeCodeReference >> target: anObject [
 	target := anObject
 ]
-ect
-]

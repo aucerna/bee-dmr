@@ -88,5 +88,4 @@ RelocationFixup >> size: anInteger [
 RelocationFixup >> target [
 	^target
 ]
-get
-]
+

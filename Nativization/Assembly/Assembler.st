@@ -2175,6 +2175,4 @@ Assembler >> xorRwithA [
 	codegen xor: codegen regR with: codegen regA
 
 ]
-gA
 
-]
