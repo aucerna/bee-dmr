@@ -46,7 +46,6 @@ Kernel >> bootstrap [
 	Symbol initializeSymbolTable
 ]
 
-
 Kernel >> entry: argc argv: argv [
 	<callback: long (long, pointer)>
 	"^Smalltalk startSession"
