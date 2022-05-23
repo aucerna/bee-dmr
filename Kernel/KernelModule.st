@@ -5,7 +5,7 @@
 "
 
 Class {
-	#name : #Kernel,
+	#name : #KernelModule,
 	#superclass : #Module,
 	#instVars : [
 		'memory',
@@ -16,7 +16,7 @@ Class {
 }
 
 { #category : #bootstrapping }
-Kernel >> bootstrap [
+KernelModule >> bootstrap [
 	| shift |
 	CompiledBlock initializeFormatFlags.
 	CompiledMethod initializeFormatFlags.
@@ -46,21 +46,21 @@ Kernel >> bootstrap [
 	Symbol initializeSymbolTable
 ]
 
-Kernel >> entry: argc argv: argv [
+KernelModule >> entry: argc argv: argv [
 	<callback: long (long, pointer)>
 	"^Smalltalk startSession"
-	^Kernel new foo.
+	^KernelModule new foo.
 
 ]
 
 { #category : #initialization }
-Kernel >> initialize [
+KernelModule >> initialize [
 	loadedModules := Dictionary new.
 	loadedModules at: #Kernel put: self.
 ]
 
 { #category : #initialization }
-Kernel >> initializeMemory [
+KernelModule >> initializeMemory [
 	| kernel rs |
 	kernel := GCSpace new.
 	rs := CriticalArray on: (Array new: 16 * 1024).
@@ -72,7 +72,7 @@ Kernel >> initializeMemory [
 ]
 
 { #category : #services }
-Kernel >> loadModule: aSymbol [
+KernelModule >> loadModule: aSymbol [
 	| filename |
 	loadedModules at: aSymbol ifPresent: [:module | ^module].
 	filename := self findModulePath: aSymbol.
@@ -81,11 +81,11 @@ Kernel >> loadModule: aSymbol [
 ]
 
 { #category : #accessing }
-Kernel >> memory [
+KernelModule >> memory [
 	^memory
 ]
 
-Kernel >> foo [
+KernelModule >> foo [
 	| result |
 	"self _halt."
 	"#(1 2 3 4 5) do: [:i | result := i]."
