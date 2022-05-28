@@ -60,6 +60,11 @@ Behavior >> classBinding [
 	^class
 ]
 
+{ #category : #accessing }
+Behavior >> classBinding: aSpecies [
+	class := aSpecies
+]
+
 { #category : #copying }
 Behavior >> copyWithout: behavior [
 	| b |

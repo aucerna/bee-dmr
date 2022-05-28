@@ -16,6 +16,11 @@ Class {
 	#category : #Kernel
 }
 
+Class class >> newSubclassOf: aClass [
+	| meta |
+	meta := Metaclass new beSubclassOf: aClass class.
+	^meta instanceClass module: Kernel; initializeFrom: aClass.
+]
 
 { #category : #lookup }
 Class >> _lookupName: aSymbol [
@@ -186,6 +191,7 @@ Class >> hasSubclasses [
 Class >> initializeFrom: aSpecies [
 	| md |
 	superclass := aSpecies.
+	classVariables := #().
 	md := MethodDictionary new.
 	instanceBehavior := Behavior with: md.
 	instanceBehavior classBinding: self.
@@ -208,6 +214,16 @@ Class >> isClass [
 { #category : #testing }
 Class >> isDeleted [
 	^false
+]
+
+{ #category : #accessing }
+Class >> module [
+	^module
+]
+
+{ #category : #accessing }
+Class >> module: aModule [
+	module := aModule
 ]
 
 { #category : #accessing }

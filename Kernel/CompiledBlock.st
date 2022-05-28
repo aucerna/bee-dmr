@@ -141,6 +141,11 @@ CompiledBlock >> format [
 	^format
 ]
 
+{ #category : #accessing }
+CompiledBlock >> format: anInteger [
+	format := anInteger
+]
+
 { #category : #testing }
 CompiledBlock >> hasMethodEnvironment [
 	^self size >= 2 and: [(self at: 2) notNil]

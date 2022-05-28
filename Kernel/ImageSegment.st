@@ -13,6 +13,12 @@ Class {
 }
 
 { #category : #accessing }
+ImageSegment class >> load: filename [
+	"TO BE IMPLEMENTED!"
+	^nil
+]
+
+{ #category : #accessing }
 ImageSegment >> name [
 	^name
 ]
