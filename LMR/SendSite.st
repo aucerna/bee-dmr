@@ -5,13 +5,8 @@
 
 Class {
 	#name : #SendSite,
-	#superclass : #Object,
+	#superclass : #DispatchSite,
 	#instVars : [
-		'instructions',
-		'selector',
-		'cache',
-		'tally',
-		'format'
 	],
 	#classVars : [
 		'FormatFlags',

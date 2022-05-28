@@ -18,7 +18,9 @@ Class {
 
 { #category : #accessing }
 GlobalDispatchCache class >> current [
-	^Thread currentGlobalLookup ifNil: [Shared]
+	| current |
+	current := Thread currentGlobalLookup.
+	^current == nil ifTrue: [Shared]
 ]
 
 { #category : #initializing }
