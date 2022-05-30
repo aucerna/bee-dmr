@@ -13,6 +13,11 @@ Class {
 }
 
 { #category : #accessing }
+Metaclass >> name [
+	^class name , ' class'
+]
+
+{ #category : #accessing }
 Metaclass >> beSubclassOf: aClass [
 	| md |	
 	format := aClass format.
