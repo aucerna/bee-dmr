@@ -61,12 +61,13 @@ Module >> export: anObject as: aSymbol [
 
 { #category : #services }
 Module >> exportClass: aClass [
-	self export: aClass as: aClass name
+	self export: aClass as: aClass name asSymbol
 ]
 
 { #category : #services }
 Module >> import: aSymbol [
-	namespace at: aSymbol ifPresent: [:module | ^module].
+	| module |
+	namespace at: aSymbol ifPresent: [:loaded | ^loaded].
 	module := Kernel loadModule: aSymbol.
 	namespace at: aSymbol put: module.
 	self bind: module as: aSymbol.
@@ -88,7 +89,17 @@ Module >> justDefined: aSymbol [
 	lookups do: [:lookup | lookup flush]
 ]
 
+{ #category : #bootstrapping }
+Module >> loadRequiredModules [
+	self requires do: [:name | self import: name]
+]
+
 { #category : #accessing }
 Module >> namespace [
 	^namespace
+]
+
+{ #category : #accessing }
+Module >> requires [
+	^#()
 ]

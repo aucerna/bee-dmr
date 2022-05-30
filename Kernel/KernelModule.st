@@ -18,11 +18,6 @@ Class {
 
 { #category : #bootstrapping }
 KernelModule >> prepareForSnapshot: anImageSegmentBuilder [
-	Kernel prepareForSnapshot: anImageSegmentBuilder
-]
-
-{ #category : #bootstrapping }
-KernelModule >> prepareForSnapshot: anImageSegmentBuilder [
 	anImageSegmentBuilder
 		map: loadedModules to: OrderedCollection new;
 		map: moduleLoaders to: OrderedCollection new
@@ -58,6 +53,11 @@ KernelModule >> bootstrap [
 	self initialize
 ]
 
+{ #category : #initialization }
+KernelModule >> addModuleLoader: aModuleLoader [
+	moduleLoaders add: aModuleLoader
+]
+
 KernelModule >> entry: argc argv: argv [
 	<callback: long (long, pointer)>
 	"^Smalltalk startSession"
@@ -85,7 +85,9 @@ KernelModule >> loadModule: aSymbol [
 	| filename |
 	loadedModules at: aSymbol ifPresent: [:module | ^module].
 	moduleLoaders do: [:loader | 
-		(loader load: aSymbol) ifNotNil: [:module | ^module]].
+		(loader load: aSymbol) ifNotNil: [:module | 
+			loadedModules at: aSymbol put: module.
+			^module]].
 	^self error: 'module not found'
 ]
 
