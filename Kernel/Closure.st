@@ -19,7 +19,7 @@ Class {
 
 { #category : #initialization }
 Closure class >> initializeIndexes [
-	Indexes := PoolDictionary newConstantPool
+	Indexes := self addNamespace
 		at: 'ReceiverIndex' put: 1;
 		at: 'ParentEnvironmentIndex' put: 2;
 		yourself
@@ -124,9 +124,7 @@ Closure >> evaluate [
 
 { #category : #handling }
 Closure >> evaluateAtomically [
-	| enabled |
-	enabled := Processor enableInterrupts: false.
-	^self ensure: [Processor enableInterrupts: enabled]
+	self errorVMSpecific
 ]
 
 { #category : #handling }
@@ -136,15 +134,12 @@ Closure >> evaluateFor: anObject [
 
 { #category : #handling }
 Closure >> evaluateWith: value [
-	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #handling }
 Closure >> evaluateWith: anObject with: anotherObject [
-	block argumentCount = 2
-		ifFalse: [^super evaluateWith: anObject with: anotherObject].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #evaluating }
@@ -313,11 +308,6 @@ Closure >> repeatUntil: aBlock [
 		aBlock value] whileFalse
 ]
 
-{ #category : #services }
-Closure >> saveHomeFrame [
-	homeFrame := StackFrameCursor caller
-]
-
 { #category : #handling }
 Closure >> spawnAndWait [
 	| s result |
@@ -339,26 +329,22 @@ Closure >> templateIndex [
 
 { #category : #handling }
 Closure >> value [
-	block argumentCount = 0 ifFalse: [^self arityError: 0].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #handling }
 Closure >> value: value [
-	block argumentCount = 1 ifFalse: [^self arityError: 1].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #handling }
 Closure >> value: first value: second [
-	block argumentCount = 2 ifFalse: [^self arityError: 2].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #handling }
 Closure >> value: first value: second value: third [
-	block argumentCount = 3 ifFalse: [^self arityError: 3].
-	self _transferControlTo: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #evaluating }
@@ -376,11 +362,7 @@ Closure >> valueSelector [
 
 { #category : #handling }
 Closure >> valueWithArguments: arguments [
-	| size |
-	size := arguments basicSize.
-	block argumentCount = size ifFalse: [^self arityError: size].
-	arguments _expandInStackSized: size.
-	^self _invoke: block blockNativeCode
+	self errorVMSpecific
 ]
 
 { #category : #handling }
@@ -390,7 +372,7 @@ Closure >> whileFalse [
 
 { #category : #handling }
 Closure >> whileFalse: aBlock [
-	[self value] whileFalse: [aBlock value]
+	self errorVMSpecific
 ]
 
 { #category : #handling }
@@ -400,6 +382,6 @@ Closure >> whileTrue [
 
 { #category : #handling }
 Closure >> whileTrue: aBlock [
-	[self value] whileTrue: [aBlock value]
+	self errorVMSpecific
 ]
 

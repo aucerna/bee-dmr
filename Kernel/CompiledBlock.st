@@ -10,7 +10,7 @@ Class {
 	#type : #variable,
 	#instVars : [
 		'format',
-		'nativeCode',
+		'optimizedCode',
 		'method'
 	],
 	#classVars : [
@@ -44,13 +44,13 @@ CompiledBlock class >> initializeFormatFlags [
 	self compileAll.
 	self class compileAll
 	"
-	Flags := PoolDictionary newConstantPool
-		at: 'ArgCount' put: (1 thru: 6);
-		at: 'TempCount' put: (7 thru: 14);
-		at: 'Id' put: (15 thru: 22);
-		at: 'CapturesSelf' put: (1 bitShift: 23 - 1);
-		at: 'CapturesHome' put: (1 bitShift: 24 - 1);
-		at: 'EnvCount' put: (25 thru: 31);
+	Flags := self addNamespace
+		at: #ArgCount put: (1 thru: 6);
+		at: #TempCount put: (7 thru: 14);
+		at: #Id put: (15 thru: 22);
+		at: #CapturesSelf put: (1 bitShift: 23 - 1);
+		at: #CapturesHome put: (1 bitShift: 24 - 1);
+		at: #EnvCount put: (25 thru: 31);
 		yourself.
 ]
 
@@ -109,16 +109,16 @@ CompiledBlock >> bindMethod: aCompiledMethod [
 
 { #category : #accessing }
 CompiledBlock >> blockCode [
-	^nativeCode code
+	^optimizedCode code
 ]
 
 { #category : #accessing }
-CompiledBlock >> blockNativeCode [
+CompiledBlock >> blockOptimizedCode [
 	"
 	required to let the optimizing compiler inline this code
-	without confusing with CompiledMethod>>#nativeCode
+	without confusing with CompiledMethod>>#optimizedCode
 	"
-	^nativeCode
+	^optimizedCode
 ]
 
 { #category : #accessing }
@@ -141,6 +141,11 @@ CompiledBlock >> format [
 	^format
 ]
 
+{ #category : #accessing }
+CompiledBlock >> format: anInteger [
+	format := anInteger
+]
+
 { #category : #testing }
 CompiledBlock >> hasMethodEnvironment [
 	^self size >= 2 and: [(self at: 2) notNil]
@@ -160,8 +165,8 @@ CompiledBlock >> initialize [
 ]
 
 { #category : #accessing }
-CompiledBlock >> invalidateNativeCode [
-	nativeCode := nil
+CompiledBlock >> invalidateOptimizedCode [
+	optimizedCode := nil
 ]
 
 { #category : #testing }
@@ -208,20 +213,20 @@ CompiledBlock >> method: aCompiledMethod [
 	method := aCompiledMethod
 ]
 
-{ #category : #comparing }
-CompiledBlock >> nativeCode [
-	^nativeCode
-]
-
-{ #category : #comparing }
-CompiledBlock >> nativeCode: code [
-	code block: self.
-	nativeCode := code
-]
-
 { #category : #services }
 CompiledBlock >> newClosure [
 	^Closure newFrom: self
+]
+
+{ #category : #comparing }
+CompiledBlock >> optimizedCode [
+	^optimizedCode
+]
+
+{ #category : #comparing }
+CompiledBlock >> optimizedCode: anObject [
+	anObject block: self.
+	optimizedCode := anObject
 ]
 
 { #category : #comparing }

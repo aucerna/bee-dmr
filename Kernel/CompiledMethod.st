@@ -10,7 +10,7 @@ Class {
 	#type : #variable,
 	#instVars : [
 		'format',
-		'nativeCode',
+		'optimizedCode',
 		'astcodes',
 		'class',
 		'selector',
@@ -29,16 +29,16 @@ CompiledMethod class >> aspects [
 
 { #category : #initialization }
 CompiledMethod class >> initializeFormatFlags [
-	Flags := PoolDictionary newConstantPool.
+	Flags := self addNamespace.
 	Flags
-		at: 'ArgCount' put: (1 thru: 6);
-		at: 'BlockCount' put: (7 thru: 13);
-		at: 'TempCount' put: (14 thru: 21);
-		at: 'CapturesSelf' put: (1 bitShift: 22 - 1);
-		at: 'HasEnvironment' put: (1 bitShift: 23 - 1);
-		at: 'HasFrame' put: (1 bitShift: 24 - 1);
-		at: 'Debuggable' put: (1 bitShift: 25 - 1);
-		at: 'EnvCount' put: (26 thru: 31)
+		at: #ArgCount put: (1 thru: 6);
+		at: #BlockCount put: (7 thru: 13);
+		at: #TempCount put: (14 thru: 21);
+		at: #CapturesSelf put: (1 bitShift: 22 - 1);
+		at: #HasEnvironment put: (1 bitShift: 23 - 1);
+		at: #HasFrame put: (1 bitShift: 24 - 1);
+		at: #Debuggable put: (1 bitShift: 25 - 1);
+		at: #EnvCount put: (26 thru: 31)
 ]
 
 { #category : #initialization }
@@ -167,7 +167,7 @@ CompiledMethod >> executeOn: receiver withArguments: anArray [
 	size := anArray basicSize.
 	self argumentCount = size ifFalse: [^self error: 'incorrect arity'].
 	anArray _expandInStackSized: size.
-	^receiver _invoke: self validNativeCodeAddress _asNative
+	^receiver _invoke: self validOptimizedCodeAddress _asNative
 ]
 
 { #category : #accessing }
@@ -196,8 +196,8 @@ CompiledMethod >> hash [
 ]
 
 { #category : #accessing }
-CompiledMethod >> hasNativeCode [
-	^nativeCode != nil
+CompiledMethod >> hasOptimizedCode [
+	^optimizedCode != nil
 ]
 
 { #category : #initialization }
@@ -212,9 +212,9 @@ CompiledMethod >> install [
 ]
 
 { #category : #accessing }
-CompiledMethod >> invalidateNativeCode [
-	nativeCode := nil.
-	self blocksDo: [:b | b invalidateNativeCode]
+CompiledMethod >> invalidateOptimizedCode [
+	optimizedCode := nil.
+	self blocksDo: [:b | b invalidateOptimizedCode]
 ]
 
 { #category : #testing }
@@ -254,7 +254,7 @@ CompiledMethod >> isFFIMethod [
 
 { #category : #unclassified }
 CompiledMethod >> isNativized [
-	^false == (nativeCode == nil)
+	^false == (optimizedCode == nil)
 ]
 
 { #category : #testing }
@@ -283,26 +283,26 @@ CompiledMethod >> method [
 	^self
 ]
 
-{ #category : #accessing }
-CompiledMethod >> nativeCode [
-	^nativeCode
-]
-
-{ #category : #accessing }
-CompiledMethod >> nativeCode: code [
-	code method: self.
-	nativeCode := code
-]
-
-{ #category : #accessing }
-CompiledMethod >> nativeCodeAddress [
-	nativeCode isNil ifTrue: [self nativize].
-	nativeCode nativeCodeAddress
-]
-
 { #category : #services }
 CompiledMethod >> nativize [
-	nativeCode := Smalltalk nativizer nativeCodeFor: self
+	optimizedCode := Smalltalk nativizer nativeCodeFor: self
+]
+
+{ #category : #accessing }
+CompiledMethod >> optimizedCode [
+	^optimizedCode
+]
+
+{ #category : #accessing }
+CompiledMethod >> optimizedCode: anObject [
+	code method: self.
+	optimizedCode := anObject
+]
+
+{ #category : #accessing }
+CompiledMethod >> optimizedCodeAddress [
+	optimizedCode isNil ifTrue: [self nativize].
+	optimizedCode optimizedCodeAddress
 ]
 
 { #category : #copying }
@@ -313,7 +313,7 @@ CompiledMethod >> postCopy [
 			b isBlock ifTrue: [
 				c := b copy method: self.
 				self at: i put: c]];
-		updateNativeCode
+		updateOptimizedCode
 ]
 
 { #category : #unclassified }
@@ -342,7 +342,7 @@ CompiledMethod >> selector [
 { #category : #accessing }
 CompiledMethod >> selector: aSymbol [
 	selector := aSymbol.
-	nativeCode notNil ifTrue: [self invalidateNativeCode; nativize]
+	optimizedCode notNil ifTrue: [self invalidateOptimizedCode; nativize]
 ]
 
 { #category : #accessing }
@@ -352,7 +352,7 @@ CompiledMethod >> selectorAt: index [
 
 { #category : #accessing }
 CompiledMethod >> sendSites [
-	^nativeCode sendSites
+	^optimizedCode sendSites
 ]
 
 { #category : #'source code support' }
@@ -378,13 +378,13 @@ CompiledMethod >> timestamp [
 ]
 
 { #category : #accessing }
-CompiledMethod >> updateNativeCode [
-	nativeCode ifNil: [^self].
-	self invalidateNativeCode; prepareForExecution
+CompiledMethod >> updateOptimizedCode [
+	optimizedCode ifNil: [^self].
+	self invalidateOptimizedCode; prepareForExecution
 ]
 
 { #category : #unclassified }
-CompiledMethod >> validNativeCodeAddress [
-	^nativeCode code _asSmallInteger
+CompiledMethod >> validOptimizedCodeAddress [
+	^optimizedCode code _asSmallInteger
 ]
 

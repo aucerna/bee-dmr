@@ -13,6 +13,11 @@ Class {
 }
 
 { #category : #'instance creation' }
+PoolDictionary class >> new [
+	^super new
+]
+
+{ #category : #'instance creation' }
 PoolDictionary class >> newConstantPool [
 	^self new beConstantPool
 ]

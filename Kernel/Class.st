@@ -10,10 +10,41 @@ Class {
 		'name',
 		'subclasses',
 		'classVariables',
-		'sharedPools'
+		'sharedPools',
+		'module'
 	],
 	#category : #Kernel
 }
+
+Class class >> newSubclassOf: aClass [
+	| meta |
+	meta := Metaclass new beSubclassOf: aClass class.
+	^meta instanceClass module: Kernel; initializeFrom: aClass.
+]
+
+{ #category : #lookup }
+Class >> _lookupName: aSymbol [
+	| current vars result |
+	current := self.
+	[ 
+		vars := current classVariables.
+		vars == nil ifFalse: [
+			result := vars _namespaceLookup: aSymbol.
+			result == nil ifFalse: [^result].
+		].
+		current := current superclass.
+		current == nil] whileFalse.
+	^module _namespaceLookup: aSymbol.
+]
+
+{ #category : #services }
+Class >> addNamespace [
+	| result |
+	classVariables ifNil: [classVariables := Array with: Namespace new].
+	result := Namespace new.
+	classVariables := classVariables copyWith: result.
+	^result
+]
 
 { #category : #services }
 Class >> beDeleted [
@@ -53,28 +84,40 @@ Class >> canBeDeleted [
 { #category : #accessing }
 Class >> classVariables [
 	classVariables isNil ifTrue: [^Dictionary new].
-	^classVariables
+	^classVariables first
+]
+
+{ #category : #accessing }
+Class >> classVariables: aDictionary [
+	classVariables
+		ifNil: [classVaribles := Array with: aDictionary]
+		ifNotNil: [classVariables at: 1 put: aDictionary].
+	(aDictionary isEmpty and: [classVariables size = 1])
+		ifTrue: [classVariables := nil]
 ]
 
 { #category : #accessing }
 Class >> classVarNamed: aString put: anObject [
-	^classVariables at: aString put: anObject
+	^classVariables first at: aString put: anObject
 ]
 
 { #category : #accessing }
 Class >> classVarNames [
-	^classVariables isNil ifTrue: [Set new] ifFalse: [classVariables keys]
+	^classVariables isNil ifTrue: [Set new] ifFalse: [classVariables first keys]
 ]
+
 
 { #category : #accessing }
 Class >> classVarNames: aCollection [
-	| cvars |
-	cvars := Dictionary new.
-	classVariables ifNil: [classVariables := cvars].
+	| new old |
+	new := Dictionary new.
+	old := sef classVariables.
+	
 	aCollection do: [:k | | assoc |
-		assoc := classVariables associationAt: k ifAbsent: [k -> nil].
-		cvars add: assoc].
-	classVariables := cvars isEmpty ifFalse: [cvars]
+		assoc := old associationAt: k ifAbsent: [k -> nil].
+		new add: assoc].
+	
+	self classVariables: new.
 ]
 
 { #category : #accessing }
@@ -130,11 +173,10 @@ Class >> duplicateHierarchyFrom: aClass with: aClassCopy [
 
 { #category : #accessing }
 Class >> fillFrom: aClass [
-	| cvars pools |
+	| pools |
 	super fillFrom: aClass.
 	self == aClass ifTrue: [^self].
-	cvars := aClass classVariables.
-	classVariables := cvars notEmpty ifTrue: [cvars].
+	self classVariables: aClass classVariables.
 	pools := aClass sharedPools.
 	sharedPools := pools notEmpty ifTrue: [pools].
 	self class fillFrom: aClass class
@@ -149,6 +191,7 @@ Class >> hasSubclasses [
 Class >> initializeFrom: aSpecies [
 	| md |
 	superclass := aSpecies.
+	classVariables := #().
 	md := MethodDictionary new.
 	instanceBehavior := Behavior with: md.
 	instanceBehavior classBinding: self.
@@ -171,6 +214,16 @@ Class >> isClass [
 { #category : #testing }
 Class >> isDeleted [
 	^false
+]
+
+{ #category : #accessing }
+Class >> module [
+	^module
+]
+
+{ #category : #accessing }
+Class >> module: aModule [
+	module := aModule
 ]
 
 { #category : #accessing }

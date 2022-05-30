@@ -18,7 +18,7 @@ Class {
 
 { #category : #execution }
 Locale class >> startUp [
-	ActiveLocale := self new initialize
+	self namespace at: #ActiveLocale put: self new initialize
 ]
 
 { #category : #times }

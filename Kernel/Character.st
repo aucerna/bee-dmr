@@ -9,16 +9,14 @@ Class {
 	#instVars : [
 		'value'
 	],
+	#classVars : [
+		'ByteCharacters'
+	],
 	#pools : [
 		'CharacterConstants'
 	],
 	#category : #Kernel
 }
-
-{ #category : #unclassified }
-Character class >> allCharacters [
-	^ByteCharacters
-]
 
 { #category : #'named characters' }
 Character class >> ampersand [
@@ -166,29 +164,31 @@ Character class >> initializeCharacterConstants [
 	"
 	Character initializeCharacterConstants
 	"
-	
-	CharacterConstants := PoolDictionary new beConstantPool.
-	CharacterConstants
-		at: 'Bell' put: 7 asCharacter;
-		at: 'Bs' put: 8 asCharacter;
-		at: 'Tab' put: 9 asCharacter;
-		at: 'Lf' put: 10 asCharacter;
-		at: 'Ff' put: 12 asCharacter;
-		at: 'Cr' put: 13 asCharacter;
-		at: 'Esc' put: 27 asCharacter;
-		at: 'Space' put: 32 asCharacter;
-		at: 'Del' put: 127 asCharacter;
-		at: 'TimerTick' put: 253 asCharacter;
-		at: 'Emdash' put: 8212 asCharacter;
-		at: 'Endash' put: 8211 asCharacter;
-		at: 'Emspace' put: Character emspace;
-		at: 'Enspace' put: Character enspace;
-		at: 'Qmspace' put: Character qmspace;
-		at: 'Bullet' put: Character bullet;
-		at: 'Lquote' put: Character lquote;
-		at: 'Rquote' put: Character rquote;
-		at: 'Ldblquote' put: Character ldblquote;
-		at: 'Rdblquote' put: Character rdblquote
+	| constants |
+	constants := self addNamespace.
+	module namespace at: #CharacterConstants put: constants.
+
+	constants
+		at: #Bell put: 7 asCharacter;
+		at: #Bs put: 8 asCharacter;
+		at: #Tab put: 9 asCharacter;
+		at: #Lf put: 10 asCharacter;
+		at: #Ff put: 12 asCharacter;
+		at: #Cr put: 13 asCharacter;
+		at: #Esc put: 27 asCharacter;
+		at: #Space put: 32 asCharacter;
+		at: #Del put: 127 asCharacter;
+		at: #TimerTick put: 253 asCharacter;
+		at: #Emdash put: 8212 asCharacter;
+		at: #Endash put: 8211 asCharacter;
+		at: #Emspace put: Character emspace;
+		at: #Enspace put: Character enspace;
+		at: #Qmspace put: Character qmspace;
+		at: #Bullet put: Character bullet;
+		at: #Lquote put: Character lquote;
+		at: #Rquote put: Character rquote;
+		at: #Ldblquote put: Character ldblquote;
+		at: #Rdblquote put: Character rdblquote
 ]
 
 { #category : #initialization }

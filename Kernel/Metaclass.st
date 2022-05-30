@@ -13,13 +13,19 @@ Class {
 }
 
 { #category : #accessing }
+Metaclass >> name [
+	^class name , ' class'
+]
+
+{ #category : #accessing }
 Metaclass >> beSubclassOf: aClass [
-	| md |
+	| md |	
 	format := aClass format.
 	superclass := aClass.
 	md := MethodDictionary new: 2.
-	instanceBehavior := Behavior with: md withAll: aClass instanceBehavior
+	instanceBehavior := Behavior with: md withAll: aClass instanceBehavior.
 	instanceBehavior classBinding: self.
+	class := self new
 ]
 
 { #category : #accessing }
@@ -60,6 +66,11 @@ Metaclass >> isMetaclass [
 { #category : #accessing }
 Metaclass >> name [
 	^class name , ' class'
+]
+
+{ #category : #accessing }
+Metaclass >> namespace [
+	^class namespace
 ]
 
 { #category : #accessing }

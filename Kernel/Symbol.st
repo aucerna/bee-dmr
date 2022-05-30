@@ -16,7 +16,7 @@ Class {
 { #category : #accessing }
 Symbol class >> findInterned: aString [
 	| symbol |
-	symbol := aString asByteArray changeClassTo: Symbol.
+	symbol := aString bytes changeClassTo: Symbol.
 	^SymbolTable lookup: symbol
 ]
 
@@ -28,12 +28,23 @@ Symbol class >> fromBytes: aByteArray [
 	^string replaceBytesFrom: 1 to: n with: aByteArray startingAt: 1
 ]
 
+{ #category : #initialization }
+Symbol class >> initializeSymbolTable [
+	| policy set |
+	self == Symbol ifFalse: [^self].
+	policy := HashTablePolicy new
+		storesAssociations: false;
+		bucketClass: OpenHashTable;
+		useStringHash.
+	set := Set new: 5000 using: policy.
+	SymbolTable := set
+]
+
 { #category : #accessing }
 Symbol class >> intern: aString [
 	| symbol existing |
 	aString isUnicode ifTrue: [^WideSymbol intern: aString].
-	symbol := aString asByteArray.
-	symbol changeClassTo: self.
+	symbol := aString bytes changeClassTo: self.
 	existing := SymbolTable lookup: symbol.
 	existing == nil ifTrue: [
 		existing := symbol.
@@ -182,6 +193,11 @@ Symbol >> evaluateWithArguments: anArray [
 { #category : #converting }
 Symbol >> existingSymbol [
 	^self
+]
+
+{ #category : #services }
+Symbol >> flushCacheFor: species [
+	self errorVMspecific
 ]
 
 { #category : #private }
