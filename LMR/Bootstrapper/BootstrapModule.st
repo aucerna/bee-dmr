@@ -14,7 +14,7 @@ BootstrapModule >> bootstrapLMR [
 	GlobalDispatchCache initialize.
 	self initializeMemory.
 
-	"self bootstrapNativizationEnvironment"
+	"self bootstrapNativizationEnvi	ronment"
 ]
 
 { #category : #bootstrapping }
@@ -40,6 +40,16 @@ BootstrapModule >> builtModules [
 		same comment than #neededModules.	^{Kernel. Files. Tonel. Nativizer. Compiler}
 	"
 	^{Kernel}
+]
+
+{ #category : #bootstrapping }
+BootstrapModule >> loadRequiredModules [
+	"
+		normally required modules are automatically loaded, but that
+		doesn't happen for the bootstrapper
+	"
+	Kernel addModuleLoader: ModuleLoader new.
+	super loadRequiredModules
 ]
 
 { #category : #bootstrapping }

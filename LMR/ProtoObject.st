@@ -291,7 +291,7 @@ ProtoObject >> basicHash [
 	shifted := LastHash bitShift: -1.
 	hash := (LastHash bitAnd: 1) = 0
 		ifTrue: [shifted]
-		ifFalse: [shifted bitXor: 16rD561].
+		ifFalse: [shifted bitXor: 16rB9C8].
 	self _basicHash: hash.
 	^LastHash := hash
 ]
@@ -338,7 +338,7 @@ ProtoObject >> primitiveSize [
 	^self _hasNamedSlots ifTrue: [size - self class instSize] ifFalse: [size]
 ]
 
-{ #category : #'*accessing }
+{ #category : #'*accessing' }
 ProtoObject >> primitiveAt: i [
 	self _isSmallInteger ifTrue: [^self shouldNotImplement].
 	^self _isBytes

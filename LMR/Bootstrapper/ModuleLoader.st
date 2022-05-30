@@ -8,6 +8,6 @@ Class {
 
 { #category : #loading }
 ModuleLoader >> load: aSymbol [
-	<primitive: LoadModule>
+	<primitive: BootstrapLoadModule>
 ]
 
