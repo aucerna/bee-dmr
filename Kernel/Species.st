@@ -547,16 +547,6 @@ Species >> shallowCopy [
 	^self
 ]
 
-{ #category : #services }
-Species >> sharedPoolsString [
-	| stream |
-	stream := '' writeStream.
-	self sharedPools asSortedCollection
-		do: [:pool | stream nextPutAll: pool]
-		separatedBy: [stream space].
-	^stream contents
-]
-
 { #category : #inquiries }
 Species >> shouldBeHidden: aSymbol [
 	^false

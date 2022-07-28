@@ -29,7 +29,7 @@ KernelModule >> bootstrap [
 	CompiledBlock initializeFormatFlags.
 	CompiledMethod initializeFormatFlags.
 	Species initializeFormatFlags.
-	Character initializeCharacters; initializeCharacterConstants.
+	Character initializeCharacters; initializeNamedCharacters.
 	Closure initializeIndexes.
 	ExternalMemory initializeConstants.
 	Float initializeConstants.
@@ -49,7 +49,9 @@ KernelModule >> bootstrap [
 	StarToken initializeCurrent.
 	Unicode allSubclasses do: [:c | c initializeCurrent].
 	Symbol initializeSymbolTable.
-
+	InternalWriteStream initializePools.
+	CharacterArray initializePools.
+	
 	self initialize
 ]
 

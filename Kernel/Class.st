@@ -9,8 +9,7 @@ Class {
 	#instVars : [
 		'name',
 		'subclasses',
-		'classVariables',
-		'sharedPools',
+		'namespaces',
 		'module'
 	],
 	#category : #Kernel
@@ -39,11 +38,24 @@ Class >> _lookupName: aSymbol [
 
 { #category : #services }
 Class >> addNamespace [
-	| result |
-	classVariables ifNil: [classVariables := Array with: Namespace new].
-	result := Namespace new.
-	classVariables := classVariables copyWith: result.
-	^result
+	^self addNamespace: Namespace new.
+]
+
+{ #category : #services }
+Class >> addNamespace: aNamespace [
+	"
+		first namespace are class variables, remaining ones are local pools of the class
+	"
+	namespaces ifNil: [namespaces := Array with: Namespace new].
+	namespaces := namespaces copyWith: aNamespace.
+	^aNamespace
+]
+
+{ #category : #services }
+Class >> addNamespaceAs: aSymbol [
+	| names |
+	names := self addNamespace.
+	^self classVarNamed: aSymbol put: names
 ]
 
 { #category : #services }
@@ -83,34 +95,33 @@ Class >> canBeDeleted [
 
 { #category : #accessing }
 Class >> classVariables [
-	classVariables isNil ifTrue: [^Dictionary new].
-	^classVariables first
+	^namespaces isEmpty ifTrue: [Namespace new] ifFalse: [namespaces first]
 ]
 
 { #category : #accessing }
-Class >> classVariables: aDictionary [
-	classVariables
-		ifNil: [classVaribles := Array with: aDictionary]
-		ifNotNil: [classVariables at: 1 put: aDictionary].
-	(aDictionary isEmpty and: [classVariables size = 1])
-		ifTrue: [classVariables := nil]
+Class >> classVariables: aNamespace [
+	namespaces isEmpty
+		ifTrue: [namespaces := Array with: aNamespace]
+		ifFalse: [namespaces at: 1 put: aNamespace].
+	(aNamespace isEmpty and: [namespaces size = 1])
+		ifTrue: [namespaces := #()]
 ]
 
 { #category : #accessing }
 Class >> classVarNamed: aString put: anObject [
-	^classVariables first at: aString put: anObject
+	^namespaces first at: aString put: anObject
 ]
 
 { #category : #accessing }
 Class >> classVarNames [
-	^classVariables isNil ifTrue: [Set new] ifFalse: [classVariables first keys]
+	^self classVariables keys
 ]
 
 
 { #category : #accessing }
 Class >> classVarNames: aCollection [
 	| new old |
-	new := Dictionary new.
+	new := Namespace new.
 	old := sef classVariables.
 	
 	aCollection do: [:k | | assoc |
@@ -177,8 +188,6 @@ Class >> fillFrom: aClass [
 	super fillFrom: aClass.
 	self == aClass ifTrue: [^self].
 	self classVariables: aClass classVariables.
-	pools := aClass sharedPools.
-	sharedPools := pools notEmpty ifTrue: [pools].
 	self class fillFrom: aClass class
 ]
 
@@ -191,7 +200,7 @@ Class >> hasSubclasses [
 Class >> initializeFrom: aSpecies [
 	| md |
 	superclass := aSpecies.
-	classVariables := #().
+	namespaces := #().
 	md := MethodDictionary new.
 	instanceBehavior := Behavior with: md.
 	instanceBehavior classBinding: self.
@@ -236,6 +245,11 @@ Class >> name: aSymbol [
 	name := aSymbol asSymbol
 ]
 
+{ #category : #services }
+Class >> namespaces [
+	^namespaces
+]
+
 { #category : #testing }
 Class >> needsReinstallation [
 	self hasClassBehavior ifFalse: [^true].
@@ -276,18 +290,6 @@ Class >> removeFromSystem [
 Class >> removeSubclass: aClass [
 	subclasses isNil ifTrue: [^self].
 	subclasses := subclasses copyWithout: aClass
-]
-
-{ #category : #accessing }
-Class >> sharedPools [
-	sharedPools isNil ifTrue: [^Array new].
-	^sharedPools
-]
-
-{ #category : #accessing }
-Class >> sharedPools: aCollection [
-	sharedPools := aCollection isEmpty
-		ifFalse: [aCollection asSet asArray collect: #asSymbol]
 ]
 
 { #category : #accessing }

@@ -16,6 +16,11 @@ Class {
 	#category : #Kernel
 }
 
+{ #category : #'initialization' }
+InternalWriteStream class >> initializePools [
+	^self addNamespace: Character namedCharacters
+]
+
 { #category : #'instance creation' }
 InternalWriteStream class >> with: aCollection [
 	^self new with: aCollection
