@@ -118,14 +118,6 @@ SmalltalkSystem >> canOpenBacktrace [
 	^true
 ]
 
-{ #category : #services }
-SmalltalkSystem >> classesUsingPool: aPoolDictionary [
-	| string |
-	string := aPoolDictionary name.
-	^ProtoObject allSubclasses
-		select: [:cls | cls sharedPools includes: string]
-]
-
 { #category : #accessing }
 SmalltalkSystem >> classNamed: aString [
 	| name tag meta global |

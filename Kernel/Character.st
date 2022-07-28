@@ -12,9 +12,6 @@ Class {
 	#classVars : [
 		'ByteCharacters'
 	],
-	#pools : [
-		'CharacterConstants'
-	],
 	#category : #Kernel
 }
 
@@ -160,15 +157,13 @@ Character class >> greaterThan [
 ]
 
 { #category : #initialization }
-Character class >> initializeCharacterConstants [
+Character class >> initializeNamedCharacters [
 	"
-	Character initializeCharacterConstants
+	Character initializeNamedCharacters
 	"
-	| constants |
-	constants := self addNamespace.
-	module namespace at: #CharacterConstants put: constants.
-
-	constants
+	| named |
+	named := self addNamespaceAs: #NamedCharacters.
+	named
 		at: #Bell put: 7 asCharacter;
 		at: #Bs put: 8 asCharacter;
 		at: #Tab put: 9 asCharacter;
@@ -239,6 +234,11 @@ Character class >> minus [
 { #category : #'named characters' }
 Character class >> muchGreater [
 	^$≫
+]
+
+{ #category : #'named characters' }
+Character class >> namedCharacters [
+	^NamedCharacters
 ]
 
 { #category : #'instance creation' }

@@ -73,11 +73,6 @@ Metaclass >> namespace [
 	^class namespace
 ]
 
-{ #category : #accessing }
-Metaclass >> sharedPools [
-	^class sharedPools
-]
-
 { #category : #inquiries }
 Metaclass >> shouldBeHidden: aSymbol [
 	^class shouldBeHidden: aSymbol

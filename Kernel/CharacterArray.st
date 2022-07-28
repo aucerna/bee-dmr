@@ -6,9 +6,6 @@
 Class {
 	#name : #CharacterArray,
 	#superclass : #ArrayedCollection,
-	#pools : [
-		'CharacterConstants'
-	],
 	#category : #Kernel
 }
 
@@ -20,6 +17,11 @@ CharacterArray class >> fromSubstrings: substrings separatedBy: separatorChar [
 		do: [:string | stream nextPutAll: string asString]
 		separatedBy: [stream nextPut: separatorChar].
 	^stream contents
+]
+
+{ #category : #'initialization' }
+CharacterArray class >> initializePools [
+	self addNamespace: Character namedCharacters
 ]
 
 { #category : #'named characters' }
