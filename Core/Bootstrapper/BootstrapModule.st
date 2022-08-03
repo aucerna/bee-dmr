@@ -1,0 +1,37 @@
+"
+    Copyright (c) 2022, Javier Pimás. 
+    See (MIT) license in root directory.
+"
+
+Class {
+	#name : #BootstrapModule,
+	#superclass : #Module,
+	#instVars : [
+		'environment'
+	],
+	#category : #'Powerlang-Core-LMR'
+}
+
+{ #category : #bootstrapping }
+BootstrapModule >> imports [
+	^{#Core.Modules -> #Builder. #Core.Modules.JSON -> #Writer  }
+]
+
+{ #category : #bootstrapping }
+BootstrapModule >> start [
+	Kernel addModuleLoader: ModuleLoader new.
+]
+
+{ #category : #bootstrapping }
+BootstrapModule >> writeJSONKernel [
+	| builder writer |
+	Kernel addModuleLoader: ModuleLoader new.
+	self
+		import: #Builder from: #Core.Modules;
+		import: #Writer from: #Core.Modules.JSON.
+	builder := Builder new.
+	builder module: Kernel; build.
+	writer := Writer new.
+	^writer closure: builder closure; exports: Kernel exports; write; image
+]
+
