@@ -110,6 +110,20 @@ ProtoObject >> _copyHeaderSized: byteSize from: anObject [
 	self errorVMSpecific
 ]
 
+{ #category : #'header access' }
+ProtoObject >> _hash [
+	^self errorVMSpecific
+]
+
+{ #category : #'header access' }
+ProtoObject >> _isBytes [
+	^self errorVMSpecific
+]
+
+{ #category : #'header access' }
+ProtoObject >> _pointersSize [
+	^self errorVMSpecific
+]
 
 { #category : #'header access' }
 ProtoObject >> _size [

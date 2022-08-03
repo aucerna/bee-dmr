@@ -6,6 +6,21 @@
 Extension { #name : #ProtoObject }
 
 { #category : '*Primitives' }
+ProtoObject >> _hash [
+	<primitive: UnderHash>
+]
+
+{ #category : '*Primitives' }
+ProtoObject >> _isBytes [
+	<primitive: UnderIsBytes>
+]
+
+{ #category : '*Primitives' }
+ProtoObject >> _pointersSize [
+	<primitive: UnderPointersSize>
+]
+
+{ #category : '*Primitives' }
 ProtoObject >> _size [
 	<primitive: UnderSize>
 ]
