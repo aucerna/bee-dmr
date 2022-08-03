@@ -42,14 +42,19 @@ KernelModule >> bootstrap [
 	cachedLookups := Dictionary new.
 	shift := WordSize = 8 ifTrue: [3] ifFalse: [2].
 	namespace 
+		at: #nil put: nil;
+		at: #true put: true;
+		at: #false put: false;
 		at: #WordSize put: WordSize;
 		at: #WordSizeShift put: shift;
 		at: #Kernel put: self;
-		at: #ActiveProcess put: Process new.
+		at: #ActiveProcess put: Process new;
+		at: #KnownSymbols put: #(+ - < > <= >= = == not).
 	StarToken initializeCurrent.
 	Unicode allSubclasses do: [:c | c initializeCurrent].
 	Symbol initializeSymbolTable.
-	InternalWriteStream initializePools.
+	namespace at: #SymbolTable put: Symbol symbolTable.
+	WriteStream initializePools.
 	CharacterArray initializePools.
 	
 	self initialize
@@ -73,13 +78,16 @@ KernelModule >> initialize [
 		we cannot do super initialize here, because it would
 		reset our bootstrapped namespace
 	"
-	name := self defaultName.
-	exports := Set new.
-	cachedLookups := Dictionary new.
+	self basicInitialize.
 	moduleLoaders := OrderedCollection new.
 	loadedModules := Dictionary new.
 	loadedModules at: #Kernel put: self.
-	namespace keys do: [:symbol | exports add: symbol]
+	namespace 
+		keys do: [:symbol | | obj |
+			obj := namespace at: symbol.
+			obj isClass 
+				ifTrue: [self addClass: obj]
+				ifFalse: [exports add: symbol]]
 ]
 
 { #category : #services }

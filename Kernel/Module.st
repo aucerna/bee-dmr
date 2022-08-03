@@ -12,14 +12,33 @@ Class {
 		'exports',
 		'namespace',
 		'hash',
-		'cachedLookups'
+		'cachedLookups',
+		'classes',
+		'extensions',
+		'overriden'
 	],
 	#category : #Kernel
 }
 
 { #category : #services }
-Module >> bind: aModule as: aSymbol [
-	namespace at: aSymbol put: aModule.
+Module >> addClass: aClass [
+	classes add: aClass.
+	self exportClass: aClass
+]
+
+{ #category : #initializing }
+Module >> basicInitialize [
+	name := self defaultName.
+	exports := Set new.
+	cachedLookups := Dictionary new.
+	classes := OrderedCollection new.
+	extensions := Dictionary new.
+	overriden := Dictionary new
+]
+
+{ #category : #services }
+Module >> bind: anObject as: aSymbol [
+	namespace at: aSymbol put: anObject.
 	self justDefined: aSymbol
 ]
 
@@ -33,6 +52,11 @@ Module >> bindAllIn: aModule [
 { #category : #services }
 Module >> bindKernelExports [
 	self bindAllIn: Kernel
+]
+
+{ #category : #accessing }
+Module >> classes [
+	^classes
 ]
 
 { #category : #initialization }
@@ -64,22 +88,23 @@ Module >> exportClass: aClass [
 	self export: aClass as: aClass name asSymbol
 ]
 
+{ #category : #accessing }
+Module >> extensions [
+	^extensions
+]
+
 { #category : #services }
-Module >> import: aSymbol [
-	| module |
-	namespace at: aSymbol ifPresent: [:loaded | ^loaded].
-	module := Kernel loadModule: aSymbol.
-	namespace at: aSymbol put: module.
-	self bind: module as: aSymbol.
-	^module
+Module >> import: name from: moduleName [
+	| module import |
+	module := self require: moduleName.
+	import := module namespace at: name.
+	self bind: import as: name
 ]
 
 { #category : #initializing }
 Module >> initialize [
-	name := self defaultName.
+	name := self basicInitialize.
 	namespace := Namespace new.
-	exports := Set new.
-	cachedLookups := Dictionary new
 ]
 
 { #category : #private }
@@ -100,6 +125,26 @@ Module >> namespace [
 ]
 
 { #category : #accessing }
+Module >> originalMethodFor: aCompiledMethod [
+	"TODO: implement. it should look in the overriden methods"
+	^aCompiledMethod
+]
+
+{ #category : #accessing }
+Module >> overriden [
+	^overriden
+]
+
+{ #category : #accessing }
 Module >> requires [
 	^#()
+]
+
+{ #category : #services }
+Module >> require: moduleName [
+	| module |
+	namespace at: moduleName ifPresent: [:loaded | ^loaded].
+	module := Kernel loadModule: moduleName.
+	self bind: module as: moduleName.
+	^module
 ]
