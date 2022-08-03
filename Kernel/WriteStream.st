@@ -9,6 +9,11 @@ Class {
 	#category : #Kernel
 }
 
+{ #category : #'initialization' }
+WriteStream class >> initializePools [
+	^self addNamespace: Character namedCharacters
+]
+
 { #category : #unclassified }
 WriteStream >> << anObject [
 	| string |
