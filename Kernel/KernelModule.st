@@ -76,7 +76,9 @@ KernelModule >> entry: argc argv: argv [
 KernelModule >> initialize [
 	"
 		we cannot do super initialize here, because it would
-		reset our bootstrapped namespace
+		reset our bootstrapped namespace. We cannot use addClass:
+		because it creates new symbol instances, which must be
+		avoided during bootstrap (else we would end with duplicated symbols)
 	"
 	self basicInitialize.
 	moduleLoaders := OrderedCollection new.
@@ -85,9 +87,8 @@ KernelModule >> initialize [
 	namespace 
 		keys do: [:symbol | | obj |
 			obj := namespace at: symbol.
-			obj isClass 
-				ifTrue: [self addClass: obj]
-				ifFalse: [exports add: symbol]]
+			obj isClass ifTrue: [classes add: obj].
+			exports add: symbol]
 ]
 
 { #category : #services }
