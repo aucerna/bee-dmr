@@ -23,8 +23,14 @@ BootstrapModule >> start [
 ]
 
 { #category : #bootstrapping }
+BootstrapModule >> fixOverrides [
+	<primitive: BootstrapFixOverrides>
+]
+
+{ #category : #bootstrapping }
 BootstrapModule >> writeJSONKernel [
 	| builder writer |
+	self fixOverrides.
 	Kernel addModuleLoader: ModuleLoader new.
 	self
 		import: #Builder from: #Core.Modules;
