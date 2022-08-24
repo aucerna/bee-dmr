@@ -24,6 +24,8 @@ Writer >> closure: anObjectClosure [
 	objects do: [:o | indexes at: o put: index. index := index + 1].
 	imports := anObjectClosure imports.
 	imports do: [:o | indexes at: o put: index. index := index + 1].
+	anObjectClosure mapping
+		keysAndValuesDo: [:obj :surrogate | indexes at: obj put: (indexes at: surrogate)]
 ]
 
 { #category : #accessing }
@@ -44,8 +46,7 @@ Writer >> initialize [
 
 { #category : #services }
 Writer >> indexOf: anObject [
-	"TODO: fix checking for ifAbsent, if the object is absent the closure is broken"
-	^indexes at: anObject ifAbsent: [0]
+	^indexes at: anObject ifAbsent: [indexes at: nil]
 ]
 
 { #category : #accessing }

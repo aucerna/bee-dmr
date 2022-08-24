@@ -32,19 +32,19 @@ ObjectClosure >> addSlotsOf: anObject [
 	self follow: b.
 	1 to: anObject _pointersSize do: [ :i | | slot |
 		slot := anObject _basicAt: i.
-		slot _isSmallInteger ifFalse: [ self follow: slot ] ]
+		self follow: slot ]
 ]
 
 { #category : #closure }
 ObjectClosure >> follow: anObject [
 	| surrogate |
 	surrogate := self surrogateFor: anObject.
-	(surrogate isNil or: [surrogate _isSmallInteger]) ifTrue: [^self].
+"	(surrogate isNil or: [surrogate _isSmallInteger]) ifTrue: [^self]."
 
 	(added includes: surrogate) ifTrue: [^self].
 	added add: surrogate.
 	objects add: surrogate.
-	queue add: surrogate
+	surrogate _isSmallInteger ifFalse: [queue add: surrogate]
 ]
 
 { #category : #accessing }
@@ -63,6 +63,11 @@ ObjectClosure >> initialize [
 { #category : #services }
 ObjectClosure >> map: anObject to: anotherObject [
 	mapping at: anObject put: anotherObject
+]
+
+{ #category : #accessing }
+ObjectClosure >> mapping [
+	^mapping
 ]
 
 { #category : #services }
