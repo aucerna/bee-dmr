@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'module',
 		'closure',
-		'wordSize'
+		'wordSize',
+		'classes'
 	],
 	#category : #'Builder'
 }
@@ -25,14 +26,17 @@ Builder >> configureClass: aClass [
 	self
 		configureSuperclass: aClass;
 		configureSubclasses: aClass;
-		configureMethods: aClass.
+		configureMethods: aClass;
+		configureMethods: aClass class
 ]
 
 { #category : #private }
 Builder >> configureMethods: aClass [
     | original saved |
     original := aClass methodDictionary.
-    saved := Dictionary new. "original collect: [:method | module originalMethodFor: method]."
+	saved := (classes includes: aClass instanceClass)
+		ifTrue: [original collect: [:method | module originalMethodFor: method]]
+		ifFalse: [Dictionary new].
     saved := saved select: [:method | method notNil].
 	saved do: [:method | self configureMethodExecutableCode: method].
     closure map: original to: saved
@@ -76,5 +80,15 @@ Builder >> map: anObject to: anotherObject [
 { #category : #accessing }
 Builder >> module: aModule [
 	module := aModule.
+	classes := Set new.
+	classes 
+		addAll: SmallInteger withAllSuperclasses;
+		addAll: Array withAllSuperclasses;
+		addAll: {ByteArray. CompiledMethod. Interval. OrderedCollection. Character. 
+				CharacterArray. String. Symbol.
+				HashedCollection. Dictionary. Set. HashTable. InlinedHashTable.
+				Species. Class. Metaclass. Behavior. Association.
+				True. False. Boolean. Closure. CompiledBlock.
+				Namespace. Module. KernelModule}.
     module classes do: [:c | self configureClass: c]
 ]

@@ -107,6 +107,11 @@ KernelModule >> memory [
 	^memory
 ]
 
+{ #category : #services }
+KernelModule >> prepareForExecution: aCompiledMethod [
+	self errorVMSpecific
+]
+
 KernelModule >> foo [
 	| result |
 	"self _halt."

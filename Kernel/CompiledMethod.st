@@ -288,11 +288,6 @@ CompiledMethod >> method [
 	^self
 ]
 
-{ #category : #services }
-CompiledMethod >> nativize [
-	optimizedCode := Smalltalk nativizer nativeCodeFor: self
-]
-
 { #category : #accessing }
 CompiledMethod >> optimizedCode [
 	^optimizedCode
@@ -306,8 +301,8 @@ CompiledMethod >> optimizedCode: anObject [
 
 { #category : #accessing }
 CompiledMethod >> optimizedCodeAddress [
-	optimizedCode isNil ifTrue: [self nativize].
-	optimizedCode optimizedCodeAddress
+	self prepareForExecution.
+	^optimizedCode optimizedCodeAddress
 ]
 
 { #category : #copying }
@@ -323,7 +318,7 @@ CompiledMethod >> postCopy [
 
 { #category : #unclassified }
 CompiledMethod >> prepareForExecution [
-	self isNativized ifFalse: [self nativize].
+	self isNativized ifFalse: [Kernel prepareForExecution: self].
 ]
 
 { #category : #accessing }
