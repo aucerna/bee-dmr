@@ -130,6 +130,13 @@ ProtoObject >> _size [
 	^self errorVMSpecific
 ]
 
+{ #category : #'raw access' }
+ProtoObject >> _uLongAtValidOffset: offset put: anInteger [
+	anInteger size > 4 ifTrue: [self error: 'does not fit in 32 bits'].
+	self _primitiveULongAtOffset: offset put: anInteger.
+	^anInteger
+]
+
 { #category : #comparing }
 ProtoObject >> ~~ anObject [
 	^self == anObject ifTrue: [false] ifFalse: [true]

@@ -699,13 +699,6 @@ CharacterArray >> uLongAtOffset: offset [
 ]
 
 { #category : #converting }
-CharacterArray >> uLongAtOffset: offset put: anInteger [
-	anInteger < 0
-		ifTrue: [self uLongAtOffset: offset put: 16r100000000 + anInteger]
-		ifFalse: [self primitiveFailed]
-]
-
-{ #category : #converting }
 CharacterArray >> unaccented [
 	"
 	'áéíóúñü' unaccented

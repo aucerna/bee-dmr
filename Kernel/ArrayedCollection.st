@@ -333,7 +333,7 @@ ArrayedCollection >> uLongAtOffset: offset put: anInteger [
 	offset _isSmallInteger ifFalse: [^self outOfBoundsIndex: offset].
 	(0 <= offset and: [offset + 3 <= self _size])
 		ifFalse: [^self outOfBoundsIndex: offset].
-	^self uLongAtValidOffset: offset put: anInteger
+	^self _uLongAtValidOffset: offset put: anInteger
 ]
 
 { #category : #accessing }
