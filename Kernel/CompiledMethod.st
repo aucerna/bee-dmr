@@ -360,6 +360,11 @@ CompiledMethod >> sourceObject [
 	^source
 ]
 
+{ #category : #'source code support' }
+CompiledMethod >> sourceObject: aString [
+	source := aString
+]
+
 { #category : #accessing }
 CompiledMethod >> tempCount [
 	^format bitsAt: TempCount
