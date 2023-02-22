@@ -54,10 +54,10 @@ MethodDictionary >> basicAt: aSymbol put: aCompiledMethod [
 MethodDictionary >> basicRemoveKey: aSymbol ifAbsent: aBlock [
 	| copy |
 	(self includesKey: aSymbol) ifFalse: [^aBlock value].
-	aSymbol flushCacheFor: self classBinding.
 	copy := MethodDictionary new.
-	self
-		keysAndValuesDo: [:selector :cm | selector == aSymbol
+	self keysAndValuesDo: [:selector :cm | 
+		selector == aSymbol
+			ifTrue: [cm flushFromCaches]
 			ifFalse: [copy basicAt: selector put: cm]].
 	[
 		table := copy contents owner: self.
@@ -116,6 +116,6 @@ MethodDictionary >> postCopy [
 
 { #category : #removing }
 MethodDictionary >> removeKey: aSymbol ifAbsent: aBlock [
-	^Smalltalk removeKey: aSymbol from: self ifAbsent: aBlock
+	^Kernel removeKey: aSymbol from: self ifAbsent: aBlock
 ]
 

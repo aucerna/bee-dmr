@@ -175,6 +175,11 @@ CompiledMethod >> executeOn: receiver withArguments: anArray [
 	^receiver _invoke: self validOptimizedCodeAddress _asNative
 ]
 
+{ #category : #services }
+CompiledMethod >> flushFromCaches [
+	self errorVMSpecific
+]
+
 { #category : #accessing }
 CompiledMethod >> format [
 	^format

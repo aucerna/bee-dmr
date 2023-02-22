@@ -112,6 +112,13 @@ KernelModule >> prepareForExecution: aCompiledMethod [
 	self errorVMSpecific
 ]
 
+{ #category : #removing }
+KernelModule >> removeKey: aSymbol from: aMethodDictionary ifAbsent: aBlock [
+	| cm |
+	cm := aMethodDictionary at: aSymbol ifAbsent: [^aBlock value].
+	^aMethodDictionary basicRemoveKey: aSymbol asSelector ifAbsent: aBlock
+]
+
 KernelModule >> foo [
 	| result |
 	"self _halt."
