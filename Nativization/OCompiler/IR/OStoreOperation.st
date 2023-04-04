@@ -114,14 +114,18 @@ OStoreOperation >> basicPrintString [
 ]
 
 { #category : #private }
-OStoreOperation >> doDuplicateWith: map [
-	| copy v |
-	copy := super doDuplicateWith: map.
+OStoreOperation >> copyTo: copy with: map [
+	| v |
+	super copyTo: copy with: map.
 	v := value isInstruction
 		ifTrue: [value duplicateWith: map]
 		ifFalse: [value].
-	copy value: v.
-	^copy
+	copy value: v
+]
+
+{ #category : #testing }
+OStoreOperation >> isStore [
+	^true
 ]
 
 { #category : #private }
@@ -134,12 +138,12 @@ OStoreOperation >> operandsDo: aBlock [
 { #category : #private }
 OStoreOperation >> printStringUsing: names [
 	| b i v |
-	b := names at: base ifAbsent: ['?'].
+	b := names at: base ifAbsent: '?'.
 	i := index isInstruction
-		ifTrue: [names at: index ifAbsent: ['?']]
+		ifTrue: [names at: index ifAbsent: '?']
 		ifFalse: [index printString].
 	v := value isInstruction
-		ifTrue: [names at: value ifAbsent: ['?']]
+		ifTrue: [names at: value ifAbsent: '?']
 		ifFalse: [value printString].
 	^'{#' , b , ' ' , name , ', ' , i , ',' , v , '}'
 ]

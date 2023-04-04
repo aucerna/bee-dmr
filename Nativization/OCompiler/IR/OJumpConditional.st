@@ -5,10 +5,9 @@
 
 Class {
 	#name : #OJumpConditional,
-	#superclass : #OInstruction,
+	#superclass : #OJump,
 	#instVars : [
 		'variable',
-		'target',
 		'implicitTarget'
 	],
 	#category : #IR
@@ -33,13 +32,12 @@ OJumpConditional >> atOperand: name put: instruction [
 ]
 
 { #category : #private }
-OJumpConditional >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy target: (target duplicateWith: map).
-	copy implicitTarget: (implicitTarget duplicateWith: map).
-	copy variable: (variable duplicateWith: map).
-	^copy
+OJumpConditional >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy
+		target: (target duplicateWith: map);
+		implicitTarget: (implicitTarget duplicateWith: map);
+		variable: (variable duplicateWith: map)
 ]
 
 { #category : #unclassified }
@@ -54,11 +52,6 @@ OJumpConditional >> implicitTarget: aBasicBlock [
 
 { #category : #unclassified }
 OJumpConditional >> isConditionalJump [
-	^true
-]
-
-{ #category : #unclassified }
-OJumpConditional >> isJump [
 	^true
 ]
 
@@ -88,19 +81,15 @@ OJumpConditional >> retargetFrom: aBasicBlock to: otherBasicBlock [
 	implicitTarget == aBasicBlock ifTrue: [implicitTarget := otherBasicBlock]
 ]
 
-{ #category : #unclassified }
-OJumpConditional >> target [
-	^target
-]
-
-{ #category : #unclassified }
-OJumpConditional >> target: aBasicBlock [
-	target := aBasicBlock
+{ #category : #private }
+OJumpConditional >> successorsDo: aBlock [
+	aBlock value: target.
+	aBlock value: implicitTarget
 ]
 
 { #category : #unclassified }
 OJumpConditional >> targets [
-	^OrderedCollection with: implicitTarget with: target
+	^super targets add: implicitTarget; yourself
 ]
 
 { #category : #unclassified }

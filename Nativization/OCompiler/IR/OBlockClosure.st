@@ -17,23 +17,18 @@ OBlockClosure class >> containing: initialBlock [
 	^self new firstBlock: initialBlock
 ]
 
+{ #category : #private }
+OBlockClosure >> copyTo: copy with: map [
+	| first |
+	super copyTo: copy with: map.
+	first := firstBlock duplicateWith: map.
+	copy firstBlock: first
+]
+
 { #category : #unclassified }
 OBlockClosure >> dissolveDeep [
 	firstBlock withSuccessorsDo: [:block | block dissolveAllInstructions].
 	super dissolveDeep
-]
-
-{ #category : #unclassified }
-OBlockClosure >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy firstBlock: (firstBlock duplicateWith: map).
-	^copy
-]
-
-{ #category : #unclassified }
-OBlockClosure >> duplicateWith: map [
-	^map at: self ifAbsent: [self doDuplicateWith: map]
 ]
 
 { #category : #unclassified }

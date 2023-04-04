@@ -126,11 +126,11 @@ OOperand >> replaceAllUsesWith: otherInstruction [
 ]
 
 { #category : #unclassified }
-OOperand >> transferUsesBy: user toUsesOf: otherInstruction [
+OOperand >> replaceUsesBy: user with: otherInstruction [
 	| following |
 	following := nextUse.
 	instruction == user ifTrue: [self transferUseTo: otherInstruction].
-	following transferUsesBy: user toUsesOf: otherInstruction
+	following ifNotNil: [following replaceUsesBy: user with: otherInstruction]
 ]
 
 { #category : #unclassified }

@@ -34,11 +34,9 @@ OLoadImplicit >> basicPrintString [
 ]
 
 { #category : #private }
-OLoadImplicit >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy name: name; register: register.
-	^copy
+OLoadImplicit >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy name: name; register: register
 ]
 
 { #category : #unclassified }

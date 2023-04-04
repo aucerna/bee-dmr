@@ -11,207 +11,173 @@ Class {
 		'firstBlock',
 		'currentBlock',
 		'locals',
-		'abi'
+		'abi',
+		'sendInliner',
+		'activation'
 	],
 	#category : #OCompiler
 }
 
-{ #category : #unclassified }
-OptimizingVisitor class >> new [
-	^self basicNew initialize
+{ #category : #'emitting - load' }
+OptimizingVisitor >> activation [
+	^activation
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> abi: anAbi [
-	abi := anAbi
+{ #category : #'emitting - load' }
+OptimizingVisitor >> allActivations [
+	^firstBlock nodesSelect: [:node | node class == OActivationContext]
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingVisitor >> defineActivationRecord [
-	| frame |
-	frame := OActivationContext named: #activationRecord.
-	frame temporaries: method tempCount.
-	currentBlock add: frame
+	activation := OActivationContext named: #activationRecord.
+	activation temporaries: method tempCount.
+	currentBlock add: activation
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> defineBlockArguments: anSBlock [
-	anSBlock isInlined
-		ifTrue: [self defineInlinedBlockArguments: anSBlock]
-		ifFalse: [
-			self
-				error: 'non-inlined blocks not yet supported';
-				defineRealBlockArguments: anSBlock]
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> defineInlinedBlockArguments: anSBlock [
-	| args |
-	args := anSBlock argumentIndexes collect: [:i | self loadStackTemporary: i].
-	locals add: args
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> defineMethodArguments: anInteger [
-	| frame load |
-	frame := firstBlock firstInstruction.
-	frame argumentCount: anInteger.
-	anInteger to: 1 by: -1 do: [:i | 
-		load := OLoadOperation base: frame slotAtImm: i + 2.
-		currentBlock add: load]
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> defineRealBlockArguments: anSBlock [
-	| block count frame load |
-	block := method at: anSBlock index.
-	count := block argumentCount.
-	count = 0 ifTrue: [^self].
-	frame := firstBlock activationRecord.
-	1 to: count do: [:i | 
-		load := OLoadOperation base: frame slotAtImm: i + 2.
-		currentBlock add: load]
-]
-
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingVisitor >> defineSelf [
 	| definition |
 	definition := OLoadImplicit named: #self.
 	currentBlock add: definition
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
+OptimizingVisitor >> environment: aNativizationEnvironment [
+	abi := aNativizationEnvironment abi
+]
+
+{ #category : #initialization }
 OptimizingVisitor >> initialize [
 	firstBlock := OBasicBlock new.
 	currentBlock := firstBlock.
 	locals := OrderedCollection new
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> inlinedBlockArgument: anInteger [
-	"
-	Remember that we only support inlined blocks for now
-	"
-	| index |
-	index := -1 - anInteger.
-	locals
-		reverseDo: [:args | args
-			detect: [:inst | inst index = index]
-			ifFound: [:inst | ^inst]].
-	self _ASSERT: false
-]
-
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingVisitor >> insertReturnSelf [
-	| receiver frame instruction |
-	receiver := firstBlock firstInstruction next.
-	frame := firstBlock firstInstruction.
-	instruction := OReturn new
-		source: receiver;
-		frame: frame;
-		argumentsCount: method argumentCount.
+	| instruction |
+	instruction := OReturn new source: activation receiver; frame: activation.
 	currentBlock add: instruction.
 	^instruction
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> loadStackTemporary: anInteger [
-	| frame index load |
-	frame := firstBlock activationRecord.
-	index := -1 - anInteger.
-	load := OLoadOperation base: frame slotAtImm: index.
-	currentBlock add: load.
-	^load
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadArgument: index [
+	| offset load |
+	offset := method argumentCount - index + 3.
+	load := OLoadOperation base: self activation slotAtImm: offset.
+	^currentBlock add: load
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadArgument: anSBinding [
-	^anSBinding isInlined
-		ifTrue: [self inlinedBlockArgument: anSBinding index]
-		ifFalse: [
-			anSBinding environment
-				ifNotNil: [self error: 'non-inlined closure arguments not yet supported'].
-			firstBlock activationRecord argumentAt: anSBinding index]
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadAssociationValue: anAssociation [
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadAssociation: anAssociation [
 	| global read name |
 	name := anAssociation key asString asSymbol.
-	name == #WordSize ifTrue: [^self lowerLoadConstant: abi wordSize].
-	name == #WordSizeShift ifTrue: [^self lowerLoadConstant: abi wordSizeShift].
+	name == #WordSize ifTrue: [^self loadLiteral: abi wordSize].
+	name == #WordSizeShift ifTrue: [^self loadLiteral: abi wordSizeShift].
 	global := OLoadConstant valued: anAssociation.
 	read := OLoadOperation base: global slotAtImm: 1.
 	currentBlock add: global; add: read.
 	^read
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadConstant: anObject [
-	| load |
-	load := OLoadConstant valued: anObject.
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadEnvironment: envIndex [
+	| result |
+	result := self activation environment.
+	envIndex ifNotNil: [
+		result := OLoadOperation base: result slotAtImm: envIndex.
+		currentBlock add: result].
+	^result
+]
+
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadEnvironmentTemporary: tempIndex environment: envIndex [
+	| load environment |
+	self error: 'non-inlined closure arguments not yet supported'.
+	environment := self loadEnvironment: envIndex.
+	load := OLoadOperation base: environment slotAtImm: tempIndex.
 	currentBlock add: load.
 	^load
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadInstanceVar: anSBinding [
-	| receiver index load |
-	receiver := firstBlock activationRecord receiver.
-	index := anSBinding index.
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadFalse [
+	^self loadLiteral: false
+]
+
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadInstance: index [
+	| receiver load |
+	receiver := self activation receiver.
 	load := OLoadOperation base: receiver slotAtImm: index.
 	currentBlock add: load.
 	^load
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadLiteral: anSBinding [
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadLiteral: value [
 	| constant |
-	constant := OLoadConstant valued: anSBinding value.
+	constant := OLoadConstant valued: value.
 	currentBlock add: constant.
 	^constant
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadSelf [
-	^firstBlock activationRecord receiver
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadNil [
+	^self loadLiteral: nil
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerLoadTemporary: anSBinding [
-	"
-	TODO: support environment/closure temporaries
-	"
-	^self loadStackTemporary: anSBinding index
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadSelf [
+	^self activation receiver
+]
+
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadTemporary: anInteger [
+	| index load |
+	index := -1 - anInteger.
+	load := OLoadOperation base: self activation slotAtImm: index.
+	currentBlock add: load.
+	^load
+]
+
+{ #category : #'emitting - load' }
+OptimizingVisitor >> loadTrue [
+	^self loadLiteral: true
 ]
 
 { #category : #private }
 OptimizingVisitor >> lowerSpecialABI: aMethodNode [
-	| literals i actual next load names frame |
+	| literals i actual next load names |
 	literals := method literals.
 	literals size = 0 ifTrue: [^self].
 	(literals at: 1) == #savePreviousSelf ifTrue: [
-		firstBlock activationRecord doSavePreviousSelf.
-		load := firstBlock firstInstruction detect: [:inst | inst isConstant].
+		activation doSavePreviousSelf.
+		load := firstBlock detect: [:inst | inst isConstant].
 		load dissolve.
 		literals := literals copyFrom: 2].
 	literals size = 0 ifTrue: [^self].
 	(literals at: 1) == #specialABIBegin ifFalse: [^self].
-	frame := firstBlock activationRecord.
 	i := 2.
 	names := aMethodNode arguments collect: [:arg | arg name asSymbol].
 	[(literals at: i) == #specialABIEnd]
-		whileFalse: [| name register implicit argument regname index |
+		whileFalse: [| name register implicit regname index offset |
 			name := literals at: i.
 			regname := literals at: i + 1.
 			register := self registerNamed: regname.
-			name = #self ifTrue: [frame receiver register: register] ifFalse: [
-				implicit := (OLoadImplicit named: name) register: register.
+			name = #self ifTrue: [activation receiver register: register] ifFalse: [
 				index := names indexOf: name.
-				argument := frame argumentAt: index.
-				argument dissolveReplacingWith: implicit].
+				offset := method argumentCount - index + 3.
+				self allActivations do: [:frame | 
+					implicit := (OLoadImplicit named: name) register: register.
+					frame receiver afterInsert: implicit.
+					frame arguments
+						select: [:arg | arg index == offset]
+						thenDo: [:arg | arg replaceAllUsesWith: implicit; dissolve]]].
 			i := i + 2].
-	actual := firstBlock firstInstruction detect: [:inst | inst isConstant].
+	actual := firstBlock detect: [:inst | inst isConstant].
 	[
 		next := actual next.
 		actual dissolve.
@@ -219,92 +185,77 @@ OptimizingVisitor >> lowerSpecialABI: aMethodNode [
 		whileFalse: [actual := next]
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> lowerStore: anSBinding with: operation [
-	| binding |
-	binding := anSBinding binding.
-	binding isTemporary
-		ifTrue: [^self lowerStoreTemporary: binding with: operation].
-	binding isInstVar
-		ifTrue: [^self lowerStoreInstanceVar: binding with: operation].
-	binding refersToAssoc
-		ifTrue: [^self lowerStoreAssociationValue: binding with: operation].
-	self _ASSERT: false
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> lowerStoreAssociationValue: anSBinding with: value [
-	| global write |
-	global := OLoadConstant valued: anSBinding association.
-	write := OStoreOperation base: global slotAtImm: 1 put: value.
-	currentBlock add: global; add: write
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> lowerStoreInstanceVar: anSBinding with: value [
-	| this write |
-	this := firstBlock activationRecord receiver.
-	write := OStoreOperation base: this slotAtImm: anSBinding index put: value.
-	currentBlock add: write
-]
-
-{ #category : #unclassified }
-OptimizingVisitor >> lowerStoreTemporary: anSBinding with: value [
-	| frame index store |
-	frame := firstBlock activationRecord.
-	index := -1 - anSBinding index.
-	store := OStoreOperation base: frame slotAtImm: index put: value.
-	currentBlock add: store
-]
-
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingVisitor >> method: aCompiledMethod [
 	method := aCompiledMethod
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OptimizingVisitor >> registerNamed: regname [
 	^abi perform: regname
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> staticBindingFor: aDynamicBinding [
-	^method classBinding staticBindingFor: aDynamicBinding name
+{ #category : #'emitting - store' }
+OptimizingVisitor >> storeAssociation: association with: value [
+	| global write |
+	global := OLoadConstant valued: association.
+	write := OStoreOperation base: global slotAtImm: 1 put: value.
+	currentBlock add: global; add: write
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> undefineBlockArguments [
-	locals removeLast
+{ #category : #'emitting - store' }
+OptimizingVisitor >> storeEnvironmentTemporary: tempIndex environment: envIndex with: value [
+	| environment store |
+	self error: 'non-inlined closure arguments not yet supported'.
+	environment := self loadEnvironment: envIndex.
+	store := OStoreOperation base: environment slotAtImm: tempIndex put: value.
+	currentBlock add: store
 ]
 
-{ #category : #unclassified }
+{ #category : #'emitting - store' }
+OptimizingVisitor >> storeInstance: index with: value [
+	| write |
+	write := OStoreOperation
+		base: self activation receiver
+		slotAtImm: index
+		put: value.
+	currentBlock add: write
+]
+
+{ #category : #'emitting - store' }
+OptimizingVisitor >> storeTemporary: anInteger with: value [
+	| store index |
+	index := -1 - anInteger.
+	store := OStoreOperation base: self activation slotAtImm: index put: value.
+	currentBlock add: store
+]
+
+{ #category : #visiting }
 OptimizingVisitor >> visit: aParseNode [
 	super visit: aParseNode.
 	^firstBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitAssignment: anAssignmentNode [
 	| result |
 	result := anAssignmentNode expression acceptVisitor: self.
-	anAssignmentNode assignees do: [:node | self lowerStore: node with: result]
+	anAssignmentNode assignees
+		do: [:node | node binding store: result using: self]
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitBlock: aBlockNode [
 	| previous cfg |
 	previous := currentBlock.
 	cfg := OBasicBlock new.
 	currentBlock := cfg.
-	self
-		defineBlockArguments: aBlockNode;
-		visitScript: aBlockNode;
-		undefineBlockArguments.
+	self visitScript: aBlockNode.
 	currentBlock := previous.
 	^OBlockClosure containing: cfg
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitCascade: aCascadeNode [
 	| receiver arguments send block |
 	block := currentBlock.
@@ -319,29 +270,12 @@ OptimizingVisitor >> visitCascade: aCascadeNode [
 	^send
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> visitCascadeReceiver: aCascadeReceiverNode [
-	^aCascadeReceiverNode receiver acceptVisitor: self
-]
-
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitIdentifier: anIdentifierNode [
-	| binding static |
-	binding := anIdentifierNode binding.
-	binding isTemporary ifTrue: [^self lowerLoadTemporary: binding].
-	binding isArgument ifTrue: [^self lowerLoadArgument: binding].
-	binding isSelf ifTrue: [^self lowerLoadSelf].
-	binding isLiteral ifTrue: [^self lowerLoadLiteral: binding].
-	static := binding.
-	static isInstVar ifTrue: [^self lowerLoadInstanceVar: static].
-	static refersToAssoc ifTrue: [
-		^static isConstant
-			ifTrue: [self lowerLoadConstant: static association value]
-			ifFalse: [self lowerLoadAssociationValue: static association]].
-	self _ASSERT: false
+	^anIdentifierNode binding loadUsing: self
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitLiteral: aLiteralNode [
 	| load |
 	load := OLoadConstant valued: aLiteralNode value.
@@ -349,58 +283,49 @@ OptimizingVisitor >> visitLiteral: aLiteralNode [
 	^load
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitMessage: aMessageNode [
-	| receiver arguments send block |
-	block := currentBlock.
+	| receiver arguments selector send |
 	receiver := aMessageNode receiver acceptVisitor: self.
 	arguments := aMessageNode arguments
 		collect: [:node | node acceptVisitor: self].
+	selector := aMessageNode selector symbol.
 	send := OMessageSend
 		receiver: receiver
-		selector: aMessageNode selector value asSymbol
+		selector: selector
 		arguments: arguments.
-	block add: send.
+	currentBlock add: send.
 	^send
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitMethod: anSMethod [
 	| last |
-	self
-		defineActivationRecord;
-		defineSelf;
-		defineMethodArguments: anSMethod argumentCount;
-		visitScript: anSMethod.
+	self visitScript: anSMethod.
 	last := currentBlock lastValue.
 	last isReturn ifFalse: [self insertReturnSelf].
 	self lowerSpecialABI: anSMethod
 ]
 
-{ #category : #unclassified }
-OptimizingVisitor >> visitNumericLiteral: aNumericLiteralNode [
-	^self visitLiteral: aNumericLiteralNode
-]
-
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitReturn: aReturnNode [
-	| source frame instruction |
+	| source instruction |
 	source := aReturnNode expression acceptVisitor: self.
-	frame := firstBlock firstInstruction.
-	instruction := OReturn new
-		source: source;
-		frame: frame;
-		argumentsCount: method argumentCount.
+	instruction := OReturn new source: source; frame: activation.
 	currentBlock add: instruction.
 	^instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitScript: aScriptNode [
-	aScriptNode statements do: [:node | node acceptVisitor: self]
+	| previous |
+	previous := activation.
+	self defineActivationRecord; defineSelf.
+	aScriptNode statements do: [:node | node acceptVisitor: self].
+	previous ifNotNil: [activation := previous]
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingVisitor >> visitSelector: aSelectorNode [
 	
 ]

@@ -8,21 +8,10 @@ Class {
 	#superclass : #OInstruction,
 	#instVars : [
 		'source',
-		'frame',
-		'argumentsCount'
+		'frame'
 	],
 	#category : #IR
 }
-
-{ #category : #unclassified }
-OReturn >> argumentsCount [
-	^argumentsCount
-]
-
-{ #category : #unclassified }
-OReturn >> argumentsCount: anInteger [
-	argumentsCount := anInteger
-]
 
 { #category : #unclassified }
 OReturn >> atOperand: name [
@@ -47,14 +36,11 @@ OReturn >> basicPrintString [
 ]
 
 { #category : #private }
-OReturn >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
+OReturn >> copyTo: copy with: map [
+	super copyTo: copy with: map.
 	copy
-		argumentsCount: argumentsCount;
 		source: (source duplicateWith: map);
-		frame: (frame duplicateWith: map).
-	^copy
+		frame: (frame duplicateWith: map)
 ]
 
 { #category : #unclassified }
@@ -79,9 +65,9 @@ OReturn >> primitivePrintString [
 	^'{ret}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OReturn >> printStringUsing: names [
-	^'ret ' , (names at: source ifAbsent: ['?']) , ''
+	^'ret ' , (names at: source ifAbsent: '?') , ''
 ]
 
 { #category : #unclassified }

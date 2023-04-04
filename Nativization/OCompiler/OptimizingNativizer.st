@@ -9,8 +9,7 @@ Class {
 	#instVars : [
 		'environment',
 		'method',
-		'firstBlock',
-		'inlinedMethods'
+		'firstBlock'
 	],
 	#category : #OCompiler
 }
@@ -49,18 +48,13 @@ OptimizingNativizer >> assembleUsing: allocation [
 OptimizingNativizer >> decompose [
 	self
 		validateAllInstructions;
-		inlineBlocks;
-		validateAllInstructions;
-		verifyPredecessors;
 		inlineMethods;
-		validateAllInstructions;
-		verifyPredecessors;
-		inlineBlocks;
 		validateAllInstructions;
 		verifyPredecessors;
 		unifyReturns;
 		validateAllInstructions;
-		verifyPredecessors
+		verifyPredecessors;
+		simplifyCFG
 ]
 
 { #category : #unclassified }
@@ -94,40 +88,19 @@ OptimizingNativizer >> fragmentInstructions [
 	binder doFragment
 ]
 
-{ #category : #unclassified }
-OptimizingNativizer >> initialize [
-	inlinedMethods := OrderedCollection new
-]
-
-{ #category : #unclassified }
-OptimizingNativizer >> inlineBlocks [
-	OptimizingBlockInliner new on: firstBlock; doInline
-]
-
-{ #category : #private }
-OptimizingNativizer >> inlinedMethods [
-	^inlinedMethods
-]
-
-{ #category : #private }
-OptimizingNativizer >> inlinedMethods: aCollection [
-	inlinedMethods := aCollection
-]
-
 { #category : #private }
 OptimizingNativizer >> inlineMethods [
 	OptimizingMethodInliner new
 		firstBlock: firstBlock;
 		environment: environment;
-		methods: inlinedMethods;
 		inlineAllMessages
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingNativizer >> method: aCompiledMethod [
 	| visitor |
 	method := aCompiledMethod.
-	visitor := OptimizingVisitor new method: method; abi: environment abi.
+	visitor := OptimizingVisitor new environment: environment; method: method.
 	firstBlock := visitor visit: aCompiledMethod parseTree
 ]
 

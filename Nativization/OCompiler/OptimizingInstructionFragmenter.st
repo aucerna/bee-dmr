@@ -20,7 +20,7 @@ OptimizingInstructionFragmenter class >> new [
 
 { #category : #accessing }
 OptimizingInstructionFragmenter >> activationRecord [
-	^firstBlock firstInstruction
+	^firstBlock activationRecord
 ]
 
 { #category : #private }

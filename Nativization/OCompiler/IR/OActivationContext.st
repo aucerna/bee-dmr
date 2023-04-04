@@ -9,8 +9,7 @@ Class {
 	#instVars : [
 		'hasFrame',
 		'temporaries',
-		'storesPreviousSelf',
-		'argumentCount'
+		'storesPreviousSelf'
 	],
 	#category : #IR
 }
@@ -21,26 +20,12 @@ OActivationContext class >> new [
 ]
 
 { #category : #accessing }
-OActivationContext >> argumentAt: anInteger [
-	| inst |
-	inst := self receiver.
-	anInteger timesRepeat: [inst := inst next].
-	^inst
-]
-
-{ #category : #accessing }
-OActivationContext >> argumentCount: anInteger [
-	argumentCount := anInteger
-]
-
-{ #category : #accessing }
 OActivationContext >> arguments [
-	| inst result |
-	inst := self receiver.
+	| result |
 	result := OrderedCollection new.
-	argumentCount timesRepeat: [
-		inst := inst next.
-		result add: inst].
+	self usesDo: [:use | | user |
+		user := use user.
+		(user isLoad and: [user index > 0]) ifTrue: [result add: user]].
 	^result
 ]
 
@@ -57,6 +42,17 @@ OActivationContext >> hasFrame [
 { #category : #accessing }
 OActivationContext >> haveFrame [
 	hasFrame := true
+]
+
+{ #category : #accessing }
+OActivationContext >> implicitLoads [
+	| result |
+	result := OrderedCollection new.
+	next
+		do: [:inst | inst isLoadImplicit
+			ifTrue: [result add: inst]
+			ifFalse: [^result]].
+	^result
 ]
 
 { #category : #accessing }
@@ -85,5 +81,21 @@ OActivationContext >> temporaries [
 OActivationContext >> temporaries: aNumber [
 	temporaries := aNumber.
 	aNumber > 0 ifTrue: [self haveFrame]
+]
+
+{ #category : #accessing }
+OActivationContext >> uninitializedTemporariesIn: aBasicBlock [
+	| uninitialized |
+	uninitialized := Set new: temporaries.
+	1 to: temporaries do: [:i | uninitialized add: -1 - i].
+	aBasicBlock instructionsDo: [:inst | | base index |
+		inst isMessageSend ifTrue: [^uninitialized].
+		inst isStore ifTrue: [
+			base := inst base.
+			(base == self and: [
+				index := inst index.
+				index isInteger])
+				ifTrue: [uninitialized remove: index ifAbsent: nil]]].
+	^uninitialized
 ]
 

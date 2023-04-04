@@ -17,20 +17,11 @@ Class {
 }
 
 { #category : #private }
-OptimizingValueNumbering >> addNewName: instruction [
-	^names at: instruction put: '{v' , names size printString , '}'
-]
-
-{ #category : #private }
-OptimizingValueNumbering >> hashOfLoadConstant: instruction [
-	^[instruction value printString] on: Error do: [^nil]
-]
-
-{ #category : #private }
-OptimizingValueNumbering >> hashOfUnary: instruction [
-	| receiver |
-	receiver := self nameOf: instruction receiver.
-	^receiver , instruction name
+OptimizingValueNumbering >> coalesce: instruction as: hash [
+	hashes
+		at: hash
+		ifPresent: [:value | ^instruction replaceAllUsesWith: value; dissolveDeep].
+	hashes at: hash put: instruction
 ]
 
 { #category : #testing }
@@ -40,12 +31,12 @@ OptimizingValueNumbering >> isCommutative: name [
 
 { #category : #testing }
 OptimizingValueNumbering >> isStillAlive: block [
-	^block withPredecessors includes: firstBlock
+	^block == firstBlock or: [block isReachableFrom: firstBlock]
 ]
 
 { #category : #accessing }
 OptimizingValueNumbering >> nameOf: instruction [
-	^names at: instruction
+	^names at: instruction ifAbsentPut: 'v' , names size printString
 ]
 
 { #category : #accessing }
@@ -59,7 +50,23 @@ OptimizingValueNumbering >> resultOfBinaryWithConstants: aBinaryInstruction [
 	operation = #'*' ifTrue: [^left * right].
 	operation = #'//' ifTrue: [^left // right].
 	operation = #'=' ifTrue: [^left = right].
+	operation = #'==' ifTrue: [^left == right].
 	self halt
+]
+
+{ #category : #private }
+OptimizingValueNumbering >> tryMoving: variable justBeforeBranch: branch [
+	| node inserted |
+	node := branch prev.
+	node == variable ifTrue: [^self].
+	[
+		node isConstant ifFalse: [^self].
+		node := node prev.
+		node == variable] whileFalse.
+	inserted := variable isPhi
+		ifTrue: [variable replaceUsesBy: branch with: variable newCopy]
+		ifFalse: [variable remove].
+	branch beforeInsert: inserted
 ]
 
 { #category : #private }
@@ -103,44 +110,10 @@ OptimizingValueNumbering >> valueBranchTo: aBasicBlock [
 		ifFalse: [hashes at: hash put: last isJumpFalse]
 ]
 
-{ #category : #private }
-OptimizingValueNumbering >> valueOf: hash be: instruction [
-	hashes at: hash ifPresent: [:value | | copy |
-		copy := instruction replaceWithCopyOf: value.
-		self addNewName: copy.
-		^copy == value ifFalse: [
-			(copy isUnaryOperation and: [copy name = #copy])
-				ifTrue: [hashes at: (self hashOfUnary: copy) put: instruction].
-			copy isConstant
-				ifTrue: [hashes at: (self hashOfLoadConstant: copy) put: instruction]]].
-	hashes at: hash put: instruction
-]
-
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitBinaryWithConstant: instruction [
 	| left right hash temp value replacement |
-	left := self nameOf: instruction left.
-	right := instruction right printString.
-	(self isCommutative: instruction name) ifTrue: [
-		left > right ifTrue: [
-			temp := left.
-			left := right.
-			right := temp]].
-	hash := left , instruction name , right.
-	(instruction left isConstant and: instruction name != #_basicAt:) ifTrue: [
-		value := self resultOfBinaryWithConstants: instruction.
-		replacement := OLoadConstant valued: value.
-		instruction dissolveReplacingWith: replacement.
-		^self
-			addNewName: replacement;
-			visitLoadConstant: replacement;
-			valueOf: hash be: replacement].
-	self valueOf: hash be: instruction
-]
-
-{ #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitBinaryWithVariable: instruction [
-	| left right hash temp |
+	instruction isUseless ifTrue: [^instruction dissolveDeep].
 	left := self nameOf: instruction left.
 	right := self nameOf: instruction right.
 	(self isCommutative: instruction name) ifTrue: [
@@ -149,13 +122,47 @@ OptimizingValueNumbering >> visitBinaryWithVariable: instruction [
 			left := right.
 			right := temp]].
 	hash := left , instruction name , right.
-	self valueOf: hash be: instruction
+	instruction left isConstant ifTrue: [
+		value := self resultOfBinaryWithConstants: instruction.
+		replacement := OLoadConstant valued: value.
+		instruction dissolveReplacingWith: replacement.
+		self visitLoadConstant: replacement].
+	(instruction name == #'=='
+		and: [instruction left isBoolean and: [instruction right value == true]])
+		ifTrue: [^instruction replaceAllUsesWith: instruction left; dissolveDeep].
+	("avoid coalescing a comparison when it would cause an unoptimized branch"
+	instruction isComparison and: [instruction isUsedJustOnce])
+		ifFalse: [self coalesce: instruction as: hash]
+]
+
+{ #category : #'visitor protocol' }
+OptimizingValueNumbering >> visitBinaryWithVariable: instruction [
+	| left right hash temp replacement |
+	instruction isUseless ifTrue: [^instruction dissolveDeep].
+	instruction right isConstant ifTrue: [
+		replacement := OBinaryConstantOperation
+			left: instruction left
+			right: instruction right value
+			name: instruction name.
+		instruction dissolveReplacingWith: replacement.
+		^self visitBinaryWithConstant: replacement].
+	left := self nameOf: instruction left.
+	right := self nameOf: instruction right.
+	(self isCommutative: instruction name) ifTrue: [
+		left > right ifTrue: [
+			temp := left.
+			left := right.
+			right := temp]].
+	hash := left , instruction name , right.
+	self coalesce: instruction as: hash
 ]
 
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitBranch: branch [
-	| hash receiver |
-	receiver := self nameOf: branch variable.
+	| variable hash receiver |
+	variable := branch variable.
+	self tryMoving: variable justBeforeBranch: branch.
+	receiver := self nameOf: variable.
 	hash := 'branch' , receiver.
 	hashes at: hash ifPresent: [:outcome | 
 		outcome isBoolean
@@ -186,15 +193,15 @@ OptimizingValueNumbering >> visitLoad: load [
 		ifTrue: [self nameOf: index]
 		ifFalse: [index printString].
 	hash := base , load name , indexHash.
-	self valueOf: hash be: load
+	self coalesce: load as: hash
 ]
 
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitLoadConstant: instruction [
-	| hash |
-	hash := self hashOfLoadConstant: instruction.
-	hash ifNil: [self].
-	self valueOf: hash be: instruction
+	"
+	we don't coalesce constants, we prefer reloading them than risking spilling
+	"
+	instruction isUsed ifFalse: [^instruction dissolve]
 ]
 
 { #category : #'visitor protocol' }
@@ -204,11 +211,8 @@ OptimizingValueNumbering >> visitLoadImplicit: instruction [
 
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitMessageSend: instruction [
-	| loads |
-	loads := names keys select: [:instr | 
-		instr isPrimitiveOperation
-			and: [#(_basicAt: _byteAt: _basicFlags) includes: instr name]].
-	loads do: [:load | hashes removeAllSuchThat: [:value | value = load]]
+	hashes
+		removeAllSuchThat: [:value | value isInstruction and: [value isLoad]]
 ]
 
 { #category : #'visitor protocol' }
@@ -218,7 +222,7 @@ OptimizingValueNumbering >> visitNullary: instruction [
 
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitPhi: instruction [
-	
+	instruction dissolveIfUseless
 ]
 
 { #category : #'visitor protocol' }
@@ -244,10 +248,16 @@ OptimizingValueNumbering >> visitStore: store [
 
 { #category : #'visitor protocol' }
 OptimizingValueNumbering >> visitUnary: instruction [
-	| hash |
-	(#(push) includes: instruction name) ifTrue: [^self].
-	hash := self hashOfUnary: instruction.
-	self valueOf: hash be: instruction
+	"
+	We cannot coalesce _asNative for now. It would extend its live range and may cause
+	it to be spilled. Spilling would mean placing a native value in the stack, but the GC
+	cannot distinguish native values yet
+	"
+	| receiver hash |
+	(#(push _asNative) includes: instruction name) ifTrue: [^self].
+	receiver := self nameOf: instruction receiver.
+	hash := receiver , instruction name.
+	self coalesce: instruction as: hash
 ]
 
 { #category : #private }
@@ -255,11 +265,11 @@ OptimizingValueNumbering >> workFrom: aBasicBlock [
 	| count |
 	hashes := Dictionary new.
 	hashesOut := Dictionary new.
-	names := Dictionary new.
+	names := IdentityDictionary new.
 	firstBlock := aBasicBlock.
 	count := 0.
 	aBasicBlock instructionsWithSuccessorsDo: [:inst | 
-		names at: inst put: '{v' , count printString , '}'.
+		names at: inst put: 'v' , count printString.
 		count := count + 1].
 	aBasicBlock withSuccessorsPostOrder
 		reverseDo: [:block | self workOn: block]
@@ -269,8 +279,7 @@ OptimizingValueNumbering >> workFrom: aBasicBlock [
 OptimizingValueNumbering >> workOn: aBlock [
 	(self isStillAlive: aBlock) ifFalse: [^self].
 	currentBlock := aBlock.
-	self unifyPredecessorHashes.
-	self valueBranchTo: aBlock.
+	self unifyPredecessorHashes; valueBranchTo: aBlock.
 	currentBlock firstInstruction acceptVisitor: self.
 	hashesOut at: aBlock put: hashes copy
 ]

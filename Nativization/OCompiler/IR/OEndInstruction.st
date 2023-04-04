@@ -5,7 +5,7 @@
 
 Class {
 	#name : #OEndInstruction,
-	#superclass : #OInstruction,
+	#superclass : #OControlInstruction,
 	#category : #IR
 }
 

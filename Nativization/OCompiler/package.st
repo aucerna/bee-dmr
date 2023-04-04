@@ -3,9 +3,18 @@
 	See (MIT) license in root directory.
 "
 
-Package { #name : #OCompiler,
+Package {
+	#name : #OCompiler,
+	#requires : [
+		'JIT',
+		'Kernel',
+		'Nativization\\Assembler\\Intel\\JIT',
+		'Nativization\\OCompiler\\IR'
+	],
 	#classes : [
 		'BMMultilevelDictionary',
+		'BytecodeToOptimizingIRVisitor',
+		'ODispatchInliner',
 		'OptimizingBlockInliner',
 		'OptimizingBraunAllocator',
 		'OptimizingBraunAssigner',
@@ -27,4 +36,3 @@ Package { #name : #OCompiler,
 		'OptimizingVisitor'
 	]
 }
-

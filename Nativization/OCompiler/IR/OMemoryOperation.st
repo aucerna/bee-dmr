@@ -37,16 +37,15 @@ OMemoryOperation >> base: anInstruction [
 ]
 
 { #category : #accessing }
-OMemoryOperation >> doDuplicateWith: map [
-	| copy i |
-	copy := super doDuplicateWith: map.
+OMemoryOperation >> copyTo: copy with: map [
+	| i |
+	super copyTo: copy with: map.
 	copy base: (base duplicateWith: map).
 	index isInstruction
 		ifTrue: [
 			i := index duplicateWith: map.
 			copy index: i]
-		ifFalse: [copy indexImm: index].
-	^copy
+		ifFalse: [copy indexImm: index]
 ]
 
 { #category : #accessing }

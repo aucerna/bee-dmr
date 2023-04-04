@@ -69,16 +69,15 @@ OMessageSend >> basicPrintString [
 		, ']'
 ]
 
-{ #category : #unclassified }
-OMessageSend >> doDuplicateWith: map [
-	| copy args |
-	copy := super doDuplicateWith: map.
+{ #category : #private }
+OMessageSend >> copyTo: copy with: map [
+	| args |
+	super copyTo: copy with: map.
 	copy
 		selector: selector;
 		receiver: (receiver duplicateWith: map).
 	args := arguments collect: [:a | a duplicateWith: map].
-	copy arguments: args.
-	^copy
+	copy arguments: args
 ]
 
 { #category : #unclassified }
@@ -97,7 +96,7 @@ OMessageSend >> primitivePrintString [
 	^'{#' , selector , '}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OMessageSend >> printStringUsing: names [
 	| string |
 	string := arguments size > 0

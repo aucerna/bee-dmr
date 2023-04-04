@@ -3,16 +3,14 @@
 	See (MIT) license in root directory.
 "
 
-Extension {#name : #NativizationEnvironment}
+Extension { #name : #NativizationEnvironment }
 
-{ #category : '*OCompiler' }
+{ #category : '*Nativization\\OCompiler' }
 NativizationEnvironment >> optimizingNativizer [
-	^OptimizingNativizer new
-		environment: self;
-		inlinedMethods: self class inlinedMethods
+	^OptimizingNativizer new environment: self
 ]
 
-{ #category : '*OCompiler' }
+{ #category : '*Nativization\\OCompiler' }
 NativizationEnvironment >> shouldOptimize: method [
 	| selector species |
 	method isDebuggable ifTrue: [^false].

@@ -41,7 +41,7 @@ OptimizingRegisterAllocator >> abi: anAbi [
 
 { #category : #unclassified }
 OptimizingRegisterAllocator >> activationRecord [
-	^firstBlock firstInstruction
+	^firstBlock activationRecord
 ]
 
 { #category : #unclassified }
@@ -126,18 +126,6 @@ OptimizingRegisterAllocator >> computeExpirations [
 	firstBlock
 		instructionsWithSuccessorsDo: [:instruction | self
 			computeExpirationOf: instruction]
-]
-
-{ #category : #unclassified }
-OptimizingRegisterAllocator >> computeInterferenceGraph [
-	liveRanges do: [:range | self computeInterferencesOf: range]
-]
-
-{ #category : #unclassified }
-OptimizingRegisterAllocator >> computeInterferencesOf: range [
-	range instructionsDo: [:instruction | | other |
-		other := self liveRangeOf: instruction.
-		self range: range interferes: other]
 ]
 
 { #category : #unclassified }
@@ -288,13 +276,12 @@ OptimizingRegisterAllocator >> liveRangeOf: value [
 	^liveRanges at: value
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingRegisterAllocator >> preallocateImplicitVariables [
-	firstBlock instructionsDo: [:inst | | range register |
+	firstBlock instructionsDo: [:inst | | range |
 		inst isLoadImplicit ifFalse: [^self].
 		range := self unifiedLiveRangeOf: inst.
-		register := inst register.
-		register ifNotNil: [allocation at: range put: register]]
+		inst register ifNotNil: [:register | allocation at: range put: register]]
 ]
 
 { #category : #unclassified }
@@ -332,9 +319,10 @@ OptimizingRegisterAllocator >> repairToRespectABI: messageSend with: range [
 	spillPoint := messageSend arguments isEmpty
 		ifTrue: [messageSend]
 		ifFalse: [messageSend arguments first].
-	clobbered do: [:assoc | 
-		assoc value anyDefinition insertPushBefore: spillPoint.
-		self insertPop: assoc value anyDefinition to: assoc key after: messageSend].
+	clobbered do: [:assoc | | def |
+		def := assoc value anyDefinition.
+		def insertPushBefore: spillPoint.
+		self insertPop: def to: assoc key after: messageSend].
 	receiver := allocation at: messageSend receiver.
 	receiver == abi regR
 		ifFalse: [self insertCopyToR: messageSend receiver before: messageSend]

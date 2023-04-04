@@ -18,11 +18,9 @@ OPrimitiveOperation >> basicPrintString [
 ]
 
 { #category : #accessing }
-OPrimitiveOperation >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy name: name.
-	^copy
+OPrimitiveOperation >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy name: name
 ]
 
 { #category : #testing }

@@ -5,27 +5,27 @@
 
 Extension { #name : #Object }
 
-{ #category : '*IR' }
+{ #category : '*Nativization\\OCompiler\\IR' }
 Object >> isBinaryConstantOperation [
 	^false
 ]
 
-{ #category : '*IR' }
+{ #category : '*Nativization\\OCompiler\\IR' }
 Object >> isBinaryVariableOperation [
 	^false
 ]
 
-{ #category : '*IR' }
+{ #category : '*Nativization\\OCompiler\\IR' }
 Object >> isTernaryOperation [
 	^false
 ]
 
-{ #category : '*IR' }
+{ #category : '*Nativization\\OCompiler\\IR' }
 Object >> isUnaryOperation [
 	^false
 ]
 
-{ #category : '*IR' }
+{ #category : '*Nativization\\OCompiler\\IR' }
 Object >> primitivePrintString [
 	^self printString
 ]

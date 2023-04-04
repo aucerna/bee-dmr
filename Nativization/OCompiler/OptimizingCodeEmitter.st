@@ -32,12 +32,12 @@ OptimizingCodeEmitter >> abi: anAbi [
 	assembler wordSize: anAbi wordSize
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingCodeEmitter >> activationRecord [
-	^firstBlock firstInstruction
+	^firstBlock activationRecord
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingCodeEmitter >> allocation: anAllocation [
 	allocation := anAllocation
 ]
@@ -106,7 +106,7 @@ OptimizingCodeEmitter >> assembleBasicAtConstant: instruction [
 	assembler load: dst from: base atIndex: instruction index value
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleBasicAtConstantPut: instruction [
 	| base value |
 	base := allocation at: instruction base.
@@ -171,7 +171,7 @@ OptimizingCodeEmitter >> assembleBitShift: instruction [
 			offset halt]
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleBitShift: src by: amount [
 	amount > 0
 		ifTrue: [
@@ -220,7 +220,7 @@ OptimizingCodeEmitter >> assembleByteAtConstant: instruction [
 		convertToSmallInteger: dst
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleByteAtConstantPut: instruction [
 	| base value |
 	base := allocation at: instruction base.
@@ -255,15 +255,16 @@ OptimizingCodeEmitter >> assembleByteAtPut: instruction [
 		convertToSmallInteger: index
 ]
 
-{ #category : #unclassified }
-OptimizingCodeEmitter >> assembleCompare: instruction [
+{ #category : #private }
+OptimizingCodeEmitter >> assembleCompare: instruction jumpTrue: trueBlock jumpFalse: falseBlock [
 	| left right |
 	left := allocation at: instruction left.
 	right := allocation at: instruction right.
-	assembler compare: left with: right
+	assembler compare: left with: right.
+	self assembleJumpTrue: trueBlock orJumpFalse: falseBlock in: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleCompareConstant: instruction jumpTrue: trueBlock jumpFalse: falseBlock [
 	| left |
 	left := allocation at: instruction left.
@@ -272,7 +273,7 @@ OptimizingCodeEmitter >> assembleCompareConstant: instruction jumpTrue: trueBloc
 		assembleJumpTrue: trueBlock orJumpFalse: falseBlock in: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleCompareConstant: left with: right [
 	right isSmallInteger ifTrue: [^assembler compare: left with: right * 2 + 1].
 	right ifNil: [^assembler compareWithNil: left].
@@ -305,10 +306,9 @@ OptimizingCodeEmitter >> assembleCopyResult: instruction [
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleEquals: instruction [
 	self
-		assembleCompare: instruction;
-		assembleJumpTrue: [:label | assembler jumpIfEqualTo: label]
-		orJumpFalse: [:label | assembler jumpIfNotEqualTo: label]
-		in: instruction
+		assembleCompare: instruction
+		jumpTrue: [:label | assembler jumpIfEqualTo: label]
+		jumpFalse: [:label | assembler jumpIfNotEqualTo: label]
 ]
 
 { #category : #unclassified }
@@ -329,14 +329,14 @@ OptimizingCodeEmitter >> assembleExtendedSize: extendedSizeSend [
 		convertToSmallInteger: dst
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleFrom: aBasicBlock [
 	firstBlock := aBasicBlock.
 	blocks := firstBlock withSuccessorsPostOrder reversed.
 	self doAssemble
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleGenericMessageSend: instruction [
 	| dest |
 	self assembleLookup: instruction selector.
@@ -347,10 +347,9 @@ OptimizingCodeEmitter >> assembleGenericMessageSend: instruction [
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleGreater: instruction [
 	self
-		assembleCompare: instruction;
-		assembleJumpTrue: [:label | assembler jumpIfGreaterSignedTo: label]
-		orJumpFalse: [:label | assembler jumpIfLessOrEqualSignedTo: label]
-		in: instruction
+		assembleCompare: instruction
+		jumpTrue: [:label | assembler jumpIfGreaterSignedTo: label]
+		jumpFalse: [:label | assembler jumpIfLessOrEqualSignedTo: label]
 ]
 
 { #category : #unclassified }
@@ -364,10 +363,9 @@ OptimizingCodeEmitter >> assembleGreaterConstant: instruction [
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleGreaterEqual: instruction [
 	self
-		assembleCompare: instruction;
-		assembleJumpTrue: [:label | assembler jumpIfGreaterOrEqualSignedTo: label]
-		orJumpFalse: [:label | assembler jumpIfLessSignedTo: label]
-		in: instruction
+		assembleCompare: instruction
+		jumpTrue: [:label | assembler jumpIfGreaterOrEqualSignedTo: label]
+		jumpFalse: [:label | assembler jumpIfLessSignedTo: label]
 ]
 
 { #category : #unclassified }
@@ -389,14 +387,14 @@ OptimizingCodeEmitter >> assembleIsSmallInteger: instruction [
 		in: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleJumpIfEqualTo: target [
 	| label |
 	label := jumpDestinations at: target.
 	assembler jumpIfEqualTo: label
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleJumpTo: target [
 	| label index |
 	label := jumpDestinations at: target.
@@ -406,29 +404,24 @@ OptimizingCodeEmitter >> assembleJumpTo: target [
 		ifFalse: [assembler shortJumpTo: label]
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleJumpTrue: blockJumpTrue orJumpFalse: blockJumpFalse in: instruction [
-	| next end result label loadFalse |
-	next := instruction next.
-	(next isConditionalJump and: [instruction allUses size = 1])
-		ifTrue: [
-			label := jumpDestinations at: next target.
-			next isJumpTrue
-				ifTrue: [blockJumpTrue value: label]
-				ifFalse: [blockJumpFalse value: label].
-			self nextBlock != next implicitTarget
-				ifTrue: [self assembleJumpTo: next implicitTarget]]
-		ifFalse: [
-			result := allocation at: instruction.
-			loadFalse := assembler newLabel.
-			end := assembler newLabel.
-			blockJumpFalse value: loadFalse.
-			assembler
-				load: result withBoolean: true;
-				shortJumpTo: end;
-				@ loadFalse;
-				load: result withBoolean: false;
-				@ end]
+	| success result loadFalse end |
+	success := self
+		tryOptimizing: instruction
+		jumpTrue: blockJumpTrue
+		jumpFalse: blockJumpFalse.
+	success ifTrue: [^self].
+	result := allocation at: instruction.
+	loadFalse := assembler newLabel.
+	end := assembler newLabel.
+	blockJumpFalse value: loadFalse.
+	assembler
+		load: result withBoolean: true;
+		shortJumpTo: end;
+		@ loadFalse;
+		load: result withBoolean: false;
+		@ end
 ]
 
 { #category : #private }
@@ -487,7 +480,7 @@ OptimizingCodeEmitter >> assembleLongSlotAtPut: instruction [
 		convertToSmallInteger: index
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> assembleLookup: selector [
 	self haltWhen: selector = #'&'.
 	messageLinker emitSend: selector using: assembler
@@ -496,10 +489,9 @@ OptimizingCodeEmitter >> assembleLookup: selector [
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleLower: instruction [
 	self
-		assembleCompare: instruction;
-		assembleJumpTrue: [:label | assembler jumpIfLessSignedTo: label]
-		orJumpFalse: [:label | assembler jumpIfGreaterOrEqualSignedTo: label]
-		in: instruction
+		assembleCompare: instruction
+		jumpTrue: [:label | assembler jumpIfLessSignedTo: label]
+		jumpFalse: [:label | assembler jumpIfGreaterOrEqualSignedTo: label]
 ]
 
 { #category : #unclassified }
@@ -513,10 +505,9 @@ OptimizingCodeEmitter >> assembleLowerConstant: instruction [
 { #category : #unclassified }
 OptimizingCodeEmitter >> assembleLowerEqual: instruction [
 	self
-		assembleCompare: instruction;
-		assembleJumpTrue: [:label | assembler jumpIfLessOrEqualSignedTo: label]
-		orJumpFalse: [:label | assembler jumpIfGreaterSignedTo: label]
-		in: instruction
+		assembleCompare: instruction
+		jumpTrue: [:label | assembler jumpIfLessOrEqualSignedTo: label]
+		jumpFalse: [:label | assembler jumpIfGreaterSignedTo: label]
 ]
 
 { #category : #unclassified }
@@ -658,13 +649,16 @@ OptimizingCodeEmitter >> assembleULongAtPut: instruction [
 	assembler convertToSmallInteger: value
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OptimizingCodeEmitter >> currentBlock [
 	^blocks at: currentBlockIndex
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> doAssemble [
+	| nilval |
+	nilval := firstBlock nilUnitializedTemporaries.
+	nilval ifNotNil: [allocation at: nilval put: assembler regNil].
 	self labelBlocks.
 	blocks withIndexDo: [:block :index | | label |
 		currentBlockIndex := index.
@@ -674,13 +668,13 @@ OptimizingCodeEmitter >> doAssemble [
 	assembler applyFixups
 ]
 
-{ #category : #unclassified }
+{ #category : #initialization }
 OptimizingCodeEmitter >> initialize [
 	jumpDestinations := Dictionary new.
 	self initializeLowLevelAssembler; initializeAssemblers
 ]
 
-{ #category : #unclassified }
+{ #category : #initialization }
 OptimizingCodeEmitter >> initializeAssemblers [
 	assemblers := Dictionary new
 		at: #'+' put: #Plus;
@@ -721,29 +715,28 @@ OptimizingCodeEmitter >> initializeAssemblers [
 		yourself
 ]
 
-{ #category : #unclassified }
+{ #category : #initialization }
 OptimizingCodeEmitter >> initializeLowLevelAssembler [
 	assembler := JITAssembler64 new
 ]
 
-{ #category : #private }
+{ #category : #testing }
 OptimizingCodeEmitter >> jumpWasAssembledInComparison: aConditionalJump [
 	| prev |
 	prev := aConditionalJump prev.
 	prev == aConditionalJump variable ifFalse: [^false].
-	prev allUses size != 1 ifTrue: [^false].
+	prev isUsedJustOnce ifFalse: [^false].
 	prev class == OMessageSend ifTrue: [^false].
 	prev class == OPhi ifTrue: [^false].
 	prev class == OLoadOperation ifTrue: [^false].
-	(prev isKindOf: OBinaryOperation)
-		ifTrue: [(#(< <= = == != >= >) includes: prev name) ifTrue: [^true]].
+	((prev isKindOf: OBinaryOperation) and: [prev isComparison]) ifTrue: [^true].
 	prev class == OUnaryOperation ifTrue: [
 		#_isSmallInteger = prev name ifTrue: [^true].
 		#copy = prev name ifTrue: [^false]].
 	self halt
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingCodeEmitter >> labelBlocks [
 	blocks do: [:block | | label |
 		label := assembler newLabel.
@@ -762,7 +755,7 @@ OptimizingCodeEmitter >> loadMifNeeded [
 		ifTrue: [^assembler loadMwithGlobal: #DebuggableLookupSuper]
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OptimizingCodeEmitter >> messageLinker: aMessageLinker [
 	messageLinker := aMessageLinker
 ]
@@ -772,24 +765,39 @@ OptimizingCodeEmitter >> method: aCompiledMethod [
 	method := aCompiledMethod
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OptimizingCodeEmitter >> nativeCode [
 	^assembler nativeCode
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OptimizingCodeEmitter >> nextBlock [
 	^blocks at: currentBlockIndex + 1 ifAbsent: [nil]
 ]
 
-{ #category : #accessing }
+{ #category : #testing }
 OptimizingCodeEmitter >> savesPreviousSelf [
 	^self activationRecord savesPreviousSelf
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OptimizingCodeEmitter >> selectorFor: instruction [
 	^assemblers at: instruction name
+]
+
+{ #category : #testing }
+OptimizingCodeEmitter >> tryOptimizing: comparison jumpTrue: blockJumpTrue jumpFalse: blockJumpFalse [
+	| inst label |
+	comparison isUsedJustOnce ifFalse: [^false].
+	inst := comparison next.
+	inst isConditionalJump ifFalse: [^false].
+	label := jumpDestinations at: inst target.
+	inst isJumpTrue
+		ifTrue: [blockJumpTrue value: label]
+		ifFalse: [blockJumpFalse value: label].
+	self nextBlock != inst implicitTarget
+		ifTrue: [self assembleJumpTo: inst implicitTarget].
+	^true
 ]
 
 { #category : #visiting }
@@ -815,7 +823,7 @@ OptimizingCodeEmitter >> visitBranch: branch comparing: aBoolean [
 		ifTrue: [self assembleJumpTo: branch implicitTarget]
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitGeneric: instruction [
 	| selector |
 	selector := #assemble , (self selectorFor: instruction) , #':'.
@@ -838,7 +846,7 @@ OptimizingCodeEmitter >> visitJumpTrue: aJumpTrue [
 	self visitBranch: aJumpTrue comparing: true
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitLoad: instruction [
 	self visitGeneric: instruction
 ]
@@ -901,7 +909,7 @@ OptimizingCodeEmitter >> visitReturn: aReturnInstruction [
 	assembler return
 ]
 
-{ #category : #unclassified }
+{ #category : #visiting }
 OptimizingCodeEmitter >> visitStore: instruction [
 	self visitGeneric: instruction
 ]

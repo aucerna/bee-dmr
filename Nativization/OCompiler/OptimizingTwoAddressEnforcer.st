@@ -73,8 +73,8 @@ OptimizingTwoAddressEnforcer >> visitBinaryWithVariable: instruction [
 	dest := allocation at: instruction ifAbsent: [^self].
 	left == dest ifTrue: [^self].
 	right == dest ifTrue: [
-		(#(< <= = == > >= _transferControlTo:) includes: instruction name)
-			ifTrue: [^self].
+		instruction isComparison ifTrue: [^self].
+		#_transferControlTo: = instruction name ifTrue: [^self].
 		instruction name == #'-'
 			ifTrue: [^self invertMinus: instruction with: left with: right].
 		(#(+ bitAnd: bitOr: &  ) includes: instruction name)
@@ -101,19 +101,9 @@ OptimizingTwoAddressEnforcer >> visitJumpTrue: instruction [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'visitor protocol' }
 OptimizingTwoAddressEnforcer >> visitLoad: load [
-	| index dest base copy |
-	index := load index.
-	index isInstruction ifFalse: [^self].
-	index isConstant ifTrue: [^self].
-	base := allocation at: load base.
-	index := allocation at: index.
-	dest := allocation at: load.
-	base == dest ifTrue: [^self].
-	copy := load base newCopy.
-	load beforeInsert: copy; base: copy.
-	allocation at: copy put: dest
+	
 ]
 
 { #category : #unclassified }

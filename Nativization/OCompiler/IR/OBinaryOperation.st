@@ -35,16 +35,14 @@ OBinaryOperation >> atOperand: operandName put: instruction [
 
 { #category : #unclassified }
 OBinaryOperation >> canHaveSideEffects [
-	^false
+	^name = #_transferControlTo:
 ]
 
 { #category : #unclassified }
-OBinaryOperation >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
+OBinaryOperation >> copyTo: copy with: map [
+	super copyTo: copy with: map.
 	left isInstruction ifTrue: [copy left: (left duplicateWith: map)].
-	right isInstruction ifTrue: [copy right: (right duplicateWith: map)].
-	^copy
+	right isInstruction ifTrue: [copy right: (right duplicateWith: map)]
 ]
 
 { #category : #unclassified }
@@ -55,6 +53,16 @@ OBinaryOperation >> invertOperation [
 	name == #'>=' ifTrue: [^name := #'<='].
 	name == #'==' ifTrue: [^name].
 	self halt
+]
+
+{ #category : #unclassified }
+OBinaryOperation >> isBoolean [
+	^self isComparison
+]
+
+{ #category : #unclassified }
+OBinaryOperation >> isComparison [
+	^#(< <= = == != >= >) includes: name
 ]
 
 { #category : #unclassified }

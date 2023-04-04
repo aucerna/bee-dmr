@@ -5,7 +5,7 @@
 
 Class {
 	#name : #OBeginInstruction,
-	#superclass : #OInstruction,
+	#superclass : #OControlInstruction,
 	#category : #IR
 }
 
@@ -15,30 +15,18 @@ OBeginInstruction >> basicAcceptVisitor: aVisitor [
 ]
 
 { #category : #unclassified }
+OBeginInstruction >> detect: aBlock ifNone: absentBlock [
+	^next detect: aBlock ifNone: absentBlock
+]
+
+{ #category : #unclassified }
 OBeginInstruction >> do: aBlock [
 	next do: aBlock
 ]
 
 { #category : #unclassified }
-OBeginInstruction >> hasPrev [
-	^false
-]
-
-{ #category : #unclassified }
 OBeginInstruction >> printBackwardOn: aStream [
 	
-]
-
-{ #category : #printing }
-OBeginInstruction >> printOn: aStream [
-	aStream nextPutAll: '[' , self basicHash printString , '] '.
-	next printForwardOn: aStream
-]
-
-{ #category : #printing }
-OBeginInstruction >> printOn: aStream using: names [
-	aStream nextPutAll: '[' , self basicHash printString , '] '.
-	next printForwardOn: aStream using: names
 ]
 
 { #category : #printing }
@@ -57,10 +45,5 @@ OBeginInstruction >> realReverseDo: aBlock [
 { #category : #enumerating }
 OBeginInstruction >> reverseDo: aBlock [
 	
-]
-
-{ #category : #unclassified }
-OBeginInstruction >> usesResultOf: anInstruction [
-	^false
 ]
 

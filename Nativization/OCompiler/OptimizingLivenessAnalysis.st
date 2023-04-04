@@ -39,20 +39,13 @@ OptimizingLivenessAnalysis >> analyzeLiveness [
 { #category : #private }
 OptimizingLivenessAnalysis >> analyzeLivenessOf: block [
 	| alive last changed pressure |
-	self haltWhen: block hash = 46528.
 	alive := self gatherAliveAfter: block.
-	self
-		haltWhen: (alive
-			anySatisfy: [:value | value printString
-				beginsWith: '[53422] [jump to #45650]']).
 	pressure := pressures at: block ifAbsentPut: [0].
 	last := block lastInstruction.
-	last realReverseDo: [:instr | | presure |
-		instr operandsDo: [:value | 
-			self haltWhen: (value printString beginsWith: '[53422] [jump to #45650]').
-			alive addIfAbsent: value].
+	last realReverseDo: [:instr | 
+		instr operandsDo: [:value | alive addIfAbsent: value].
 		alive removeIfPresent: instr.
-		pressure := presure max: alive size].
+		pressure := pressure max: alive size].
 	block phis reverseDo: [:phi | alive removeIfPresent: phi].
 	pressures at: block put: pressure.
 	changed := true.

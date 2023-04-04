@@ -79,26 +79,35 @@ OPhi >> blocks [
 	^blocks
 ]
 
+{ #category : #testing }
+OPhi >> canHaveSideEffects [
+	^false
+]
+
 { #category : #unclassified }
 OPhi >> clearVariables [
 	variables := OrderedCollection new.
 	blocks := OrderedCollection new
 ]
 
-{ #category : #unclassified }
-OPhi >> doDuplicateWith: map [
-	| copy b v |
-	copy := super doDuplicateWith: map.
+{ #category : #private }
+OPhi >> copyTo: copy with: map [
+	| b v |
+	super copyTo: copy with: map.
 	b := blocks collect: [:block | block duplicateWith: map].
 	v := variables collect: [:variable | variable duplicateWith: map].
-	copy variables: v blocks: b.
-	^copy
+	copy variables: v blocks: b
 ]
 
 { #category : #unclassified }
 OPhi >> initialize [
 	variables := OrderedCollection new.
 	blocks := OrderedCollection new
+]
+
+{ #category : #private }
+OPhi >> isBoolean [
+	^variables conform: [:v | v isBoolean]
 ]
 
 { #category : #unclassified }
@@ -116,17 +125,17 @@ OPhi >> primitivePrintString [
 	^'{#phi}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OPhi >> printStringUsing: names [
 	| sources |
-	sources := variables size > 0
-		ifTrue: [
-			(variables
-				with: blocks
-				collect: [:var :block | (names at: block ifAbsent: ['?']) , '->'
-					, (names at: var ifAbsent: ['?'])])
-				gather: [:x | x , ', ']]
-		ifFalse: ['  '].
+	sources := variables size = 0 ifTrue: ['  '] ifFalse: [
+		String streamContents: [:strm | 
+			variables with: blocks do: [:var :block | 
+				strm
+					nextPutAll: (names at: block ifAbsent: '?');
+					nextPutAll: '->';
+					nextPutAll: (names at: var ifAbsent: '?');
+					nextPutAll: ', ']]].
 	^'phi(' , (sources allButLast: 2) , ')'
 ]
 
@@ -143,10 +152,13 @@ OPhi >> removeBlock: removed [
 	variable removeUse: self at: removed.
 	variables removeIndex: index.
 	blocks removeIndex: index.
-	variables size = 1 ifTrue: [
-		self replaceAllUsesWith: variables first; dissolve.
-		^variables first].
-	^self
+	self removeIfPossible
+]
+
+{ #category : #unclassified }
+OPhi >> removeIfPossible [
+	variables size = 1
+		ifTrue: [self replaceAllUsesWith: variables first; dissolve]
 ]
 
 { #category : #unclassified }

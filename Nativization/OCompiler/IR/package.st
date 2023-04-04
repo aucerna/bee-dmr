@@ -3,7 +3,11 @@
 	See (MIT) license in root directory.
 "
 
-Package { #name : #IR,
+Package {
+	#name : #IR,
+	#requires : [
+		'Kernel'
+	],
 	#classes : [
 		'BMNullaryOperation',
 		'OActivationContext',
@@ -15,6 +19,7 @@ Package { #name : #IR,
 		'OBlockClosure',
 		'OComposedLiveRange',
 		'OConstant',
+		'OControlInstruction',
 		'ODominatorTree',
 		'OEndInstruction',
 		'OInstruction',

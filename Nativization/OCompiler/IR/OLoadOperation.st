@@ -78,6 +78,11 @@ OLoadOperation >> basicPrintString [
 ]
 
 { #category : #private }
+OLoadOperation >> canHaveSideEffects [
+	^false
+]
+
+{ #category : #private }
 OLoadOperation >> isLoad [
 	^true
 ]

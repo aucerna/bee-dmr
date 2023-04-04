@@ -90,7 +90,7 @@ OSimpleLiveRange >> initialize [
 
 { #category : #unclassified }
 OSimpleLiveRange >> isLiveAt: aBlock [
-	^definition livesAfter: aBlock firstInstruction prev orOutOf: aBlock
+	^definition livesAfter: aBlock orOutOf: aBlock
 ]
 
 { #category : #unclassified }

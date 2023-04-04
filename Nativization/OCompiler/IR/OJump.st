@@ -18,6 +18,12 @@ OJump class >> to: aDestination [
 ]
 
 { #category : #unclassified }
+OJump >> afterConnect: anInstruction [
+	self _ASSERT: anInstruction isEnd.
+	^super afterConnect: anInstruction
+]
+
+{ #category : #unclassified }
 OJump >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitJump: self
 ]
@@ -28,11 +34,9 @@ OJump >> basicPrintString [
 ]
 
 { #category : #private }
-OJump >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy target: (target duplicateWith: map).
-	^copy
+OJump >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy target: (target duplicateWith: map)
 ]
 
 { #category : #unclassified }
@@ -58,6 +62,11 @@ OJump >> printStringUsing: names [
 { #category : #unclassified }
 OJump >> retargetFrom: aBasicBlock to: otherBasicBlock [
 	target := otherBasicBlock
+]
+
+{ #category : #private }
+OJump >> successorsDo: aBlock [
+	aBlock value: target
 ]
 
 { #category : #unclassified }

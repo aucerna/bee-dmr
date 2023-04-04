@@ -71,9 +71,7 @@ OComposedLiveRange >> initialize [
 { #category : #unclassified }
 OComposedLiveRange >> isLiveAt: aBlock [
 	^self allDefinitions
-		anySatisfy: [:def | def
-			livesAfter: aBlock firstInstruction prev
-			orOutOf: aBlock]
+		anySatisfy: [:def | def livesAfter: aBlock orOutOf: aBlock]
 ]
 
 { #category : #unclassified }

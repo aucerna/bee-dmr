@@ -5,14 +5,18 @@
 
 Class {
 	#name : #OBasicBlock,
-	#superclass : #Object,
+	#superclass : #OBeginInstruction,
 	#instVars : [
-		'firstInstruction',
-		'lastInstruction',
+		'end',
 		'predecessors'
 	],
 	#category : #IR
 }
+
+{ #category : #private }
+OBasicBlock class >> decorator [
+	^Smalltalk at: #CollectionDecorator
+]
 
 { #category : #unclassified }
 OBasicBlock class >> new [
@@ -20,23 +24,23 @@ OBasicBlock class >> new [
 ]
 
 { #category : #unclassified }
-OBasicBlock class >> newStartingWith: anInstruction [
-	^self basicNew initializeWith: anInstruction
-]
-
-{ #category : #unclassified }
 OBasicBlock >> activationRecord [
-	^self firstInstruction
+	^next
 ]
 
 { #category : #unclassified }
 OBasicBlock >> add: instruction [
-	^lastInstruction beforeInsert: instruction
+	^end beforeInsert: instruction
+]
+
+{ #category : #'adding / removing' }
+OBasicBlock >> addFrom: first to: last [
+	end prev afterInsert: first to: last
 ]
 
 { #category : #unclassified }
 OBasicBlock >> addFront: instruction [
-	^firstInstruction afterInsert: instruction
+	^self afterInsert: instruction
 ]
 
 { #category : #unclassified }
@@ -113,6 +117,11 @@ OBasicBlock >> asArray [
 	^self asReversePostOrderInstructionsCollection asArray
 ]
 
+{ #category : #private }
+OBasicBlock >> asOrderedCollection [
+	^OrderedCollection withAll: self
+]
+
 { #category : #unclassified }
 OBasicBlock >> asReversePostOrderInstructionsCollection [
 	| collection |
@@ -123,19 +132,17 @@ OBasicBlock >> asReversePostOrderInstructionsCollection [
 	^collection
 ]
 
-{ #category : #private }
-OBasicBlock >> basicFirst [
-	^firstInstruction
-]
-
-{ #category : #private }
-OBasicBlock >> basicLast [
-	^lastInstruction
-]
-
 { #category : #unclassified }
 OBasicBlock >> cleanPredecessors [
 	predecessors := OrderedCollection new
+]
+
+{ #category : #private }
+OBasicBlock >> collect: aBlock in: aCollection [
+	self do: [:inst | | collected |
+		collected := aBlock value: inst.
+		aCollection add: collected].
+	^aCollection
 ]
 
 { #category : #unclassified }
@@ -164,6 +171,15 @@ OBasicBlock >> computeLiveOutInto: liveOut andLiveInInto: liveIn [
 ]
 
 { #category : #private }
+OBasicBlock >> copyTo: copy with: map [
+	| copyend |
+	copy afterConnect: (next duplicateWith: map).
+	copyend := map at: end.
+	(end prev duplicateWith: map) afterConnect: copyend.
+	copy predecessors: (predecessors collect: [:pred | pred duplicateWith: map])
+]
+
+{ #category : #private }
 OBasicBlock >> dissolveAllInstructions [
 	| value |
 	[
@@ -175,17 +191,6 @@ OBasicBlock >> dissolveAllInstructions [
 { #category : #private }
 OBasicBlock >> dissolveIfUnreachable [
 	predecessors isEmpty ifTrue: [self dissolveAllInstructions]
-]
-
-{ #category : #private }
-OBasicBlock >> doDuplicateWith: map [
-	| block copy p |
-	block := map at: self.
-	self instructionsDo: [:i | 
-		copy := i duplicateWith: map.
-		block add: copy].
-	p := predecessors collect: [:pred | pred duplicateWith: map].
-	block predecessors: p
 ]
 
 { #category : #unclassified }
@@ -216,7 +221,7 @@ OBasicBlock >> dominanceFrontiersUsing: idoms [
 { #category : #unclassified }
 OBasicBlock >> dominatorTree [
 	| all root idoms indices intersect changed |
-	all := self updatePredecessors withSuccessorsPostOrder reversed.
+	all := self withSuccessorsPostOrder reversed.
 	idoms := Array new: all size.
 	idoms at: 1 put: 1.
 	root := all first.
@@ -258,17 +263,15 @@ OBasicBlock >> duplicate [
 { #category : #private }
 OBasicBlock >> duplicateWith: map [
 	| copy |
-	map at: self ifPresent: [:block | block].
-	self
-		withSuccessorsDo: [:block | 
-			copy := self class new.
-			map
-				at: block put: copy;
-				at: lastInstruction put: copy basicLast;
-				at: firstInstruction put: copy basicFirst.
-			block instructionsDo: [:inst | map at: inst put: nil]];
-		withSuccessorsDo: [:block | block doDuplicateWith: map].
-	^map at: self
+	map at: self ifPresent: [:c | ^c].
+	copy := self class new.
+	map
+		at: self put: copy;
+		at: end put: copy next.
+	prev ifNotNil: [copy prev: (prev duplicateWith: map)].
+	next ifNotNil: [copy next: (next duplicateWith: map)].
+	self copyTo: copy with: map.
+	^copy
 ]
 
 { #category : #private }
@@ -278,7 +281,10 @@ skipping: skipped
 if: compare [
 	| jump |
 	jump := jumpType variable: compare target: target implicitTarget: skipped.
-	self lastInstruction afterInsert: jump
+	end beforeInsert: jump.
+	target addPredecessor: self.
+	skipped addPredecessor: self.
+	^jump
 ]
 
 { #category : #unclassified }
@@ -286,11 +292,12 @@ OBasicBlock >> endWithJumpFalseTo: target skipping: skipped if: condition [
 	self endWith: OJumpFalse to: target skipping: skipped if: condition
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OBasicBlock >> endWithJumpTo: target [
 	| jump |
 	jump := OJump to: target.
-	self lastInstruction afterInsert: jump
+	end beforeInsert: jump.
+	target addPredecessor: self
 ]
 
 { #category : #unclassified }
@@ -300,12 +307,12 @@ OBasicBlock >> endWithJumpTrueTo: target skipping: skipped if: condition [
 
 { #category : #unclassified }
 OBasicBlock >> firstInstruction [
-	^firstInstruction next
+	^next
 ]
 
 { #category : #unclassified }
 OBasicBlock >> firstNonPhi [
-	^self firstInstruction firstNonPhi
+	^next firstNonPhi
 ]
 
 { #category : #unclassified }
@@ -318,12 +325,18 @@ OBasicBlock >> fullyRemovePredecessor: predecessor [
 ]
 
 { #category : #unclassified }
-OBasicBlock >> ifHasExplicitSuccesor: explicitBlock ifHasImplicitSuccesor: implicitBlock [
-	| last |
-	last := self lastInstruction.
-	last isJump ifFalse: [^self].
-	explicitBlock value: last target.
-	last isConditionalJump ifTrue: [implicitBlock value: last implicitTarget]
+OBasicBlock >> hasMultiplePredecessors [
+	^predecessors size > 1
+]
+
+{ #category : #unclassified }
+OBasicBlock >> hasMultipleSuccessors [
+	^self lastInstruction isConditionalJump
+]
+
+{ #category : #unclassified }
+OBasicBlock >> hasSuccessors [
+	^self lastInstruction isJump
 ]
 
 { #category : #unclassified }
@@ -355,33 +368,9 @@ OBasicBlock >> indexOf: anInstruction [
 
 { #category : #unclassified }
 OBasicBlock >> initialize [
-	firstInstruction := OInstruction empty.
-	lastInstruction := firstInstruction next.
+	next := OEndInstruction new prev: self.
+	end := next.
 	predecessors := OrderedCollection new
-]
-
-{ #category : #unclassified }
-OBasicBlock >> initializeWith: anInstruction [
-	firstInstruction := anInstruction cutPrevious.
-	lastInstruction := firstInstruction last next.
-	predecessors := OrderedCollection new
-]
-
-{ #category : #unclassified }
-OBasicBlock >> inline: inlined replacing: aMessageSend [
-	| returned return join last |
-	last := inlined lastBlock.
-	return := last lastValue.
-	returned := return source.
-	aMessageSend replaceAllUsesWith: returned.
-	return dissolve.
-	inlined successors isEmpty ifFalse: [
-		join := self splitAfter: aMessageSend.
-		join addPredecessor: last.
-		last endWithJumpTo: join].
-	aMessageSend dissolveReplacingWithAll: inlined firstInstruction.
-	self replaceAsPredecessor: inlined.
-	^join ifNil: [self]
 ]
 
 { #category : #unclassified }
@@ -406,7 +395,7 @@ at: block2
 replacing: operation [
 	| phi |
 	phi := OPhi with: value1 from: block1 with: value2 from: block2.
-	self firstInstruction beforeInsert: phi.
+	self afterInsert: phi.
 	operation replaceAllUsesWith: phi; dissolve
 ]
 
@@ -444,18 +433,12 @@ OBasicBlock >> instructionsAsCollection [
 
 { #category : #unclassified }
 OBasicBlock >> instructionsDo: aBlock [
-	^firstInstruction do: aBlock
+	^next do: aBlock
 ]
 
 { #category : #unclassified }
 OBasicBlock >> instructionsReverseDo: aBlock [
-	^lastInstruction reverseDo: aBlock
-]
-
-{ #category : #unclassified }
-OBasicBlock >> instructionsSelect: condition thenDo: aBlock [
-	^firstInstruction
-		do: [:next | (condition value: next) ifTrue: [aBlock value: next]]
+	^end reverseDo: aBlock
 ]
 
 { #category : #unclassified }
@@ -509,6 +492,21 @@ OBasicBlock >> isPhiArgument: instruction [
 	^false
 ]
 
+{ #category : #testing }
+OBasicBlock >> isReachableFrom: aBasicBlock [
+	| seen work |
+	seen := Set withAll: predecessors.
+	work := OrderedCollection withAll: predecessors.
+	[work isEmpty] whileFalse: [| block |
+		block := work removeFirst.
+		block == aBasicBlock ifTrue: [^true].
+		block predecessors do: [:p | 
+			(seen includes: p) ifFalse: [
+				seen add: p.
+				work add: p]]].
+	^false
+]
+
 { #category : #unclassified }
 OBasicBlock >> iteratedDominanceFrontiersOf: blocks using: frontiers [
 	| result changed |
@@ -529,19 +527,14 @@ OBasicBlock >> lastBlock [
 
 { #category : #unclassified }
 OBasicBlock >> lastInstruction [
-	^lastInstruction prev
-]
-
-{ #category : #unclassified }
-OBasicBlock >> lastPhi [
-	^self firstInstruction lastPhi
+	^end prev
 ]
 
 { #category : #unclassified }
 OBasicBlock >> lastValue [
 	| last |
-	last := lastInstruction lastValue.
-	^last = firstInstruction
+	last := end lastValue.
+	^last = self
 		ifTrue: [predecessors size = 1 ifTrue: [predecessors first lastValue]]
 		ifFalse: [last]
 ]
@@ -555,10 +548,24 @@ OBasicBlock >> length [
 ]
 
 { #category : #unclassified }
+OBasicBlock >> moveAllTo: block [
+	self moveAllTo: block after: block lastInstruction
+]
+
+{ #category : #unclassified }
+OBasicBlock >> moveAllTo: block after: instruction [
+	block replace: self asPredecessorIn: self successors.
+	next == end ifTrue: [^self].
+	end prev afterConnect: instruction next.
+	instruction afterConnect: next.
+	self afterConnect: end
+]
+
+{ #category : #unclassified }
 OBasicBlock >> movePhisTo: otherBlock [
 	| inst dest |
-	inst := self firstInstruction.
-	dest := otherBlock firstInstruction prev.
+	inst := next.
+	dest := otherBlock.
 	[inst isPhi] whileTrue: [| next |
 		next := inst next.
 		dest afterInsert: inst.
@@ -569,6 +576,47 @@ OBasicBlock >> movePhisTo: otherBlock [
 { #category : #unclassified }
 OBasicBlock >> name [
 	^'#' , self hash printString
+]
+
+{ #category : #unclassified }
+OBasicBlock >> nilUnitializedTemporaries [
+	| stack uninitialized nilval |
+	stack := self activationRecord.
+	stack hasFrame ifFalse: [^nil].
+	uninitialized := stack uninitializedTemporariesIn: self.
+	uninitialized isEmpty ifTrue: [^nil].
+	nilval := OLoadConstant valued: nil.
+	stack next afterInsert: nilval.
+	uninitialized do: [:index | | store |
+		store := OStoreOperation base: stack slotAtImm: index put: nilval.
+		nilval afterInsert: store].
+	^nilval
+]
+
+{ #category : #private }
+OBasicBlock >> nodesSelect: aBlock [
+	| seen work result visit |
+	seen := IdentitySet with: self.
+	work := OrderedCollection with: self.
+	result := OrderedCollection new.
+	visit := [:inst | 
+		(seen includes: inst) ifFalse: [
+			seen add: inst.
+			work add: inst]].
+	[work isEmpty] whileFalse: [| node |
+		node := work removeLast.
+		(aBlock value: node) ifTrue: [result add: node].
+		node class = OBlockClosure ifTrue: [visit value: node firstBlock].
+		node class = OBasicBlock ifTrue: [
+			node do: [:inst | visit value: inst].
+			node successors do: [:succ | visit value: succ]].
+		node operandsDo: [:input | visit value: input]].
+	^result
+]
+
+{ #category : #unclassified }
+OBasicBlock >> operandsDo: aBlock [
+	
 ]
 
 { #category : #unclassified }
@@ -600,14 +648,12 @@ OBasicBlock >> phiWithArgument: instruction [
 	self error: 'not found'
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OBasicBlock >> postOrder: result seen: seen [
 	seen add: self.
 	self
-		ifHasExplicitSuccesor: [:next | (seen includes: next)
-			ifFalse: [next postOrder: result seen: seen]]
-		ifHasImplicitSuccesor: [:next | (seen includes: next)
-			ifFalse: [next postOrder: result seen: seen]].
+		successorsDo: [:succ | (seen includes: succ)
+			ifFalse: [succ postOrder: result seen: seen]].
 	result add: self
 ]
 
@@ -628,12 +674,12 @@ OBasicBlock >> predecessors: aCollection [
 
 { #category : #private }
 OBasicBlock >> primitivePrintOn: aStream [
-	aStream
-		nextPutAll: '<=== ' , self name , String cr , firstInstruction asString
-			, '===>'
+	aStream nextPutAll: '<=== '; print: self name; cr.
+	next printForwardOn: aStream.
+	aStream nextPutAll: '===>'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBasicBlock >> printAll [
 	| stream |
 	stream := '' writeStream.
@@ -643,10 +689,14 @@ OBasicBlock >> printAll [
 	^stream contents
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBasicBlock >> printAllNamed [
-	| stream names vars blocks |
-	stream := '' writeStream.
+	^String streamContents: [:s | self printAllNamedOn: s]
+]
+
+{ #category : #printing }
+OBasicBlock >> printAllNamedOn: aStream [
+	| names vars blocks |
 	names := Dictionary new.
 	vars := 0.
 	blocks := 0.
@@ -657,35 +707,43 @@ OBasicBlock >> printAllNamed [
 		names at: block put: 'B' , blocks printString.
 		blocks := blocks + 1].
 	self reversePostOrderDo: [:block | 
-		block printOn: stream using: names.
-		stream cr].
-	^stream contents
+		block printOn: aStream using: names.
+		aStream cr]
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBasicBlock >> printOn: aStream [
-	self primitivePrintOn: aStream
+	predecessors isEmpty
+		ifTrue: [self printAllNamedOn: aStream]
+		ifFalse: [self primitivePrintOn: aStream]
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBasicBlock >> printOn: aStream using: names [
 	| string |
 	string := names at: self ifAbsent: [^self primitivePrintOn: aStream].
-	aStream nextPutAll: '<=== ' , string , ' [' , self hash printString , '] \'.
+	aStream
+		nextPutAll: '<=== ';
+		nextPutAll: string;
+		space;
+		nextPut: $[;
+		nextPutAll: self hash printString;
+		nextPut: $];
+		space;
+		nextPut: $\.
 	predecessors size > 0 ifTrue: [
 		predecessors allButLast
-			do: [:pred | aStream
-				nextPutAll: (names at: pred ifAbsent: 'missing') , ' | '].
-		aStream nextPutAll: (names at: predecessors last ifAbsent: 'missing')].
-	aStream
-		nextPutAll: '/' , String cr , (firstInstruction printStringUsing: names)
-			, '===>'
+			do: [:pred | aStream nextPutAll: (names at: pred ifAbsent: '?') , ' | '].
+		aStream nextPutAll: (names at: predecessors last ifAbsent: '?')].
+	aStream nextPutAll: '/'; cr.
+	next printForwardOn: aStream using: names.
+	aStream nextPutAll: '===>'
 ]
 
 { #category : #unclassified }
 OBasicBlock >> realInstructionsDo: aBlock [
 	| current |
-	current := self firstInstruction.
+	current := next.
 	[current isPhi] whileTrue: [current := current next].
 	current do: aBlock
 ]
@@ -696,8 +754,8 @@ OBasicBlock >> removePredecessor: aBasicBlock [
 ]
 
 { #category : #unclassified }
-OBasicBlock >> replaceAsPredecessor: old [
-	self successors do: [:succ | succ replacePredecessor: old with: self]
+OBasicBlock >> replace: old asPredecessorIn: successors [
+	successors do: [:succ | succ replacePredecessor: old with: self]
 ]
 
 { #category : #unclassified }
@@ -709,6 +767,14 @@ OBasicBlock >> replacePredecessor: old with: new [
 { #category : #unclassified }
 OBasicBlock >> reversePostOrderDo: aBlock [
 	self withSuccessorsPostOrder reverseDo: [:block | aBlock value: block]
+]
+
+{ #category : #private }
+OBasicBlock >> size [
+	| result |
+	result := 0.
+	next do: [:inst | result := result + 1].
+	^result
 ]
 
 { #category : #unclassified }
@@ -723,11 +789,16 @@ OBasicBlock >> split [
 
 { #category : #unclassified }
 OBasicBlock >> splitAfter: anInstruction [
-	| next |
-	next := self class newStartingWith: anInstruction next.
-	lastInstruction := anInstruction cutFollowing.
-	next replaceAsPredecessor: self.
-	^next
+	| block start last |
+	block := self class new.
+	start := anInstruction next.
+	start isEnd ifTrue: [^block].
+	last := end prev.
+	block
+		replace: self asPredecessorIn: self successors;
+		addFrom: start to: last.
+	anInstruction afterConnect: end.
+	^block
 ]
 
 { #category : #unclassified }
@@ -739,13 +810,6 @@ OBasicBlock >> splitAllCriticalEdges [
 { #category : #unclassified }
 OBasicBlock >> splitBefore: anInstruction [
 	^self splitAfter: anInstruction prev
-]
-
-{ #category : #unclassified }
-OBasicBlock >> splitEdgeIfCriticalTo: succ [
-	^(self successors size > 1 and: [succ predecessors size > 1])
-		ifTrue: [self splitEdgeTo: succ]
-		ifFalse: [succ]
 ]
 
 { #category : #unclassified }
@@ -765,14 +829,19 @@ OBasicBlock >> splitEdgeTo: block [
 
 { #category : #unclassified }
 OBasicBlock >> splitIncomingCriticalEdges [
-	predecessors size > 1 ifTrue: [
-		predecessors
-			do: [:pred | pred successors size > 1 ifTrue: [pred splitEdgeTo: self]]]
+	predecessors size > 1 ifFalse: [^self].
+	predecessors
+		do: [:pred | pred hasMultipleSuccessors ifTrue: [pred splitEdgeTo: self]]
 ]
 
 { #category : #unclassified }
 OBasicBlock >> successors [
-	^lastInstruction prev targets
+	^end prev targets
+]
+
+{ #category : #unclassified }
+OBasicBlock >> successorsDo: aBlock [
+	self lastInstruction successorsDo: aBlock
 ]
 
 { #category : #unclassified }
@@ -781,10 +850,8 @@ OBasicBlock >> successorsPostOrder [
 	seen := Set new.
 	result := OrderedCollection new: 10.
 	self
-		ifHasExplicitSuccesor: [:next | (seen includes: next)
-			ifFalse: [next postOrder: result seen: seen]]
-		ifHasImplicitSuccesor: [:next | (seen includes: next)
-			ifFalse: [next postOrder: result seen: seen]].
+		successorsDo: [:succ | (seen includes: succ)
+			ifFalse: [succ postOrder: result seen: seen]].
 	^result
 ]
 
@@ -793,10 +860,9 @@ OBasicBlock >> unifyReturns [
 	| returns last ret prev end jump phi |
 	returns := self allReturnsWithBlocks.
 	last := returns removeFirst.
+	returns isEmpty ifTrue: [^self].
 	ret := last key.
 	last := last value.
-	returns isEmpty ifTrue: [^self].
-	ret := last lastInstruction.
 	prev := ret prev.
 	(prev isPhi and: prev = last firstInstruction)
 		ifTrue: [
@@ -804,9 +870,7 @@ OBasicBlock >> unifyReturns [
 			phi := prev]
 		ifFalse: [
 			end := last splitAfter: prev.
-			end addPredecessor: last.
-			jump := OJump to: end.
-			prev afterInsert: jump.
+			last endWithJumpTo: end.
 			phi := OPhi new.
 			phi addVariable: ret source from: last.
 			ret source removeUse: ret at: #source.
@@ -822,29 +886,20 @@ OBasicBlock >> unifyReturns [
 		tail dissolve]
 ]
 
-{ #category : #unclassified }
-OBasicBlock >> updatePredecessors [
-	self
-		postOrderDo: [:block | block cleanPredecessors];
-		postOrderDo: [:block | block successors
-			do: [:successor | successor addPredecessor: block]];
-		postOrderDo: [:block | block sortPhiVariables]
-]
-
-{ #category : #unclassified }
+{ #category : #testing }
 OBasicBlock >> usesResultOf: anInstruction [
-	firstInstruction
+	next
 		detect: [:instruction | instruction usesResultOf: anInstruction]
 		ifNone: [^false].
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #validation }
 OBasicBlock >> validateAllInstructions [
 	| all blocks |
 	self withSuccessorsDo: [:block | | forward current backwards |
 		forward := OrderedCollection new.
-		current := block instVarNamed: #firstInstruction.
+		current := block.
 		[current notNil] whileTrue: [
 			forward add: current.
 			current := current next].
@@ -855,7 +910,8 @@ OBasicBlock >> validateAllInstructions [
 			current := current prev].
 		self ASSERT: forward = backwards reversed].
 	all := Set new.
-	blocks := OrderedCollection new add: self; yourself.
+	blocks := OrderedCollection new.
+	blocks add: self.
 	[blocks isEmpty] whileFalse: [| block |
 		block := blocks removeFirst.
 		block instructionsWithSuccessorsDo: [:inst | 
@@ -863,8 +919,8 @@ OBasicBlock >> validateAllInstructions [
 			inst
 				operandsDo: [:o | o isBlockClosure ifTrue: [blocks add: o firstBlock]]]].
 	self instructionsWithSuccessorsDo: [:inst | 
-		self ASSERT: inst validateUses.
 		inst
+			validateUses;
 			usesDo: [:operand | self _ASSERT: (all includes: operand instruction)]]
 ]
 
@@ -875,19 +931,6 @@ OBasicBlock >> validateCFG [
 			do: [:successor | self _ASSERT: (successor predecessors includes: block)].
 		block predecessors
 			do: [:predecessor | self _ASSERT: (predecessor successors includes: block)]]
-]
-
-{ #category : #unclassified }
-OBasicBlock >> withPredecessors [
-	| result incoming |
-	result := OrderedCollection new.
-	incoming := OrderedCollection with: self.
-	[
-		result addAll: incoming.
-		incoming := incoming gather: #predecessors.
-		incoming removeAllSuchThat: [:pred | result includes: pred].
-		incoming isEmpty] whileFalse.
-	^result
 ]
 
 { #category : #unclassified }

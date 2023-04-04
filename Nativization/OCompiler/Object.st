@@ -3,9 +3,9 @@
 	See (MIT) license in root directory.
 "
 
-Extension {#name : #Object}
+Extension { #name : #Object }
 
-{ #category : '*OCompiler' }
+{ #category : '*Nativization\\OCompiler' }
 Object >> isInstruction [
 	^false
 ]

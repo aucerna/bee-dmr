@@ -32,12 +32,15 @@ OLoadConstant >> canHaveSideEffects [
 	^false
 ]
 
+{ #category : #private }
+OLoadConstant >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy value: constant
+]
+
 { #category : #unclassified }
-OLoadConstant >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy value: constant.
-	^copy
+OLoadConstant >> isBoolean [
+	^constant isBoolean
 ]
 
 { #category : #unclassified }

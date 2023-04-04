@@ -40,12 +40,20 @@ OUnaryOperation >> basicPrintString [
 			ifFalse: [receiver printString]) , ' ' , name , ']'
 ]
 
+{ #category : #testing }
+OUnaryOperation >> canHaveSideEffects [
+	^name == #push or: [name == #pop]
+]
+
 { #category : #accessing }
-OUnaryOperation >> doDuplicateWith: map [
-	| copy |
-	copy := super doDuplicateWith: map.
-	copy receiver: (receiver duplicateWith: map).
-	^copy
+OUnaryOperation >> copyTo: copy with: map [
+	super copyTo: copy with: map.
+	copy receiver: (receiver duplicateWith: map)
+]
+
+{ #category : #testing }
+OUnaryOperation >> isBoolean [
+	^name == #_isSmallInteger or: [name == #copy and: [receiver isBoolean]]
 ]
 
 { #category : #unclassified }
@@ -61,7 +69,7 @@ OUnaryOperation >> operandsDo: aBlock [
 { #category : #accessing }
 OUnaryOperation >> printStringUsing: names [
 	^(receiver isInstruction
-		ifTrue: [names at: receiver ifAbsent: ['?']]
+		ifTrue: [names at: receiver ifAbsent: '?']
 		ifFalse: [receiver printString]) , ' ' , name
 ]
 

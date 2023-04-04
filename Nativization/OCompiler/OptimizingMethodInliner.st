@@ -9,24 +9,52 @@ Class {
 	#instVars : [
 		'firstBlock',
 		'methods',
-		'environment'
+		'environment',
+		'changed'
 	],
 	#category : #OCompiler
 }
 
 { #category : #unclassified }
+OptimizingMethodInliner class >> new [
+	^super new initialize
+]
+
+{ #category : #unclassified }
 OptimizingMethodInliner class >> on: basicBlock [
-	^self basicNew firstBlock: basicBlock
+	^self new firstBlock: basicBlock
 ]
 
 { #category : #unclassified }
 OptimizingMethodInliner >> bindArgumentsOf: firstBlockInlined with: aMessageSend [
-	| inlined |
+	| inlined args |
 	inlined := firstBlockInlined activationRecord.
-	inlined arguments
-		with: aMessageSend arguments
-		do: [:formal :actual | formal replaceAllUsesWith: actual; dissolve].
+	args := aMessageSend arguments.
+	inlined arguments do: [:arg | | passed index |
+		index := args size - arg index + 3.
+		passed := args at: index.
+		arg replaceAllUsesWith: passed; dissolve].
 	inlined receiver replaceAllUsesWith: aMessageSend receiver; dissolve
+]
+
+{ #category : #private }
+OptimizingMethodInliner >> bindTemporariesOf: inlinedFrame [
+	| inlinerFrame current added |
+	inlinerFrame := firstBlock activationRecord.
+	current := inlinerFrame temporaries.
+	added := inlinedFrame temporaries.
+	inlinerFrame temporaries: current + added.
+	inlinedFrame
+		usesDo: [:operand | | user |
+			user := operand instruction.
+			user isMemoryOperation
+				ifTrue: [
+					"only temps remain, arguments have been dissolved"
+					self _ASSERT: user index < 0.
+					user indexImm: user index - current]
+				ifFalse: [self _ASSERT: user isReturn]];
+		replaceAllUsesWith: inlinerFrame;
+		dissolve
 ]
 
 { #category : #unclassified }
@@ -50,22 +78,34 @@ OptimizingMethodInliner >> bindTemporariesOf: inlinedFrame into: inlinerFrame [
 ]
 
 { #category : #unclassified }
-OptimizingMethodInliner >> bindVariablesOf: initialBlock with: aMessageSend [
-	| values |
-	values := OrderedCollection
-		with: aMessageSend receiver
-		withAll: aMessageSend arguments.
-	initialBlock instructionsDo: [:instruction | 
-		instruction isDefineArgument ifFalse: [^self].
-		instruction name == #activationRecord ifFalse: [
-			instruction replaceAllUsesWith: values first.
-			values removeFirst].
-		instruction dissolve]
+OptimizingMethodInliner >> blockInliner [
+	^OptimizingBlockInliner new inlinerActivation: firstBlock activationRecord
+]
+
+{ #category : #private }
+OptimizingMethodInliner >> booleanInliner: selector [
+	| dispatcher types |
+	dispatcher := self newDispatcher.
+	types := {true. false} collect: [:bool | | method |
+		method := bool behavior findMethodFor: selector.
+		bool -> method].
+	^dispatcher types: types
+]
+
+{ #category : #unclassified }
+OptimizingMethodInliner >> dynamicDispatch [
+	^self newDispatcher
+]
+
+{ #category : #accessing }
+OptimizingMethodInliner >> environment [
+	^environment
 ]
 
 { #category : #accessing }
 OptimizingMethodInliner >> environment: aNativizationEnvironment [
-	environment := aNativizationEnvironment
+	environment := aNativizationEnvironment.
+	self methods: environment inlinedMethods
 ]
 
 { #category : #unclassified }
@@ -74,55 +114,79 @@ OptimizingMethodInliner >> firstBlock: aBasicBlock [
 ]
 
 { #category : #unclassified }
+OptimizingMethodInliner >> initialize [
+	methods := Dictionary new
+]
+
+{ #category : #unclassified }
 OptimizingMethodInliner >> inlineAllMessages [
-	firstBlock withSuccessorsPostOrder do: [:block | | current |
-		current := block.
-		block instructionsAsCollection do: [:instruction | 
-			(self shouldInline: instruction)
-				ifTrue: [current := self inlineMethod: instruction in: current]]]
+	[
+		changed := false.
+		firstBlock withSuccessorsPostOrder do: [:block | | current |
+			current := block.
+			block instructionsAsCollection do: [:instruction | 
+				instruction isMessageSend
+					ifTrue: [current := (self tryOptimizingSend: instruction in: current) value]]].
+		changed] whileTrue
 ]
 
 { #category : #unclassified }
-OptimizingMethodInliner >> inlinedMethodFor: aMessageSend [
-	^methods detect: [:m | m selector == aMessageSend selector]
+OptimizingMethodInliner >> isBooleanMessage: selector [
+	^#(#ifTrue: #ifFalse: #ifTrue:ifFalse: #ifFalse:ifTrue: #and: #or:)
+		includes: selector
 ]
 
-{ #category : #unclassified }
-OptimizingMethodInliner >> inlineMessages [
-	self inlineMessagesIn: firstBlock
+{ #category : #json }
+OptimizingMethodInliner >> lookup: aMessageSend [
+	| receiver selector |
+	receiver := aMessageSend receiver.
+	selector := aMessageSend selector.
+	receiver isBlockClosure ifTrue: [^self blockInliner].
+	receiver isConstant ifTrue: [^self lookup: selector for: receiver value].
+	(self isBooleanMessage: selector) ifTrue: [^self booleanInliner: selector].
+	(self methodForSelector: selector)
+		ifNotNil: [:method | ^self staticInliner: method].
+	^self dynamicDispatch
 ]
 
 { #category : #private }
-OptimizingMethodInliner >> inlineMethod: aMessageSend in: block [
-	| method nativizer initialBlock |
-	method := self inlinedMethodFor: aMessageSend.
-	nativizer := OptimizingNativizer new.
-	initialBlock := nativizer
-		environment: environment;
-		inlinedMethods: methods;
-		method: method;
-		decompose;
-		firstBlock.
-	self
-		bindArgumentsOf: initialBlock with: aMessageSend;
-		bindTemporariesOf: initialBlock activationRecord
-		into: firstBlock activationRecord.
-	^block inline: initialBlock replacing: aMessageSend
+OptimizingMethodInliner >> lookup: selector for: constant [
+	| behavior method |
+	behavior := constant behavior.
+	method := behavior findMethodFor: selector.
+	(method isNil or: [method primitiveNumber > 0])
+		ifTrue: [^self dynamicDispatch].
+	^self newDispatcher types: {behavior -> method}
+]
+
+{ #category : #private }
+OptimizingMethodInliner >> methodForSelector: selector [
+	^methods at: selector ifAbsent: nil
 ]
 
 { #category : #unclassified }
-OptimizingMethodInliner >> methods: methodsToInline [
-	methods := methodsToInline
+OptimizingMethodInliner >> methods: inlinedMethods [
+	inlinedMethods do: [:m | methods at: m selector put: m]
 ]
 
 { #category : #unclassified }
-OptimizingMethodInliner >> selectors [
-	^methods collect: #selector
+OptimizingMethodInliner >> newDispatcher [
+	^ODispatchInliner new methodInliner: self
 ]
 
 { #category : #unclassified }
-OptimizingMethodInliner >> shouldInline: instruction [
-	^instruction isMessageSend
-		and: [self selectors includes: instruction selector]
+OptimizingMethodInliner >> staticInliner: method [
+	^self newDispatcher types: {nil -> method}
+]
+
+{ #category : #unclassified }
+OptimizingMethodInliner >> tryOptimizingSend: aMessageSend in: aBasicBlock [
+	| inliner |
+	inliner := self lookup: aMessageSend.
+	^inliner canBeInlined
+		ifTrue: [
+			changed := true.
+			inliner inline: aMessageSend in: aBasicBlock]
+		ifFalse: [aMessageSend -> aBasicBlock]
 ]
 

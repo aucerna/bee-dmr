@@ -17,7 +17,6 @@ OptimizingCFGSimplifier >> addPredecessor: predecessor like: middle to: final [
 	final phisDo: [:phi | | source |
 		source := phi atOperand: middle.
 		phi addVariable: source from: predecessor].
-	final addPredecessor: predecessor.
 	^final
 ]
 
@@ -26,10 +25,7 @@ OptimizingCFGSimplifier >> cleanFrom: aBlock [
 	| all |
 	firstBlock := aBlock.
 	all := firstBlock successorsPostOrder.
-	[
-		firstBlock updatePredecessors.
-		self simplify]
-		whileTrue: [all do: [:block | block dissolveIfUnreachable]]
+	[self simplify] whileTrue: [all do: [:block | block dissolveIfUnreachable]]
 ]
 
 { #category : #private }
@@ -45,11 +41,13 @@ OptimizingCFGSimplifier >> hoistBranchIn: succ to: pred [
 		removePredecessor: pred.
 	target1 := self addPredecessor: pred like: succ to: branch target.
 	target2 := self addPredecessor: pred like: succ to: branch implicitTarget.
-	new := branch class
-		variable: condition
-		target: target1
-		implicitTarget: target2.
-	jump dissolveReplacingWith: new
+	jump remove.
+	new := pred
+		endWith: branch class
+		to: target1
+		skipping: target2
+		if: condition.
+	jump replaceAllUsesWith: new
 ]
 
 { #category : #private }
@@ -68,18 +66,13 @@ OptimizingCFGSimplifier >> simplify [
 OptimizingCFGSimplifier >> tryCombining: block [
 	| last following |
 	last := block lastInstruction.
-	(last isUnconditionalJump and: [
-		following := last target.
-		following predecessors size = 1])
-		ifTrue: [
-			following successors do: [:successor | 
-				successor
-					addPredecessor: block;
-					removePredecessor: following;
-					phisDo: [:phi | phi replaceBlock: following with: block]].
-			last afterInsertAll: following firstInstruction; dissolve.
-			^true].
-	^false
+	last isUnconditionalJump ifFalse: [^false].
+	following := last target.
+	following hasMultiplePredecessors ifTrue: [^false].
+	following phisDo: [:phi | phi removeIfPossible].
+	last dissolve.
+	following moveAllTo: block.
+	^true
 ]
 
 { #category : #private }

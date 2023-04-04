@@ -117,26 +117,9 @@ OptimizingVariableBinder >> insertPhiOf: name at: block [
 		atAllPut: name;
 		asOrderedCollection.
 	phi := OPhi new basicVariables: variables blocks: block predecessors.
-	block firstInstruction beforeInsert: phi.
+	block afterInsert: phi.
 	pendingPhis add: phi -> block.
 	self define: phi as: name in: block
-]
-
-{ #category : #private }
-OptimizingVariableBinder >> instructionsForWriting: aWriteVariable [
-	| binding |
-	binding := aWriteVariable binding.
-	binding isTemporary
-		ifTrue: [^self instructionsForWriting: aWriteVariable toTemporary: binding].
-	binding isInstVar
-		ifTrue: [^self
-			instructionsForWriting: aWriteVariable
-			toInstanceVariable: binding].
-	binding refersToAssoc
-		ifTrue: [^self
-			instructionsForWriting: aWriteVariable
-			toAssociation: binding].
-	self halt
 ]
 
 { #category : #private }
