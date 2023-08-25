@@ -13,11 +13,6 @@ Class {
 }
 
 { #category : #bootstrapping }
-BootstrapModule >> imports [
-	^{#Core.Modules -> #Builder. #Core.Modules.JSON -> #Writer  }
-]
-
-{ #category : #bootstrapping }
 BootstrapModule >> start [
 	Kernel addModuleLoader: ModuleLoader new.
 ]

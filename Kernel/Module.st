@@ -15,7 +15,8 @@ Class {
 		'cachedLookups',
 		'classes',
 		'extensions',
-		'overriden'
+		'overriden',
+		'requires'
 	],
 	#category : #Kernel
 }
@@ -106,16 +107,47 @@ Module >> import: moduleName [
 
 { #category : #services }
 Module >> import: name from: moduleName [
+	^self import: name from: moduleName as: name
+]
+
+{ #category : #services }
+Module >> import: name from: moduleName as: newName [
 	| module import |
 	module := Kernel load: moduleName.
 	import := module namespace at: name.
-	self bind: import as: name
+	self bind: import as: newName
+]
+
+{ #category : #services }
+Module >> importDescriptor: descriptor [
+	| exportName moduleName |
+	exportName := descriptor value.
+	moduleName := descriptor key.
+	^self import: exportName from: moduleName
+]
+
+{ #category : #services }
+Module >> importRequiredModules [
+	requires do: [:name | self import: name].
+	self imports do: [:descriptor | self importDescriptor: descriptor]
+]
+
+{ #category : #services }
+Module >> imports [
+	"
+	Returns an array of import descriptors. A descriptor can be:
+	 - A composite symbol (i.e #Core.Modules.Writer) (NOT IMPLEMENTED YET).
+	 - An association of module name and exported name (i.e #Core.Modules.JSON -> #Writer)
+	 - An association of module name, exported name and rename (i.e. #Core.Modules.JSON -> (#Writer -> #JSONWriter)) (NOT IMPLEMENTED YET)
+	"
+	^#()
 ]
 
 { #category : #initializing }
 Module >> initialize [
-	name := self basicInitialize.
+	self basicInitialize.
 	namespace := Namespace new.
+	requires := #()
 ]
 
 { #category : #private }
@@ -125,9 +157,8 @@ Module >> justDefined: aSymbol [
 	lookups do: [:lookup | lookup flush]
 ]
 
-{ #category : #bootstrapping }
-Module >> loadRequiredModules [
-	self requires do: [:name | self import: name]
+{ #category : #private }
+Module >> justLoaded [
 ]
 
 { #category : #accessing }
@@ -148,14 +179,6 @@ Module >> overriden [
 
 { #category : #accessing }
 Module >> requires [
-	^#()
+	^requires
 ]
 
-{ #category : #services }
-Module >> require: moduleName [
-	| module |
-	namespace at: moduleName ifPresent: [:loaded | ^loaded].
-	module := Kernel loadModule: moduleName.
-	self bind: module as: moduleName.
-	^module
-]
