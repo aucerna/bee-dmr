@@ -92,7 +92,7 @@ KernelModule >> initialize [
 ]
 
 { #category : #services }
-KernelModule >> loadModule: aSymbol [
+KernelModule >> load: aSymbol [
 	| filename |
 	loadedModules at: aSymbol ifPresent: [:module | ^module].
 	moduleLoaders do: [:loader | 

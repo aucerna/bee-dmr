@@ -64,7 +64,9 @@ Module >> defaultName [
 	| classname i |
 	classname := self class name.
 	i := classname indexOfString: 'Module'.
-	^i = 0 ifTrue: [classname] ifFalse: [classname copyTo: i - 1]
+	i = 0 ifTrue: [^classname].
+	i = 1 ifTrue: [^classname copyFrom: 'Module' size + 1 to: classname size].
+	^classname copyTo: i - 1
 ]
 
 { #category : #services }
@@ -94,9 +96,18 @@ Module >> extensions [
 ]
 
 { #category : #services }
+Module >> import: moduleName [
+	| module |
+	namespace at: moduleName ifPresent: [:loaded | ^loaded].
+	module := Kernel load: moduleName.
+	self bind: module as: moduleName.
+	^module
+]
+
+{ #category : #services }
 Module >> import: name from: moduleName [
 	| module import |
-	module := self require: moduleName.
+	module := Kernel load: moduleName.
 	import := module namespace at: name.
 	self bind: import as: name
 ]
