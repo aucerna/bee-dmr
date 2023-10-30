@@ -14,7 +14,7 @@ Class {
 
 { #category : #adding }
 WeakIdentityDictionary >> add: anAssociation [
-	self ASSERT: anAssociation class == Ephemeron.
+	self _ASSERT: anAssociation class == Ephemeron.
 	^self critical: [super add: anAssociation]
 ]
 

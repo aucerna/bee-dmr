@@ -417,11 +417,6 @@ String >> ansiz [
 ]
 
 { #category : #converting }
-String >> asAnsi [
-	^self
-]
-
-{ #category : #converting }
 String >> asByteArray [
 	| array |
 	array := ByteArray new: self sizeInBytes.
@@ -519,6 +514,11 @@ String >> byteAt: position put: asciiValue [
 { #category : #accessing }
 String >> characterSize [
 	^1
+]
+
+{ #category : #copying }
+String >> copy [
+	^self copyFrom: 1 to: self size
 ]
 
 { #category : #private }

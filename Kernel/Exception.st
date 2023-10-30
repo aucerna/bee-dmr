@@ -226,7 +226,7 @@ Exception >> return: value [
 Exception >> signal [
 	| signaller result |
 	Smalltalk memory inGC
-		ifTrue: [self _error: 'trying to signal an exception in a critical moment'].
+		ifTrue: [self _error: 'Trying to signal an exception in a critical moment'].
 	signaller := self.
 	[signaller notNil] whileTrue: [
 		resignaledException := nil.

@@ -102,6 +102,16 @@ CompiledMethod >> beDMRVersion [
 ]
 
 { #category : #accessing }
+CompiledMethod >> beFlushed [
+	format := format bitOr: HasBeenFlushed
+]
+
+{ #category : #accessing }
+CompiledMethod >> beNotFlushed [
+	format := format bitClear: HasBeenFlushed
+]
+
+{ #category : #accessing }
 CompiledMethod >> blockCount [
 	^format bitsAt: BlockCount
 ]
@@ -183,6 +193,12 @@ CompiledMethod >> executeOn: receiver withArguments: anArray [
 	^receiver _invoke: nativeCode
 ]
 
+{ #category : #private }
+CompiledMethod >> flushFromCaches [
+	self beFlushed.
+	SendSite flush: selector
+]
+
 { #category : #accessing }
 CompiledMethod >> format [
 	^format
@@ -191,6 +207,11 @@ CompiledMethod >> format [
 { #category : #accessing }
 CompiledMethod >> format: anInteger [
 	format := anInteger
+]
+
+{ #category : #accessing }
+CompiledMethod >> hasBeenFlushed [
+	^(format bitAnd: HasBeenFlushed) > 0
 ]
 
 { #category : #testing }

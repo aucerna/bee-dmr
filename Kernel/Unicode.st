@@ -101,7 +101,7 @@ Unicode >> decodeStringFrom: aStream on: buffer [
 	n := string size.
 	[aStream atEnd or: [code = 0] or: [index >= n]] whileFalse: [
 		code := self decodeFrom: aStream.
-		(bytes andNot: [Ansi isAnsi: code]) ifTrue: [
+		(bytes andNot: [code < 255]) ifTrue: [
 			bytes := false.
 			string := string asWideString].
 		code = 0 ifFalse: [

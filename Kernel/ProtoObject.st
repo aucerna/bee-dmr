@@ -220,7 +220,7 @@ ProtoObject >> _invoke: aNativeCode [
 
 { #category : #'header access' }
 ProtoObject >> _isArrayed [
-	^false == self _isFixed
+	^(self _basicFlags bitAnd: IsArrayed) == IsArrayed
 ]
 
 { #category : #'header access' }
@@ -336,9 +336,9 @@ ProtoObject >> _pointersSize [
 ]
 
 { #category : #unwinding }
-ProtoObject >> _returnTo: aBeeFrame [
+ProtoObject >> _returnTo: framePointer [
 	[#forceEnvironment].
-	aBeeFrame _beCurrent.
+	framePointer _beCurrent.
 	^self
 ]
 
@@ -418,7 +418,7 @@ ProtoObject >> = other [
 
 { #category : #system }
 ProtoObject >> == anObject [
-	^self == anObject
+	^self _equals: anObject
 ]
 
 { #category : #system }

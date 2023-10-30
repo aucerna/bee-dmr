@@ -60,6 +60,9 @@ SmallInteger >> & anInteger [
 { #category : #arithmetic }
 SmallInteger >> * aNumber [
 	| result size |
+	aNumber _isSmallInteger ifTrue: [
+		result := self _smallIntegerMultiply: aNumber.
+		result _overflowed ifFalse: [^result]].
 	aNumber isInteger ifFalse: [^aNumber * self].
 	aNumber isLargeInteger ifTrue: [^aNumber * self].
 	size := self sizeInBytes + aNumber sizeInBytes.
@@ -86,7 +89,7 @@ SmallInteger >> // aNumber [
 					ifFalse: [-1]].
 			quotient := self / aNumber.
 			answer := quotient truncated.
-			^(quotient < 0 and: [quotient ~= answer])
+			^(quotient < 0 and: [quotient != answer])
 				ifTrue: [answer - 1]
 				ifFalse: [answer]]
 ]
@@ -119,34 +122,47 @@ SmallInteger >> ~= aNumber [
 
 { #category : #arithmetic }
 SmallInteger >> + aNumber [
-	^aNumber _isSmallInteger
+	| result |
+	aNumber _isSmallInteger ifFalse: [^aNumber + self].
+	result := self _smallIntegerPlus: aNumber.
+	^result _overflowed
 		ifTrue: [self asLargeInteger + aNumber]
-		ifFalse: [aNumber + self]
+		ifFalse: [result]
 ]
 
 { #category : #arithmetic }
 SmallInteger >> < aNumber [
-	^aNumber > self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smallIntegerLessThan: aNumber]
+		ifFalse: [aNumber > self]
 ]
 
 { #category : #comparing }
 SmallInteger >> <= aNumber [
-	^aNumber >= self
+	^aNumber _isSmallInteger
+		ifTrue: [self _smallIntegerLessEqualThan: aNumber]
+		ifFalse: [aNumber >= self]
 ]
 
 { #category : #comparing }
 SmallInteger >> = aNumber [
-	^aNumber = self
+	^aNumber _isSmallInteger
+		ifTrue: [self _equals: aNumber]
+		ifFalse: [aNumber = self]
 ]
 
 { #category : #comparing }
 SmallInteger >> > aNumber [
-	^aNumber < self
+	^aNumber _isSmallInteger
+		ifTrue: [aNumber _smallIntegerLessThan: self]
+		ifFalse: [aNumber < self]
 ]
 
 { #category : #comparing }
 SmallInteger >> >= aNumber [
-	^aNumber <= self
+	^aNumber _isSmallInteger
+		ifTrue: [aNumber _smallIntegerLessEqualThan: self]
+		ifFalse: [aNumber <= self]
 ]
 
 { #category : #arithmetic }
@@ -231,6 +247,7 @@ SmallInteger >> behavior: aBehavior [
 { #category : #bits }
 SmallInteger >> bitAnd: anInteger [
 	| sum |
+	anInteger _isSmallInteger ifTrue: [^self _smallIntegerBitAnd: anInteger].
 	anInteger isInteger ifFalse: [^anInteger bitAnd: self].
 	(self < 0 and: [anInteger < 0]) ifTrue: [^anInteger bitAnd: self].
 	sum := 0.
@@ -250,7 +267,9 @@ SmallInteger >> bitAt: anInteger [
 
 { #category : #bits }
 SmallInteger >> bitOr: anInteger [
-	^anInteger bitOr: self
+	^anInteger _isSmallInteger
+		ifTrue: [self _smallIntegerBitOr: anInteger]
+		ifFalse: [anInteger bitOr: self]
 ]
 
 { #category : #bits }
@@ -436,11 +455,6 @@ SmallInteger >> quo: aNumber [
 { #category : #arithmetic }
 SmallInteger >> quoRem1: anInteger [
 	^{self // anInteger. self \\ anInteger}
-]
-
-{ #category : #arithmetic }
-SmallInteger >> rem: aNumber [
-	^super rem: aNumber
 ]
 
 { #category : #finalization }

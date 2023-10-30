@@ -45,16 +45,32 @@ GlobalDispatchCache >> at: aSymbol for: aBehavior put: aCompiledMethod [
 	^self startingAt: index for: aBehavior put: aCompiledMethod
 ]
 
-{ #category : #services }
-GlobalDispatchCache >> flush [
-	1 to: contents _size do: [:i | contents _basicAt: i put: nil]
+{ #category : #accessing }
+GlobalDispatchCache >> basicFlush: selector for: aBehavior [
+	| index |
+	index := self indexOf: selector with: aBehavior.
+	self flush: selector for: aBehavior startingAt: index
 ]
 
 { #category : #accessing }
-GlobalDispatchCache >> flush: selector for: aBehavior [
-	| index |
-	index := self indexOf: selector with: aBehavior.
-	^self flush: selector for: aBehavior startingAt: index
+GlobalDispatchCache >> basicFlush: selector forSpecies: aSpecies [
+	"
+	We avoid sending messages to aSpecies because it would 
+	create a huge PIC. Instead we use undermessages.
+	"
+	| behavior subclasses |
+	behavior := aSpecies _basicAt: 2.
+	self basicFlush: selector for: behavior.
+	subclasses := self subclassesOf: aSpecies.
+	subclasses == nil ifFalse: [
+		1 to: subclasses size do: [:i | | subclass |
+			subclass := subclasses at: i.
+			subclass == nil ifFalse: [self basicFlush: selector forSpecies: subclass]]]
+]
+
+{ #category : #services }
+GlobalDispatchCache >> flush [
+	1 to: contents _size do: [:i | contents _basicAt: i put: nil]
 ]
 
 { #category : #services }
@@ -72,20 +88,22 @@ GlobalDispatchCache >> flush: selector for: aBehavior startingAt: position [
 
 { #category : #accessing }
 GlobalDispatchCache >> flush: selector forSpecies: aSpecies [
-	| index |
-	(aSpecies == Object or: [aSpecies == ProtoObject or: [aSpecies == nil]])
+	"
+	We avoid sending messages to aSpecies because it would 
+	create a huge PIC. Instead we use undermessages.
+	"
+	(Object == aSpecies or: [ProtoObject == aSpecies or: [aSpecies == nil]])
 		ifTrue: [^self flushAll: selector].
-	aSpecies withAllSubclassesDo: [:species | 
-		index := self indexOf: selector with: species instanceBehavior.
-		self flush: selector for: species instanceBehavior startingAt: index]
+	self basicFlush: selector forSpecies: aSpecies
 ]
 
 { #category : #services }
-GlobalDispatchCache >> flushAll: selector [
-	1 to: contents _size by: 2 do: [:i | | method |
+GlobalDispatchCache >> flushAll: aSymbol [
+	1 to: contents _size by: 2 do: [:i | | method selector |
 		method := contents _basicAt: i.
-		(method !== nil and: [method selector == selector])
-			ifTrue: [contents _basicAt: i put: nil]]
+		method == nil ifFalse: [
+			selector := method _basicAt: 4.
+			selector == aSymbol ifTrue: [contents _basicAt: i put: nil]]]
 ]
 
 { #category : #accessing }
@@ -112,7 +130,13 @@ GlobalDispatchCache >> lookup: selector for: aBehavior startingAt: position [
 		method := contents _basicAt: index.
 		method == nil ifTrue: [^nil].
 		protocol := contents _basicAt: index + 1.
-		(protocol == aBehavior and: [method selector == selector]) ifTrue: [^method].
+		(protocol == aBehavior and: [method selector == selector]) ifTrue: [
+			method hasBeenFlushed
+				ifTrue: [
+					contents
+						_basicAt: index + 1 put: nil;
+						_basicAt: index put: nil]
+				ifFalse: [^method]].
 		index := index + 2].
 	^nil
 ]
@@ -150,5 +174,20 @@ GlobalDispatchCache >> startingAt: position for: aBehavior put: aCompiledMethod 
 		_basicAt: position + 10 put: nil;
 		_basicAt: position + 12 put: nil;
 		_basicAt: position + 14 put: nil
+]
+
+{ #category : #accessing }
+GlobalDispatchCache >> subclassesOf: aSpecies [
+	"
+	Optimized to avoid megamorphic sends
+	"
+	| metaclass subclasses class |
+	metaclass := aSpecies _size = 6.
+	^metaclass
+		ifTrue: [
+			class := aSpecies _basicAt: 6.
+			subclasses := class _basicAt: 7.
+			subclasses == nil ifFalse: [subclasses collect: [:c | c class]]]
+		ifFalse: [aSpecies _basicAt: 7]
 ]
 

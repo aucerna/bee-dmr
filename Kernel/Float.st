@@ -447,7 +447,7 @@ Float >> < aNumber [
 	aNumber isFloat ifFalse: [^self < aNumber asFloat].
 	result := self _floatLessThan: aNumber.
 	result _isSmallInteger ifFalse: [^result].
-	self errorOn: #'<' status: result
+	^self errorOn: #'<' status: result
 ]
 
 { #category : #comparing }
@@ -475,7 +475,7 @@ Float >> = aNumber [
 	equal := nan == aNumber isNaN.
 	equal ifFalse: [^false].
 	nan ifTrue: [^true].
-	self errorOn: #'=' status: result
+	^self errorOn: #'=' status: result
 ]
 
 { #category : #comparing }
@@ -606,7 +606,7 @@ Float >> exp [
 	float clearStatusFlags.
 	result := OS libc exp: self.
 	status := self _floatStatus.
-	(float hasErrorFlag: status) ifTrue: [self errorOn: #exp status: status].
+	(float hasErrorFlag: status) ifTrue: [^self errorOn: #exp status: status].
 	^result
 ]
 
@@ -938,7 +938,7 @@ Float >> timesTwoPower: anInteger [
 	new := self copy.
 	result := new _timesTwoPower: anInteger asFloat.
 	result == new ifTrue: [^result].
-	self errorOn: #timesTwoPower status: result
+	^self errorOn: #timesTwoPower status: result
 ]
 
 { #category : #arithmetic }

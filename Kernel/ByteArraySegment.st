@@ -127,6 +127,11 @@ ByteArraySegment >> bytesAtOffset: anInteger put: aByteArray [
 ]
 
 { #category : #accessing }
+ByteArraySegment >> checkBounds: start to: end [
+	(start < 1 or: [end > size]) ifTrue: [self outOfBoundsIndex: end]
+]
+
+{ #category : #accessing }
 ByteArraySegment >> copyFrom: start to: end [
 	| s |
 	self validateIndex: start toIndex: end.

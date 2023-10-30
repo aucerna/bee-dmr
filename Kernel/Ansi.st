@@ -10,10 +10,28 @@ Class {
 }
 
 { #category : #services }
+Ansi class >> ansiTable [
+	^#(8364 0 8218 402 8222 8230 8224 8225
+		710 8240 352 8249 338 0 381 0 0 8216
+		8217 8220 8221 8226 8211 8212 732
+		8482 353 8250 339 0 382 376)
+]
+
+{ #category : #services }
 Ansi class >> isAnsi: anInteger [
 	anInteger < 128 ifTrue: [^true].
 	255 < anInteger ifTrue: [^false].
 	^159 < anInteger
+]
+
+{ #category : #private }
+Ansi class >> sortedAnsiTable [
+	^#(338 339 352 353 376 381 382
+		402
+		710 732
+		8211 8212 8216 8217 8218 8220 8221 8222 8224 8225 8226 8230 8240 8249 8250
+		8364
+		8482)
 ]
 
 { #category : #'encoding / decoding' }
@@ -26,7 +44,7 @@ Ansi >> decodeInteger: anInteger [
 	| code |
 	anInteger < 128 ifTrue: [^anInteger].
 	159 < anInteger ifTrue: [^anInteger].
-	code := Character ansiTable at: anInteger - 127.
+	code := self class ansiTable at: anInteger - 127.
 	^code = 0 ifTrue: [anInteger] ifFalse: [code]
 ]
 
@@ -35,7 +53,7 @@ Ansi >> encode: aCharacter on: aStream [
 	| value index |
 	value := aCharacter asInteger.
 	((value between: 128 and: 159) or: [255 < value]) ifTrue: [
-		index := Character ansiTable indexOf: value.
+		index := self class ansiTable indexOf: value.
 		value := index = 0 ifTrue: [$? asInteger] ifFalse: [index + 127]].
 	aStream nextPut: value
 ]
@@ -44,7 +62,7 @@ Ansi >> encode: aCharacter on: aStream [
 Ansi >> encodeInteger: anInteger [
 	| index |
 	anInteger < 256 ifTrue: [^anInteger].
-	index := Character ansiTable indexOf: anInteger.
+	index := self class ansiTable indexOf: anInteger.
 	^index = 0 ifTrue: [$? asInteger] ifFalse: [index + 127]
 ]
 

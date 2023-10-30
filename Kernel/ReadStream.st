@@ -479,7 +479,7 @@ ReadStream >> upTo: token [
 	[
 		self atEnd not and: [
 			c := self next.
-			c ~= token]]
+			c != token]]
 		whileTrue: [write nextPut: c].
 	^write contents
 ]

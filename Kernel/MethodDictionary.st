@@ -42,10 +42,10 @@ MethodDictionary >> basicAt: aSymbol put: aCompiledMethod [
 MethodDictionary >> basicRemoveKey: aSymbol ifAbsent: aBlock [
 	| copy |
 	(self includesKey: aSymbol) ifFalse: [^aBlock value].
-	self flushCache: aSymbol.
 	copy := MethodDictionary new.
-	self
-		keysAndValuesDo: [:selector :cm | selector == aSymbol
+	self keysAndValuesDo: [:selector :cm | 
+		selector == aSymbol
+			ifTrue: [cm flushFromCaches]
 			ifFalse: [copy basicAt: selector put: cm]].
 	[
 		table := copy contents owner: self.
@@ -67,15 +67,7 @@ MethodDictionary >> copy [
 
 { #category : #private }
 MethodDictionary >> flushCache [
-	self keysDo: [:selector | self flushCache: selector]
-]
-
-{ #category : #private }
-MethodDictionary >> flushCache: aSymbol [
-	| class |
-	class := self isEmpty ifFalse: [self anyone classBinding].
-	GlobalDispatchCache current flush: aSymbol forSpecies: class.
-	SendSite flush: aSymbol
+	self do: [:method | method flushFromCaches]
 ]
 
 { #category : #private }
@@ -106,5 +98,11 @@ MethodDictionary >> postCopy [
 { #category : #removing }
 MethodDictionary >> removeKey: aSymbol ifAbsent: aBlock [
 	^Smalltalk removeKey: aSymbol from: self ifAbsent: aBlock
+]
+
+{ #category : #private }
+MethodDictionary >> shouldNativizeBeforeInstalling: aCompiledMethod [
+	class imageSegment storesNativeCode ifTrue: [^true].
+	^aCompiledMethod notNil and: [aCompiledMethod isNativized]
 ]
 

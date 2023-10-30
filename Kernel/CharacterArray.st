@@ -117,8 +117,14 @@ CharacterArray >> article [
 ]
 
 { #category : #converting }
+CharacterArray >> asByteCharacters [
+	^self
+]
+
+{ #category : #converting }
 CharacterArray >> asFloat [
 	^Float fromString: self
+
 ]
 
 { #category : #converting }
@@ -143,17 +149,13 @@ CharacterArray >> asLowercase [
 { #category : #converting }
 CharacterArray >> asNumber [
 	^Number fromString: self
+
 ]
 
 { #category : #converting }
 CharacterArray >> asString [
 	^self
-]
 
-{ #category : #converting }
-CharacterArray >> asUnicode [
-	self ASSERT: false.
-	^self asWideString
 ]
 
 { #category : #converting }
@@ -435,10 +437,7 @@ td1: anArray [
 ]
 
 { #category : #testing }
-CharacterArray >> isAnsiCompliant [
-	1 to: self size do: [:i | | char |
-		char := self at: i.
-		char isAnsiCompliant ifFalse: [^false]].
+CharacterArray >> isByteCompliant [
 	^true
 ]
 
@@ -468,18 +467,6 @@ CharacterArray >> lineAt: index [
 		(index between: start and: end) ifTrue: [^line].
 		line := line + 1.
 		start := end]
-]
-
-{ #category : #filenames }
-CharacterArray >> pathName [
-	"
-	'c:\dir\name.ext' pathName
-	"
-	| slash index |
-	self asFilename directoryExists ifTrue: [^self].
-	slash := $\.
-	index := self findLast: [:char | char == slash] ifAbsent: [^'.'].
-	^self copyFrom: 1 to: index - 1
 ]
 
 { #category : #private }
@@ -678,6 +665,13 @@ CharacterArray >> trimPrefix: aString [
 	^(self beginsWith: aString)
 		ifTrue: [self allButFirst: aString size]
 		ifFalse: [self]
+]
+
+{ #category : #copying }
+CharacterArray >> trimRight [
+	| end |
+	end := self findLast: [:ch | ch isBlank not] ifAbsent: [^self class new].
+	^self copyFrom: 1 to: end
 ]
 
 { #category : #copying }

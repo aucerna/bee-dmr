@@ -25,14 +25,6 @@ Character class >> ampersand [
 	^$&
 ]
 
-{ #category : #private }
-Character class >> ansiTable [
-	^#(8364 0 8218 402 8222 8230 8224 8225
-		710 8240 352 8249 338 0 381 0 0 8216
-		8217 8220 8221 8226 8211 8212 732
-		8482 353 8250 339 0 382 376)
-]
-
 { #category : #'named characters' }
 Character class >> backspace [
 	^self value: 8
@@ -299,16 +291,6 @@ Character class >> sizeInBytes [
 	^1
 ]
 
-{ #category : #private }
-Character class >> sortedAnsiTable [
-	^#(338 339 352 353 376 381 382
-		402
-		710 732
-		8211 8212 8216 8217 8218 8220 8221 8222 8224 8225 8226 8230 8240 8249 8250
-		8364
-		8482)
-]
-
 { #category : #'named characters' }
 Character class >> space [
 	^$ 
@@ -398,18 +380,6 @@ Character >> >= aCharacter [
 ]
 
 { #category : #converting }
-Character >> asAnsi [
-	"
-	8364 asCharacter asAnsi
-	"
-	| index |
-	value < 256 ifTrue: [^self].
-	index := self class ansiTable indexOf: value.
-	index = 0 ifTrue: [^$?].
-	^Character value: index + 127
-]
-
-{ #category : #converting }
 Character >> asCharacter [
 	^self
 ]
@@ -434,13 +404,6 @@ Character >> asString [
 	| class |
 	class := self isAnsi ifTrue: [String] ifFalse: [WideString].
 	^class with: self
-]
-
-{ #category : #converting }
-Character >> asUnicode [
-	| code |
-	code := Ansi current decodeInteger: value.
-	^Character value: code
 ]
 
 { #category : #operations }
@@ -776,13 +739,6 @@ Character >> numericValue [
 Character >> printOn: aStream [
 	self isUnicode ifTrue: [aStream beUnicode].
 	aStream nextPut: $$; nextPut: self
-]
-
-{ #category : #converting }
-Character >> reduced [
-	self ASSERT: false.
-	value < 256 ifTrue: [^self].
-	^self isAnsiCompliant ifTrue: [self asAnsi] ifFalse: [self]
 ]
 
 { #category : #private }

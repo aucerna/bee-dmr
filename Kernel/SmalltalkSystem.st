@@ -70,7 +70,7 @@ SmalltalkSystem >> at: aSymbol ifAbsentPut: aBlock [
 { #category : #accessing }
 SmalltalkSystem >> at: aSymbol put: anObject [
 	| key global |
-	key := aSymbol asSelector.
+	key := aSymbol asSymbol.
 	global := globals at: key ifAbsent: nil.
 	global isClass ifTrue: [
 		anObject == global ifTrue: [^self].
@@ -208,8 +208,6 @@ SmalltalkSystem >> finalizer [
 
 { #category : #services }
 SmalltalkSystem >> flushDispatchCaches [
-	GlobalDispatchCache current flush.
-	SendSite flushInstances; flush
 ]
 
 { #category : #accessing }
@@ -290,7 +288,7 @@ SmalltalkSystem >> initializeFinalizationBlocks [
 
 { #category : #initialization }
 SmalltalkSystem >> initializeFinalizer [
-	finalizer := WeakIdentitySet new
+	finalizer := WeakIdentitySet new asCriticalSet
 ]
 
 { #category : #initialization }
@@ -401,11 +399,15 @@ SmalltalkSystem >> propertiesFor: anObject [
 
 { #category : #accessing }
 SmalltalkSystem >> put: aCompiledMethod at: aSymbol in: aMethodDictionary [
-	(aMethodDictionary shouldNativizeBeforeInstalling: aSymbol)
+	| original |
+	original := aMethodDictionary at: aSymbol ifAbsent: nil.
+	(aMethodDictionary shouldNativizeBeforeInstalling: original)
 		ifTrue: [aCompiledMethod prepareForExecution].
 	self put: aCompiledMethod withoutFlushing: aSymbol in: aMethodDictionary.
-	aMethodDictionary flushCache: aSymbol.
-	^aCompiledMethod
+	original
+		ifNil: [aSymbol flushFromCachesWith: aCompiledMethod classBinding]
+		ifNotNil: [original flushFromCaches].
+	^aCompiledMethod beNotFlushed
 ]
 
 { #category : #accessing }
@@ -466,16 +468,18 @@ SmalltalkSystem >> removeKey: key [
 
 { #category : #accessing }
 SmalltalkSystem >> removeKey: aSymbol from: aMethodDictionary ifAbsent: aBlock [
-	| cm |
-	cm := aMethodDictionary at: aSymbol ifAbsent: [^aBlock value].
-	self devenv forgetMethod: cm.
-	^aMethodDictionary basicRemoveKey: aSymbol asSelector ifAbsent: aBlock
+	| cm symbol |
+	symbol := aSymbol asSymbol.
+	self isRuntime ifFalse: [
+		cm := aMethodDictionary at: symbol ifAbsent: [^aBlock value].
+		self updateWithoutMethod: cm].
+	^aMethodDictionary basicRemoveKey: symbol ifAbsent: aBlock
 ]
 
 { #category : #removing }
 SmalltalkSystem >> removeKey: aSymbol ifAbsent: aBlock [
 	| selector global |
-	selector := aSymbol asSelector.
+	selector := aSymbol asSymbol.
 	global := globals at: selector ifAbsent: [^aBlock value].
 	(global isClass and: [global symbol == selector]) ifTrue: [
 		global allInstances notEmpty
@@ -488,7 +492,7 @@ SmalltalkSystem >> removeKey: aSymbol ifAbsent: aBlock [
 { #category : #updating }
 SmalltalkSystem >> renameClass: aClass to: aSymbol [
 	| symbol token assoc |
-	symbol := aSymbol asSymbol asSelector.
+	symbol := aSymbol asSymbol.
 	(globals includesKey: symbol)
 		ifTrue: [self error: 'the global ' , symbol , ' already exists'].
 	token := aClass symbol.

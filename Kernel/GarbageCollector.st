@@ -26,6 +26,11 @@ GarbageCollector class >> on: aMemory [
 ]
 
 { #category : #ephemerons }
+GarbageCollector >> checkEphemeron: object [
+	
+]
+
+{ #category : #ephemerons }
 GarbageCollector >> checkEphemerons [
 	| done |
 	done := true.
@@ -162,7 +167,9 @@ GarbageCollector >> rememberSpecial: object [
 	| collection class |
 	class := object class.
 	collection := class == Ephemeron
-		ifTrue: [uncheckedEphemerons]
+		ifTrue: [
+			self checkEphemeron: object.
+			uncheckedEphemerons]
 		ifFalse: [class == StackWrapper ifTrue: [stacks] ifFalse: [weakContainers]].
 	collection unsafeAdd: object
 ]
@@ -194,14 +201,19 @@ GarbageCollector >> scan: current from: start to: limit [
 ]
 
 { #category : #cleaning }
-GarbageCollector >> scanNativeStack: stackWrapper [
-	stackWrapper isActive
-		ifTrue: [self updateStackPointer: stackWrapper]
-		ifFalse: [self scanTopSlot: stackWrapper].
-	stackWrapper
+GarbageCollector >> scanFirstStackChunk: aStackWrapper [
+	| start end |
+	aStackWrapper isActive
+		ifTrue: [self updateStackPointer: aStackWrapper]
+		ifFalse: [self scanTopSlot: aStackWrapper].
+	start := aStackWrapper sp + (WordSize * 2) _asPointer.
+	end := aStackWrapper bp.
+	aStackWrapper
 		nativeFramesDo: [:frame :size | self
 			scanNativeStackFrame: frame
 			sized: size]
+		startingAt: start
+		base: end
 ]
 
 { #category : #cleaning }
@@ -214,18 +226,6 @@ GarbageCollector >> scanNativeStackFrame: framePointer sized: size [
 ]
 
 { #category : #cleaning }
-GarbageCollector >> scanReifiedStack: stackWrapper [
-	| sp size |
-	sp := stackWrapper sp.
-	size := stackWrapper reifiedSize.
-	self scan: sp _asObject from: 1 to: size.
-	stackWrapper
-		framesBeneathCallbackDo: [:frame :nativeSize | self
-			scanNativeStackFrame: frame
-			sized: nativeSize]
-]
-
-{ #category : #cleaning }
 GarbageCollector >> scanSpecialSlots: special [
 	self scan: special from: 1 to: special _size
 ]
@@ -233,9 +233,11 @@ GarbageCollector >> scanSpecialSlots: special [
 { #category : #cleaning }
 GarbageCollector >> scanStack: aStackWrapper [
 	aStackWrapper isValid ifFalse: [^self].
-	aStackWrapper isNative
-		ifTrue: [self scanNativeStack: aStackWrapper]
-		ifFalse: [self scanReifiedStack: aStackWrapper]
+	aStackWrapper isNative ifTrue: [self scanFirstStackChunk: aStackWrapper].
+	aStackWrapper
+		framesBeneathCallbackDo: [:frame :nativeSize | self
+			scanNativeStackFrame: frame
+			sized: nativeSize]
 ]
 
 { #category : #cleaning }
@@ -286,7 +288,7 @@ GarbageCollector >> strenghtenAndMigrateEphemerons [
 	contents := self copyRescuedEphemerons.
 	contents ifNil: [
 		^self
-			_error: 'rescued ephemerons could not be copied outside of GC work space'].
+			_error: 'Rescued ephemerons could not be copied outside of GC work space'].
 	contents _beSeen.
 	memory rememberIfNeeded: contents.
 	rescuedEphemerons

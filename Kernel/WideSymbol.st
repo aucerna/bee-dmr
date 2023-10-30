@@ -22,7 +22,7 @@ WideSymbol class >> findInterned: aString [
 { #category : #accessing }
 WideSymbol class >> intern: aString [
 	| symbol canonical |
-	aString isAnsiCompliant ifTrue: [^Symbol intern: aString reduced].
+	aString isByteCompliant ifTrue: [^Symbol intern: aString asByteCharacters].
 	symbol := aString asByteArray.
 	symbol changeClassTo: self.
 	canonical := SymbolTable lookup: symbol.
@@ -36,20 +36,20 @@ WideSymbol >> <= aString [
 ]
 
 { #category : #converting }
-WideSymbol >> asAnsi [
-	^self asString asAnsi asSymbol
+WideSymbol >> asByteCharacters [
+	| n result |
+	n := self size.
+	result := Symbol new: n.
+	1 to: n do: [:i | | code char |
+		code := self codeAt: i.
+		char := code < 256 ifTrue: [code] ifFalse: [$? asInteger].
+		result byteAt: i put: char].
+	^result
 ]
 
 { #category : #converting }
 WideSymbol >> asLowercase [
 	^UTF16 current lowercaseOf: self
-]
-
-{ #category : #converting }
-WideSymbol >> asSelector [
-	^self isAnsiCompliant
-		ifTrue: [self asString asAnsi asSelector]
-		ifFalse: [self]
 ]
 
 { #category : #converting }
@@ -94,6 +94,11 @@ WideSymbol >> atValid: index [
 { #category : #private }
 WideSymbol >> codeAt: index [
 	^self uLongAtOffset: index - 1 * 4
+]
+
+{ #category : #testing }
+WideSymbol >> isByteCompliant [
+	^false
 ]
 
 { #category : #testing }

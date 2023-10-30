@@ -29,7 +29,7 @@ Closure class >> initializeIndexes [
 Closure class >> newFrom: aBlock [
 	| size closure |
 	#atomic.
-	size := aBlock _size.
+	size := aBlock _size - 1.
 	closure := self allocate: size * WordSize size: size.
 	closure _beNamed; _beArrayed.
 	self nil: size slotsOf: closure.
@@ -46,7 +46,7 @@ Closure class >> receiverIndex [
 { #category : #handling }
 Closure >> _return: result [
 	self canReturn ifFalse: [^self cannotReturn].
-	^ActiveProcess returnTo: homeFrame with: result
+	^ActiveProcess returnTo: homeFrame current with: result
 ]
 
 { #category : #comparing }
@@ -183,11 +183,11 @@ Closure >> forkNamed: aString [
 
 { #category : #comparing }
 Closure >> hash [
-	| hash |
-	hash := self size.
-	hash := (hash hashMultiply: 16r19660D) bitXor: block hash.
+	| hash s |
+	s := self size.
+	hash := (s hashMultiply: 16r19660D) bitXor: block hash.
 	1
-		to: hash
+		to: s
 		do: [:i | hash := (hash hashMultiply: 16r19660D) bitXor: (self at: i) hash].
 	^hash
 ]
@@ -216,6 +216,13 @@ Closure >> ifCurtailed: aBlock [
 		success := true.
 		value]
 		ensure: [success ifFalse: [aBlock value]]
+]
+
+{ #category : #'file in/out' }
+Closure >> invalidate [
+	| error |
+	error := [nil error: 'trying to execute invalid closure'].
+	block := error block
 ]
 
 { #category : #accessing }

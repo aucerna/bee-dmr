@@ -22,12 +22,17 @@ Class {
 	#category : #Kernel
 }
 
+{ #category : #'instance creation' }
+AllocationZone class >> new [
+	^super new initialize
+]
+
 { #category : #services }
 AllocationZone >> allocate: size [
 	| oop |
 	oop := self allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
-	self error: 'not enough space'
+	self _error: 'Out of memory in old space'
 ]
 
 { #category : #services }
@@ -42,6 +47,11 @@ AllocationZone >> allocateIfPossible: size [
 { #category : #services }
 AllocationZone >> assureFree: anInteger [
 	current availableBytes < anInteger ifTrue: [self bumpSpace]
+]
+
+{ #category : #inquiries }
+AllocationZone >> availableBytes [
+	^self usableBytes - self commitedBytes
 ]
 
 { #category : #accessing }
@@ -87,7 +97,7 @@ AllocationZone >> commitedBytes [
 { #category : #private }
 AllocationZone >> createEmptySpace [
 	| start s end |
-	nextFree == limit ifTrue: [self error: 'out of space'].
+	nextFree == limit ifTrue: [self _error: 'Out of space in old zone'].
 	start := nextFree.
 	end := nextFree + spaceSize.
 	nextFree := end + spaceSize.
@@ -158,7 +168,7 @@ AllocationZone >> objectsDo: aBlock [
 	spaces do: [:s | s objectsDo: aBlock]
 ]
 
-{ #category : #private }
+{ #category : #accessing }
 AllocationZone >> occupancy [
 	^occupancy
 ]
@@ -178,7 +188,7 @@ AllocationZone >> regionCount [
 	^self indexOfPointer: nextFree - 1
 ]
 
-{ #category : #updating }
+{ #category : #inquiries }
 AllocationZone >> regionIndexOf: object [
 	| pointer |
 	pointer := object _asPointer.
@@ -187,7 +197,7 @@ AllocationZone >> regionIndexOf: object [
 	^self indexOfPointer: pointer
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 AllocationZone >> regionSize [
 	^spaceSize
 ]
@@ -217,6 +227,11 @@ AllocationZone >> relocate: anInteger [
 	limit := limit + anInteger
 ]
 
+{ #category : #inquiries }
+AllocationZone >> reservedBytes [
+	^limit - base * 2
+]
+
 { #category : #private }
 AllocationZone >> resetOccupancy [
 	occupancy atAllPut: 0.
@@ -241,7 +256,7 @@ AllocationZone >> size [
 	^limit - base
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 AllocationZone >> spaces [
 	^spaces
 ]
@@ -258,6 +273,14 @@ AllocationZone >> updateRegionOccupancy: object [
 	index ifNil: [^self].
 	bytes := occupancy at: index.
 	occupancy at: index put: bytes + object _sizeInBytes
+]
+
+{ #category : #inquiries }
+AllocationZone >> usableBytes [
+	"
+	half of each reserved area is held for evacuation purposes only and not directly usable
+	"
+	^self reservedBytes // 2
 ]
 
 { #category : #inquiries }

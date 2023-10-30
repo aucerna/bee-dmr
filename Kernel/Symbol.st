@@ -83,20 +83,10 @@ Symbol >> arity [
 ]
 
 { #category : #converting }
-Symbol >> asAnsi [
-	^self
-]
-
-{ #category : #converting }
 Symbol >> asByteArray [
 	| array |
 	array := ByteArray new: self sizeInBytes.
 	^array replaceBytesFrom: 1 to: array size with: self startingAt: 1
-]
-
-{ #category : #converting }
-Symbol >> asSelector [
-	^self
 ]
 
 { #category : #converting }
@@ -177,6 +167,12 @@ Symbol >> evaluateWithArguments: anArray [
 { #category : #converting }
 Symbol >> existingSymbol [
 	^self
+]
+
+{ #category : #converting }
+Symbol >> flushFromCachesWith: aSpecies [
+	GlobalDispatchCache current flush: self forSpecies: aSpecies.
+	SendSite flush: self
 ]
 
 { #category : #private }
@@ -335,7 +331,7 @@ Symbol >> storeOn: aStream [
 	aStream nextPut: $#.
 	(self isEmpty or: [| first |
 		first := self first.
-		(first isLetter not and: [first ~= $_])
+		(first isLetter not and: [first != $_])
 			or: [self anySatisfy: [:char | char isIdentifierCharacter not]]])
 		ifTrue: [
 			aStream nextPut: $'.

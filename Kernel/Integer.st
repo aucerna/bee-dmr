@@ -277,16 +277,16 @@ Integer >> gcd: anInteger [
 	u := self abs max: (v := anInteger abs).
 	v := self abs min: v.
 	[v class == SmallInteger] whileFalse: [
-		(uHat := u bitShift: (k := higher - u highBit)) class == SmallInteger
-			ifFalse: [
-				k := k - 1.
-				uHat := uHat bitShift: -1].
+		k := higher - u highBit.
+		(uHat := u bitShift: k) class == SmallInteger ifFalse: [
+			k := k - 1.
+			uHat := uHat bitShift: -1].
 		vHat := v bitShift: k.
 		a := d := 1.
 		b := c := 0.
 		[
-			(vPrime := vHat + d) ~= 0 and: [
-				(vPrimePrime := vHat + c) ~= 0
+			(vPrime := vHat + d) != 0 and: [
+				(vPrimePrime := vHat + c) != 0
 					and: [(q := uHat + a // vPrimePrime) = (uHat + b // vPrime)]]]
 			whileTrue: [
 				c := a - (q * (a := c)).

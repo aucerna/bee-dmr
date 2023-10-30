@@ -155,13 +155,20 @@ Memory >> allocate: size [
 	oop := edenSpace allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
 	size > LargeThreshold ifTrue: [^self allocateLarge: size].
-	CRITICAL ifFalse: [self collectIfTime; updateUI].
 	^self allocateCommitting: size
 ]
 
 { #category : #allocation }
 Memory >> allocateCommitting: size [
-	| oop |
+	| oop grew |
+	grew := edenSpace increaseSoftLimit: 256 kbytes _asPointer.
+	CRITICAL ifFalse: [
+		grew
+			ifTrue: [self rescueEphemerons]
+			ifFalse: [self collectYoung; collectOldIfTime].
+		self updateUI].
+	oop := edenSpace allocateIfPossible: size.
+	oop _isSmallInteger ifTrue: [^oop].
 	oop := allocator allocateIfPossible: size.
 	oop _isSmallInteger ifTrue: [^oop].
 	^oldZone allocate: size
@@ -172,7 +179,9 @@ Memory >> allocateLarge: size [
 	| space oop |
 	space := self createLargeSpace: size.
 	oop := space allocateIfPossible: size.
-	oop _isSmallInteger ifFalse: [self error: 'allocation failed'].
+	oop _isSmallInteger
+		ifFalse: [self
+			_error: 'Failed to allocate large space of size ' , size printString].
 	^oop
 ]
 
@@ -208,7 +217,7 @@ Memory >> allSubinstancesOf: aSpecies [
 	^subinstances
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> arenaBytes [
 	^oldZone size + edenSpace size + toSpace size * 2
 ]
@@ -218,12 +227,12 @@ Memory >> assureFree: size [
 	edenSpace availableBytes < size ifTrue: [self collectYoung]
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> available [
 	^edenSpace availableBytes
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> baseAddress [
 	^spaces first dataBase
 ]
@@ -247,15 +256,13 @@ Memory >> collect [
 ]
 
 { #category : #allocation }
-Memory >> collectIfTime [
-	(edenSpace increaseSoftLimit: 256 kbytes _asPointer) ifTrue: [^self].
-	self collectYoung.
-	fullCollector reachedCountdown ifTrue: [self collectOld]
+Memory >> collectOld [
+	self markedEvaluate: []
 ]
 
 { #category : #allocation }
-Memory >> collectOld [
-	self markedEvaluate: []
+Memory >> collectOldIfTime [
+	fullCollector hasReachedCountdown ifTrue: [self collectOld]
 ]
 
 { #category : #private }
@@ -265,11 +272,14 @@ Memory >> collectYoung [
 	would be created before setting CRITICAL to true, and that may trigger
 	a infinite chain of recursive collectYoung sends
 	"
-	CRITICAL ifTrue: [self stop].
+	CRITICAL
+		ifTrue: [self
+			_error: 'Attempted to collect young memory during a critical section'].
 	CRITICAL := inGC := true.
+	SendSite ensureEnoughFreeCaches: 100.
 	self collectYoungMeasuring.
 	CRITICAL := inGC := false.
-	self freshenFinalizable; rescueEphemerons; adjustSpaces
+	self freshenFinalizable; adjustSpaces; rescueEphemerons
 ]
 
 { #category : #private }
@@ -282,6 +292,11 @@ Memory >> collectYoungMeasuring [
 	fullCollector tenured: meter runs last tenured
 ]
 
+{ #category : #inquiries }
+Memory >> commitedSize [
+	^spaces inject: 0 into: [:sum :space | sum + (space commitedSize * 2)]
+]
+
 { #category : #private }
 Memory >> createLargeSpace: size [
 	"
@@ -291,6 +306,9 @@ Memory >> createLargeSpace: size [
 	"
 	| address space limit |
 	address := OS reserveAndCommit: size.
+	address = 0
+		ifTrue: [self
+			_error: 'Not enough memory to allocate ' , size printString , ' bytes'].
 	space := self newSpace address: address size: size.
 	limit := space reservedLimit.
 	space
@@ -319,7 +337,7 @@ Memory >> createPinnedSpace [
 	self addSpace: pinnedSpace
 ]
 
-{ #category : #initialization }
+{ #category : #private }
 Memory >> createRememberedSet [
 	rememberedSet := RememberedSet new initialize: 16 kbytes
 ]
@@ -404,7 +422,7 @@ Memory >> fullClassMortalityHistogram [
 	^histogram
 ]
 
-{ #category : #system }
+{ #category : #private }
 Memory >> garbageCollectTest2 [
 	| space broken |
 	space := GCSpace copyFrom: fromSpace.
@@ -413,7 +431,7 @@ Memory >> garbageCollectTest2 [
 	broken size > 0 ifTrue: [broken halt]
 ]
 
-{ #category : #inquiries }
+{ #category : #testing }
 Memory >> hasMarkedReferencesTo: aGCSpace in: aCollection [
 	aCollection do: [:space | 
 		space markedDo: [:object | 
@@ -424,7 +442,7 @@ Memory >> hasMarkedReferencesTo: aGCSpace in: aCollection [
 	^false
 ]
 
-{ #category : #inquiries }
+{ #category : #testing }
 Memory >> hasReferencesToSpace: aGCSpace [
 	| searched |
 	searched := spaces copyWithout: aGCSpace.
@@ -433,6 +451,9 @@ Memory >> hasReferencesToSpace: aGCSpace [
 
 { #category : #statistics }
 Memory >> histogram [
+	"
+	Memory current histogram
+	"
 	| sizes |
 	sizes := Dictionary new: 3000.
 	self critical: [| original |
@@ -441,7 +462,7 @@ Memory >> histogram [
 	^sizes associations asArray sortBy: [:a :b | a value > b value]
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 Memory >> inGC [
 	^inGC
 ]
@@ -491,7 +512,7 @@ Memory >> isYoungSafe: anObject [
 	^anObject _asPointer between: youngBase and: youngLimit
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> kernelSpace [
 	^spaces first
 ]
@@ -504,9 +525,9 @@ Memory >> largeSpaces [
 { #category : #services }
 Memory >> make: anObject become: anotherObject [
 	"
-	We cannot use anObject from a closure here: the become action might
-	be applied to the closure elements before finishing and after that
-	point we wouldn't find anObject anymore
+	We cannot create closures here: the become action might be
+	applied to the closure elements before finishing and afterwards
+	we wouldn't find anObject anymore
 	"
 	| prev |
 	prev := CRITICAL.
@@ -540,7 +561,7 @@ Memory >> markedEvaluate: aClosure [
 		fromSpace unmarkAll] evaluateAtomically.
 	inGC := false.
 	CRITICAL := prev.
-	prev ifFalse: [self rescueEphemerons].
+	self rescueEphemerons.
 	^result
 ]
 
@@ -549,7 +570,7 @@ Memory >> meterRuns [
 	^meter runs
 ]
 
-{ #category : #copying }
+{ #category : #allocation }
 Memory >> newLargeArray: size [
 	| headerSize bodySize totalSize buffer object |
 	#atomic.
@@ -628,12 +649,12 @@ Memory >> old [
 	^oldZone
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> oldBase [
 	^oldZone base
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 Memory >> oldLimit [
 	^oldZone limit
 ]
@@ -648,7 +669,7 @@ Memory >> oldRecyclableByteCount [
 	^total
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 Memory >> oldSizesHistogram [
 	| histogram |
 	histogram := Dictionary new.
@@ -690,7 +711,7 @@ Memory >> pinnedCopy: anObject [
 	^copy
 ]
 
-{ #category : #initialization }
+{ #category : #testing }
 Memory >> pointsToYoungObjects: anObject [
 	(self isYoung: anObject behavior) ifTrue: [^true].
 	1 to: anObject _pointersSize do: [:index | | ivar |
@@ -734,7 +755,7 @@ Memory >> printOn: stream [
 	^stream
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 Memory >> queueEphemerons: aCriticalArray [
 	unreachableEphemerons addAll: aCriticalArray
 ]
@@ -772,21 +793,6 @@ Memory >> remember: anObject [
 	rememberedSet add: anObject
 ]
 
-{ #category : #services }
-Memory >> rememberAfterBecome: anObject [
-	"
-	When a remembered object is becomed into another, it
-	is implicitly removed from the remembered set. It will
-	not be updated during GC any more, which should be ok
-	as the original object should be unreachable and therefore
-	considered dead. However, current bee doesn't become
-	references in native code, and also resurrects dead objects
-	in some places (allInstances), so we rather keep updating
-	the old object for now.
-	"
-	anObject _isRemembered ifTrue: [self remember: anObject _beNotRemembered]
-]
-
 { #category : #accessing }
 Memory >> rememberedSet [
 	^rememberedSet
@@ -809,14 +815,36 @@ Memory >> rememberIfNotYoung: anObject [
 
 { #category : #services }
 Memory >> removeSpace: aCodeImageSegment [
-	spaces remove: aCodeImageSegment space
+	"
+	The spaces array could grow while executing. This could happen if a send site
+	cache is fetched and indirectly causes a large space or pinned space to be created.
+	To avoid that from happening we ensure there is a good amount of them free
+	"
+	self critical: [
+		SendSite ensureEnoughFreeCaches: 100.
+		spaces remove: aCodeImageSegment space]
 ]
 
 { #category : #services }
 Memory >> rescueEphemerons [
-	[unreachableEphemerons isEmpty] whileFalse: [| e |
-		e := unreachableEphemerons pop.
-		[e rescue] ifCurtailed: [e activate]]
+	"
+	Rescuing ephemerons can trigger all kinds of behavior (i.e. process switches,
+	full GCs, etc). For that reason, in critical moments or when interrupts are disabled
+	we don't rescue them instantly. They won't be lost, but will be rescued after the
+	next GC. 
+	Each time an ephemeron being rescued causes GC, that GC pass will recusively
+	send rescueEphemerons. If not careful, that recursion can chain and quickly consume
+	all the stack space. For that reason, we remove all currently unreachable from the
+	list, so that recursive GCs end up sooner (once an ephemeron is found unreachable
+	it is deactivated, so it won't be added again to the unreachable list)
+	"
+	| work |
+	CRITICAL ifTrue: [^self].
+	Processor areInterruptsEnabled ifFalse: [^self].
+	work := unreachableEphemerons.
+	work isEmpty ifTrue: [^self].
+	unreachableEphemerons := CriticalArray new growTo: 1000.
+	work do: [:e | [e rescue] ifCurtailed: [e activate]]
 ]
 
 { #category : #private }
@@ -857,7 +885,7 @@ Memory >> shallowCopy: object [
 	^answer
 ]
 
-{ #category : #initialization }
+{ #category : #testing }
 Memory >> shouldBeInRememberedSet: anObject [
 	(self isYoung: anObject) ifTrue: [^false].
 	^self pointsToYoungObjects: anObject
@@ -875,25 +903,33 @@ Memory >> startUp [
 	self initializeCollectors
 ]
 
-{ #category : #services }
-Memory >> stop [
-	self _error: 'memory stopped'
-]
-
 { #category : #accessing }
 Memory >> to [
 	^toSpace
 ]
 
-{ #category : #system }
+{ #category : #accessing }
 Memory >> unreachableEphemerons [
 	^unreachableEphemerons
 ]
 
 { #category : #allocation }
 Memory >> updateUI [
+	"
+	checking events during callbacks is disabled because handlers could block in
+	semaphores but we don't allow switching processes during callbacks
+	"
 	Processor areInterruptsEnabled ifFalse: [^self].
+	ActiveProcess isInCallback ifTrue: [^self].
 	Smalltalk eventDispatcher ifNotNil: [:dispatcher | dispatcher checkEvents]
+]
+
+{ #category : #inquiries }
+Memory >> usedSpace [
+	"
+	Memory current usedSpace
+	"
+	^spaces inject: 0 into: [:sum :space | sum + (space used * 2)]
 ]
 
 { #category : #allocation }

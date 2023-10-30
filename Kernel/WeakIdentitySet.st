@@ -16,25 +16,29 @@ Class {
 WeakIdentitySet >> add: element [
 	| ephemeron |
 	element == nil ifTrue: [^element].
-	[
-		ephemeron := Ephemeron new registry: self.
-		ephemeron key: element value: nil.
-		(table atKey: element put: ephemeron) == nil ifTrue: [self incrementTally]] evaluateAtomically.
+	ephemeron := Ephemeron new registry: self.
+	ephemeron key: element value: nil.
+	(table atKey: element put: ephemeron) == nil ifTrue: [self incrementTally].
 	^element
+]
+
+{ #category : #testing }
+WeakIdentitySet >> asCriticalSet [
+	^CriticalSet new contents: self
 ]
 
 { #category : #private }
 WeakIdentitySet >> basicAdd: element [
 	element isNil ifTrue: [^self].
 	tally := tally + 1.
-	self ASSERT: element class == Ephemeron.
+	self _ASSERT: element class == Ephemeron.
 	table basicAtKey: element key put: element.
 	^element
 ]
 
 { #category : #enumerating }
 WeakIdentitySet >> do: aBlock [
-	[super do: [:e | aBlock value: e key]] evaluateAtomically
+	super do: [:e | aBlock value: e key]
 ]
 
 { #category : #enumerating }
@@ -60,11 +64,6 @@ WeakIdentitySet >> hashFor: object [
 { #category : #private }
 WeakIdentitySet >> keyFor: anObject [
 	^anObject key
-]
-
-{ #category : #removing }
-WeakIdentitySet >> remove: anObject ifAbsent: aBlock [
-	^[super remove: anObject ifAbsent: aBlock] evaluateAtomically
 ]
 
 { #category : #private }

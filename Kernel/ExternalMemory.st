@@ -458,11 +458,7 @@ startingAt: position [
 	pos := anObject isUnicodeString
 		ifTrue: [anObject indexAt: position]
 		ifFalse: [position].
-	self
-		replaceBytesFrom: start
-		to: stop
-		with: anObject
-		startingAt: pos
+	self replaceBytesFrom: start to: stop with: anObject startingAt: pos
 ]
 
 { #category : #accessing }

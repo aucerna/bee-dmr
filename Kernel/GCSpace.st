@@ -74,7 +74,7 @@ GCSpace >> addMarkedReferencesTo: anObject into: aCollection [
 		next := object _nextBasePointer]
 ]
 
-{ #category : #asserting }
+{ #category : #accessing }
 GCSpace >> address: address size: size [
 	| p |
 	p := address // 2.
@@ -148,7 +148,7 @@ GCSpace >> commitAtLeast: bytes [
 	self commit: size
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 GCSpace >> commitedBytes [
 	^commitedLimit - base * 2
 ]
@@ -235,7 +235,7 @@ GCSpace >> dataSize [
 	^reservedLimit - base * 2
 ]
 
-{ #category : #accessing }
+{ #category : #actions }
 GCSpace >> decommitIfPossible: anInteger [
 	| delta dispense limit min newsoft |
 	delta := anInteger bitAnd: -0x1000 _asPointer.
@@ -354,7 +354,7 @@ GCSpace >> lockedAllocateIfPossible: size [
 	^answer
 ]
 
-{ #category : #enumeration }
+{ #category : #actions }
 GCSpace >> make: anObject become: anotherObject [
 	"
 	should use objectsDo:, but using blocks creates
@@ -466,13 +466,14 @@ GCSpace >> relocate: offset [
 
 { #category : #actions }
 GCSpace >> relocatingSetUp [
-	| reserved committed address offset |
+	| reserved committed address offset limit |
 	reserved := reservedLimit - base * 2.
 	committed := commitedLimit - base * 2.
 	prev := base.
 	address := OS reserve: reserved at: base * 2.
 	address = 0 ifTrue: [
-		address := OS reserve: reserved.
+		limit := prev < 4 gbytes ifTrue: [4 gbytes] ifFalse: [1 << 64].
+		address := OS reserve: reserved near: prev limit: limit.
 		address = 0 ifTrue: [OS lastError]].
 	base := address // 2.
 	offset := base - prev.
@@ -482,6 +483,11 @@ GCSpace >> relocatingSetUp [
 	softLimit := softLimit + offset.
 	address := OS commit: committed at: base * 2.
 	address = 0 ifTrue: [OS lastError]
+]
+
+{ #category : #inquiries }
+GCSpace >> reservedBytes [
+	^reservedLimit - base * 2
 ]
 
 { #category : #accessing }
@@ -572,7 +578,7 @@ GCSpace >> unmarkedDo: aBlock [
 		objectsDo: [:object | object _hasBeenSeen ifFalse: [aBlock value: object]]
 ]
 
-{ #category : #accessing }
+{ #category : #inquiries }
 GCSpace >> used [
 	^nextFree - base
 ]

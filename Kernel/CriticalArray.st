@@ -71,11 +71,11 @@ CriticalArray >> growTo: n [
 	| expanded |
 	contents _size >= n ifTrue: [^self].
 	expanded := allocator shallowCopy: contents growingTo: n.
-	expanded ifNil: [self _error: 'could not copy critical array contents'].
+	expanded ifNil: [self _error: 'Could not copy critical array contents'].
 	contents := expanded
 ]
 
-{ #category : #accessing }
+{ #category : #actions }
 CriticalArray >> ignoreWriteBarrier [
 	writeBarrier := false
 ]
@@ -92,7 +92,7 @@ CriticalArray >> includesIdentical: anObject [
 	^false
 ]
 
-{ #category : #testing }
+{ #category : #initialization }
 CriticalArray >> initialize [
 	super initialize.
 	size := 0.
@@ -106,7 +106,7 @@ CriticalArray >> isEmpty [
 	^size = 0
 ]
 
-{ #category : #accessing }
+{ #category : #actions }
 CriticalArray >> pop [
 	| answer |
 	answer := self at: size.
@@ -162,7 +162,7 @@ CriticalArray >> size: anInteger [
 	size := anInteger
 ]
 
-{ #category : #'adding / removing' }
+{ #category : #adding }
 CriticalArray >> unsafeAdd: anObject [
 	size = contents _size ifTrue: [self grow].
 	size := size + 1.
@@ -174,7 +174,7 @@ CriticalArray >> unsafeAt: index put: anObject [
 	^contents _basicAt: index put: anObject
 ]
 
-{ #category : #accessing }
+{ #category : #actions }
 CriticalArray >> usePinnedAllocation [
 	allocator := PinnedAllocator new
 ]

@@ -65,7 +65,7 @@ NonMovingCollector >> followObjects [
 ]
 
 { #category : #cleaning }
-NonMovingCollector >> haveToEvacuate: anObject [
+NonMovingCollector >> hasToEvacuate: anObject [
 	^false
 ]
 
@@ -90,7 +90,7 @@ NonMovingCollector >> purgeRememberedSet [
 	1 to: rs size do: [:i | 
 		object := rs at: i.
 		object _hasBeenSeen ifTrue: [
-			(self haveToEvacuate: object) ifTrue: [object := self copyOf: object].
+			(self hasToEvacuate: object) ifTrue: [object := self copyOf: object].
 			kept := kept + 1.
 			rs at: kept put: object]].
 	rs size: kept
@@ -116,7 +116,7 @@ NonMovingCollector >> queueCurrent [
 NonMovingCollector >> releaseLocals [
 	self sweepLargeSpaces.
 	stack release.
-	stack := nil.
+	stack := scanned := nil.
 	super releaseLocals
 ]
 
@@ -133,7 +133,7 @@ NonMovingCollector >> scanBehavior [
 	| slot evacuate |
 	slot := scanned _longSlotAt: 0.
 	slot _isSmallInteger ifTrue: [^index := index + 1].
-	evacuate := self haveToEvacuate: slot.
+	evacuate := self hasToEvacuate: slot.
 	slot _hasBeenSeen ifTrue: [
 		evacuate ifTrue: [
 			slot := self copyOf: slot.
@@ -157,7 +157,7 @@ NonMovingCollector >> scanSlot [
 	| slot evacuate |
 	slot := scanned _basicAt: index.
 	slot _isSmallInteger ifTrue: [^index := index + 1].
-	evacuate := self haveToEvacuate: slot.
+	evacuate := self hasToEvacuate: slot.
 	slot _hasBeenSeen ifTrue: [
 		evacuate ifTrue: [
 			slot := self copyOf: slot.
@@ -187,7 +187,7 @@ NonMovingCollector >> scanThreadLocalStorage: thread at: i [
 	| slot evacuate |
 	slot := thread tlsAt: i.
 	slot _isSmallInteger ifTrue: [^self].
-	evacuate := self haveToEvacuate: slot.
+	evacuate := self hasToEvacuate: slot.
 	slot _hasBeenSeen ifTrue: [
 		^evacuate ifTrue: [
 			slot := self copyOf: slot.

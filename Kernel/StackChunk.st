@@ -10,7 +10,8 @@ Class {
 		'sp',
 		'bp',
 		'base',
-		'prev'
+		'prev',
+		'defaultReturn'
 	],
 	#category : #Kernel
 }
@@ -55,6 +56,26 @@ StackChunk >> cursor [
 	^StackFrameCursor new current: bp previous: sp
 ]
 
+{ #category : #accessing }
+StackChunk >> defaultReturn [
+	^defaultReturn
+]
+
+{ #category : #accessing }
+StackChunk >> defaultReturn: anInteger [
+	defaultReturn := anInteger
+]
+
+{ #category : #initialization }
+StackChunk >> initialize [
+	defaultReturn := 0
+]
+
+{ #category : #initialization }
+StackChunk >> invalidate [
+	sp := bp := nil
+]
+
 { #category : #testing }
 StackChunk >> isForCallback [
 	^prev notNil
@@ -87,8 +108,9 @@ StackChunk >> recordStackPointers [
 
 { #category : #actions }
 StackChunk >> relocate: anInteger [
-	sp := sp + anInteger.
-	bp := bp + anInteger.
+	sp ifNotNil: [
+		sp := sp + anInteger.
+		bp := bp + anInteger].
 	base := base + anInteger
 ]
 

@@ -58,6 +58,11 @@ Object >> _basicAt: anInteger put: anObject [
 	^self at: anInteger put: anObject
 ]
 
+{ #category : #private }
+Object >> _DENY: aBoolean [
+	self _ASSERT: aBoolean not
+]
+
 { #category : #unclassified }
 Object >> _replaceFrom: start to: end with: other [
 	^self _basicCopyFrom: start to: end with: other
@@ -973,12 +978,12 @@ Object >> shallowCopy [
 Object >> shallowCopyTo: anObject [
 	| n |
 	self _isBytes ifTrue: [
-		anObject _isBytes ifFalse: [self error: 'cannot copy'].
+		anObject _isBytes ifFalse: [self error: 'cannot shallow copy'].
 		n := self _size min: anObject _size.
 		anObject basicReplaceBytesFrom: 1 to: n with: self startingAt: 1.
 		^anObject].
-	anObject _isBytes ifTrue: [self error: 'cannot copy'].
-	n := self class basicInstSize min: anObject class basicInstSize.
+	anObject _isBytes ifTrue: [self error: 'cannot shallow copy'].
+	n := self class instSize min: anObject class instSize.
 	1 to: n do: [:index | | slot |
 		slot := self basicInstVarAt: index.
 		anObject basicInstVarAt: index put: slot].

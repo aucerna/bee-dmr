@@ -17,6 +17,22 @@ Class {
 	#category : #Kernel
 }
 
+{ #category : #cleaning }
+EdenCollector >> aboutToSaveImage [
+	OS release: forwarders * 2.
+	forwarders := nil
+]
+
+{ #category : #cleaning }
+EdenCollector >> checkEphemeron: ephemeron [
+	| key |
+	key := ephemeron key.
+	(toSpace includes: key) ifTrue: [self _error: 'Re-tracing ephemeron'].
+	(ephemeron registry == StackWrapper registeredInstances
+		andNot: [key class == StackWrapper])
+		ifTrue: [self _error: 'Invalid ephemeron']
+]
+
 { #category : #ephemerons }
 EdenCollector >> copyRescuedEphemerons [
 	| copy contents |
@@ -31,8 +47,9 @@ EdenCollector >> copyRescuedEphemerons [
 EdenCollector >> copyToOld: object [
 	| copy |
 	copy := oldZone shallowCopyCommiting: object.
-	copy == nil ifTrue: [self _error: 'could not copy to old space'].
-	(memory pointsToYoungObjects: object) ifTrue: [self remember: copy].
+	copy == nil
+		ifTrue: [self _error: 'Could not copy young object to old space'].
+	(self shouldBeRememberedWhenTenuring: object) ifTrue: [self remember: copy].
 	self forward: object to: copy.
 	^copy
 ]
@@ -66,7 +83,7 @@ EdenCollector >> followRememberedAt: index [
 	| object |
 	object := rememberedSet at: index.
 	(self newspaceIncludes: object)
-		ifTrue: [self _error: 'young object in remembered set'].
+		ifTrue: [self _error: 'Young object found in remembered set'].
 	self scanRemembered: object
 ]
 
@@ -307,6 +324,12 @@ EdenCollector >> scanThreadLocalStorage: thread [
 ]
 
 { #category : #cleaning }
+EdenCollector >> shouldBeRememberedWhenTenuring: object [
+	^(memory pointsToYoungObjects: object)
+		or: [object _isSpecial and: object class == StackWrapper]
+]
+
+{ #category : #cleaning }
 EdenCollector >> swapMemoryFromAndTo [
 	"
 	self validate.
@@ -372,18 +395,17 @@ EdenCollector >> validate [
 { #category : #cleaning }
 EdenCollector >> validate: anObject [
 	"
-	check that no slot has been left pointing to
-    wiped out space (anything in new space not pointing to to).
+	Check that no slot has been left pointing to wiped out space (anything in new space not pointing to toSpace).
 	"
 	| behavior |
 	behavior := anObject _longSlotAt: 0.
 	((self newspaceIncludes: behavior) andNot: [toSpace includes: behavior])
-		ifTrue: [anObject _error: 'a young object was left outside of to-space'].
+		ifTrue: [anObject _error: 'A young object was left outside of to-space'].
 	1 to: anObject _pointersSize do: [:i | | slot |
 		slot := anObject _basicAt: i.
 		(slot _isSmallInteger not
 			and: [(self newspaceIncludes: slot) andNot: [toSpace includes: slot]])
-			ifTrue: [anObject _error: 'a young object was left outside of to-space']]
+			ifTrue: [anObject _error: 'A young object was left outside of to-space']]
 ]
 
 { #category : #private }
