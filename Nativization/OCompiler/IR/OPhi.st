@@ -13,49 +13,38 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
-OPhi class >> new [
-	^self basicNew initialize
-]
-
-{ #category : #unclassified }
-OPhi class >> with: operation1
-from: block1
-with: operation2
-from: block2 [
-	^self new
-		addVariable: operation1 from: block1;
-		addVariable: operation2 from: block2
-]
-
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OPhi >> addVariable: value from: block [
-	self DENY: (blocks includes: block).
+	self
+		_DENY: (blocks includes: block);
+		_ASSERT: (self basicBlock predecessors includes: block).
 	variables add: value.
 	blocks add: block.
 	value addUse: self at: block
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OPhi >> atOperand: name [
 	| index |
+	(super atOperand: name) ifNotNil: [:op | ^op].
 	index := blocks indexOf: name.
 	^variables at: index
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OPhi >> atOperand: name put: instruction [
 	| index |
+	(super atOperand: name put: instruction) ifNotNil: [^self].
 	index := blocks indexOf: name.
-	variables at: index put: instruction
+	^variables at: index put: instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OPhi >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitPhi: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OPhi >> basicPrintString [
 	| sources |
 	sources := variables size > 0
@@ -74,7 +63,7 @@ OPhi >> basicVariables: aCollection blocks: anotherCollection [
 	variables := aCollection
 ]
 
-{ #category : #enumerating }
+{ #category : #accessing }
 OPhi >> blocks [
 	^blocks
 ]
@@ -84,13 +73,13 @@ OPhi >> canHaveSideEffects [
 	^false
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OPhi >> clearVariables [
 	variables := OrderedCollection new.
 	blocks := OrderedCollection new
 ]
 
-{ #category : #private }
+{ #category : #copying }
 OPhi >> copyTo: copy with: map [
 	| b v |
 	super copyTo: copy with: map.
@@ -99,28 +88,34 @@ OPhi >> copyTo: copy with: map [
 	copy variables: v blocks: b
 ]
 
-{ #category : #unclassified }
+{ #category : #initialization }
 OPhi >> initialize [
 	variables := OrderedCollection new.
 	blocks := OrderedCollection new
 ]
 
-{ #category : #private }
+{ #category : #testing }
 OPhi >> isBoolean [
 	^variables conform: [:v | v isBoolean]
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OPhi >> isPhi [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OPhi >> operandsDo: aBlock [
+	super operandsDo: aBlock.
 	variables do: aBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
+OPhi >> optimized [
+	^variables size = 1 ifTrue: [variables first] ifFalse: [self]
+]
+
+{ #category : #printing }
 OPhi >> primitivePrintString [
 	^'{#phi}'
 ]
@@ -144,7 +139,7 @@ OPhi >> realReverseDo: aBlock [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OPhi >> removeBlock: removed [
 	| index variable |
 	index := blocks indexOf: removed.
@@ -155,13 +150,13 @@ OPhi >> removeBlock: removed [
 	self removeIfPossible
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OPhi >> removeIfPossible [
 	variables size = 1
 		ifTrue: [self replaceAllUsesWith: variables first; dissolve]
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OPhi >> removeVariable: removed at: index [
 	| block |
 	block := blocks at: index.
@@ -190,7 +185,7 @@ OPhi >> shortPrintString [
 	^'[phi(' , (sources allButLast: 2) , ')]'
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OPhi >> sortAfter: predecessors [
 	| indices |
 	indices := predecessors collect: [:pred | blocks indexOf: pred].
@@ -198,24 +193,24 @@ OPhi >> sortAfter: predecessors [
 	blocks := predecessors copy
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OPhi >> usesResultOf: anInstruction [
 	^variables includes: anInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OPhi >> variables [
 	^variables
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OPhi >> variables: aCollection blocks: anotherCollection [
 	blocks := anotherCollection.
 	variables := aCollection.
 	variables with: blocks do: [:var :block | var addUse: self at: block]
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OPhi >> variablesWithBlocksDo: aBlock [
 	variables with: blocks do: aBlock
 ]

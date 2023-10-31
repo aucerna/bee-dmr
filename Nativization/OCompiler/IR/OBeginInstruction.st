@@ -9,22 +9,22 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OBeginInstruction >> basicAcceptVisitor: aVisitor [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OBeginInstruction >> detect: aBlock ifNone: absentBlock [
 	^next detect: aBlock ifNone: absentBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OBeginInstruction >> do: aBlock [
 	next do: aBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OBeginInstruction >> printBackwardOn: aStream [
 	
 ]

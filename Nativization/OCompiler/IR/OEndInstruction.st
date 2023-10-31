@@ -9,12 +9,12 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OEndInstruction >> acceptVisitor: aVisitor [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OEndInstruction >> addLast: anInstruction [
 	prev next: anInstruction.
 	anInstruction prev: prev.
@@ -22,42 +22,42 @@ OEndInstruction >> addLast: anInstruction [
 	prev := anInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OEndInstruction >> detect: aBlock ifNone: absentBlock [
 	^absentBlock value
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OEndInstruction >> do: aBlock [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OEndInstruction >> hasNext [
 	^false
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OEndInstruction >> isEnd [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OEndInstruction >> last [
 	^prev
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OEndInstruction >> printForwardOn: aStream [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OEndInstruction >> printForwardOn: aStream using: names [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OEndInstruction >> printOn: aStream [
 	"
 	prev printBackwardOn: aStream
@@ -65,7 +65,7 @@ OEndInstruction >> printOn: aStream [
 	
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OEndInstruction >> replace: one with: other [
 	
 ]

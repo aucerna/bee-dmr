@@ -13,29 +13,54 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
+OReturn >> addReturnValue: anONode from: anOBasicBlock [
+	| block preds size phi |
+	block := self basicBlock.
+	preds := block predecessors.
+	size := preds size.
+	anOBasicBlock endWithJumpTo: block.
+	size = 0 ifTrue: [^self source: anONode].
+	size = 1
+		ifTrue: [
+			phi := OPhi new.
+			block addFront: phi.
+			phi addVariable: source from: preds first.
+			source removeUse: self at: #source.
+			self source: phi]
+		ifFalse: [phi := source].
+	phi addVariable: anONode from: anOBasicBlock
+]
+
+{ #category : #inquiries }
 OReturn >> atOperand: name [
+	(super atOperand: name) ifNotNil: [:op | ^op].
 	^name == #source ifTrue: [source] ifFalse: [frame]
 ]
 
-{ #category : #unclassified }
-OReturn >> atOperand: name put: instruction [
-	^name == #source
+{ #category : #services }
+OReturn >> atOperand: operandName put: instruction [
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	^operandName == #source
 		ifTrue: [source := instruction]
 		ifFalse: [frame := instruction]
 ]
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OReturn >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitReturn: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OReturn >> basicPrintString [
-	^'[ret ' , source primitivePrintString , ']'
+	^String streamContents: [:strm | 
+		strm
+			nextPutAll: '[ret ';
+			nextPutAll: source primitivePrintString;
+			nextPut: $]]
 ]
 
-{ #category : #private }
+{ #category : #copying }
 OReturn >> copyTo: copy with: map [
 	super copyTo: copy with: map.
 	copy
@@ -43,45 +68,52 @@ OReturn >> copyTo: copy with: map [
 		frame: (frame duplicateWith: map)
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OReturn >> frame: anInstruction [
 	frame := anInstruction.
 	frame addUse: self at: #frame
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
+OReturn >> isNonLocal [
+	^false
+]
+
+{ #category : #testing }
 OReturn >> isReturn [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OReturn >> operandsDo: aBlock [
-	aBlock value: source.
-	aBlock value: frame
+	super operandsDo: aBlock.
+	aBlock value: source; value: frame
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OReturn >> primitivePrintString [
 	^'{ret}'
 ]
 
 { #category : #printing }
 OReturn >> printStringUsing: names [
-	^'ret ' , (names at: source ifAbsent: '?') , ''
+	| s |
+	s := names at: source ifAbsent: '?'.
+	^'ret ' , s
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OReturn >> source [
 	^source
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OReturn >> source: anInstruction [
 	source := anInstruction.
 	source addUse: self at: #source
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OReturn >> usesResultOf: anInstruction [
 	^source == anInstruction or: [frame == anInstruction]
 ]

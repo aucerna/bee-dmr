@@ -12,79 +12,86 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #'instance creation' }
 OJump class >> to: aDestination [
 	^self new target: aDestination
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OJump >> afterConnect: anInstruction [
 	self _ASSERT: anInstruction isEnd.
 	^super afterConnect: anInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OJump >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitJump: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OJump >> basicPrintString [
 	^'[jump to ' , target name , ']'
 ]
 
-{ #category : #private }
+{ #category : #copying }
 OJump >> copyTo: copy with: map [
 	super copyTo: copy with: map.
 	copy target: (target duplicateWith: map)
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
+OJump >> dissolve [
+	target removePredecessor: self basicBlock.
+	super dissolve
+]
+
+{ #category : #services }
+OJump >> dissolveDeep [
+	super dissolveDeep.
+	target dissolveIfUnreachable
+]
+
+{ #category : #testing }
 OJump >> isJump [
 	^true
 ]
 
-{ #category : #private }
-OJump >> operandsDo: aBlock [
-	
-]
-
-{ #category : #unclassified }
+{ #category : #printing }
 OJump >> primitivePrintString [
 	^'{jump}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OJump >> printStringUsing: names [
 	^'jump to ' , (names at: target ifAbsent: ['?'])
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OJump >> retargetFrom: aBasicBlock to: otherBasicBlock [
 	target := otherBasicBlock
 ]
 
-{ #category : #private }
+{ #category : #enumerating }
 OJump >> successorsDo: aBlock [
 	aBlock value: target
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OJump >> target [
 	^target
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OJump >> target: aBasicBlock [
 	target := aBasicBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OJump >> targets [
 	^OrderedCollection with: target
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OJump >> usesResultOf: anInstruction [
 	^false
 ]

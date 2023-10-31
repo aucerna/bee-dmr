@@ -18,7 +18,7 @@ Class {
 	#category : #OCompiler
 }
 
-{ #category : #initialization }
+{ #category : #private }
 OptimizingSSAReconstructor >> definitionInBlockFrom: instruction [
 	instruction
 		reverseDo: [:current | (variable == current
@@ -27,7 +27,7 @@ OptimizingSSAReconstructor >> definitionInBlockFrom: instruction [
 	^nil
 ]
 
-{ #category : #initialization }
+{ #category : #accessing }
 OptimizingSSAReconstructor >> firstBlock: block [
 	firstBlock := block.
 	idoms := firstBlock dominatorTree allImmediateDominators
@@ -40,12 +40,12 @@ OptimizingSSAReconstructor >> insertPhiAt: block [
 		arguments := predecessors collect: [:pred | | search |
 			search := pred lastInstruction.
 			self reachingDefinitionFrom: search at: pred].
-		phi := OPhi new variables: arguments blocks: predecessors.
+		phi := OPhi new.
 		block addFront: phi.
-		phi]
+		phi variables: arguments blocks: predecessors]
 ]
 
-{ #category : #initialization }
+{ #category : #private }
 OptimizingSSAReconstructor >> reachingDefinitionFrom: instruction at: block [
 	| current search |
 	current := block.
@@ -58,7 +58,7 @@ OptimizingSSAReconstructor >> reachingDefinitionFrom: instruction at: block [
 		search := current lastInstruction] repeat
 ]
 
-{ #category : #initialization }
+{ #category : #services }
 OptimizingSSAReconstructor >> reconstructSSA [
 	| frontiers reloadBlocks uses |
 	frontiers := firstBlock dominanceFrontiersUsing: idoms.

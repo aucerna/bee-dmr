@@ -65,39 +65,51 @@ OLoadOperation class >> base: anInstruction uLongAtImm: anInteger [
 		indexImm: anInteger
 ]
 
-{ #category : #private }
+{ #category : #visitor }
 OLoadOperation >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitLoad: self
 ]
 
-{ #category : #private }
+{ #category : #printing }
 OLoadOperation >> basicPrintString [
 	^'[' , base primitivePrintString , ' ' , name , ' '
 		, index primitivePrintString
 		, ']'
 ]
 
-{ #category : #private }
+{ #category : #testing }
 OLoadOperation >> canHaveSideEffects [
 	^false
 ]
 
 { #category : #private }
+OLoadOperation >> findDominatingStore [
+	| current |
+	current := self prev.
+	[current notNil] whileTrue: [
+		(current isStore and: [current writesAddressReadBy: self])
+			ifTrue: [^current].
+		current := (current class == OBasicBlock and: [current hasOnePredecessor])
+			ifTrue: [current predecessors first lastInstruction]
+			ifFalse: [current prev]].
+	^nil
+]
+
+{ #category : #testing }
 OLoadOperation >> isLoad [
 	^true
 ]
 
-{ #category : #private }
-OLoadOperation >> operandsDo: aBlock [
-	aBlock value: base.
-	index isInstruction ifTrue: [aBlock value: index]
+{ #category : #services }
+OLoadOperation >> optimized [
+	^self findDominatingStore ifNil: [self] ifNotNil: [:store | store value]
 ]
 
-{ #category : #private }
+{ #category : #printing }
 OLoadOperation >> printStringUsing: names [
 	| b i |
 	b := names at: base ifAbsent: ['?'].
-	i := index isInstruction
+	i := index isONode
 		ifTrue: [names at: index ifAbsent: ['?']]
 		ifFalse: [index printString].
 	^'{#' , b , ' ' , name , ', ' , i , '}'

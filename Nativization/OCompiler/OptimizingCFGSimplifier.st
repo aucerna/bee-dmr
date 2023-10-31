@@ -7,12 +7,14 @@ Class {
 	#name : #OptimizingCFGSimplifier,
 	#superclass : #Object,
 	#instVars : [
-		'firstBlock'
+		'method',
+		'stop',
+		'returnBlock'
 	],
 	#category : #OCompiler
 }
 
-{ #category : #private }
+{ #category : #'adding / removing' }
 OptimizingCFGSimplifier >> addPredecessor: predecessor like: middle to: final [
 	final phisDo: [:phi | | source |
 		source := phi atOperand: middle.
@@ -20,11 +22,20 @@ OptimizingCFGSimplifier >> addPredecessor: predecessor like: middle to: final [
 	^final
 ]
 
-{ #category : #private }
-OptimizingCFGSimplifier >> cleanFrom: aBlock [
+{ #category : #testing }
+OptimizingCFGSimplifier >> canSimplify: block [
+	block == stop ifTrue: [^false].
+	(block successors includes: stop) ifTrue: [^false].
+	^true
+]
+
+{ #category : #services }
+OptimizingCFGSimplifier >> clean: anOMethod [
 	| all |
-	firstBlock := aBlock.
-	all := firstBlock successorsPostOrder.
+	method := anOMethod.
+	stop := method stop.
+	returnBlock := method returnValue basicBlock.
+	all := method start successorsPostOrder.
 	[self simplify] whileTrue: [all do: [:block | block dissolveIfUnreachable]]
 ]
 
@@ -35,9 +46,7 @@ OptimizingCFGSimplifier >> hoistBranchIn: succ to: pred [
 	branch := succ lastInstruction.
 	condition := branch variable.
 	succ
-		phisDo: [:phi | 
-			condition := phi atOperand: pred.
-			phi removeBlock: pred];
+		phisDo: [:phi | condition := phi atOperand: pred];
 		removePredecessor: pred.
 	target1 := self addPredecessor: pred like: succ to: branch target.
 	target2 := self addPredecessor: pred like: succ to: branch implicitTarget.
@@ -50,15 +59,18 @@ OptimizingCFGSimplifier >> hoistBranchIn: succ to: pred [
 	jump replaceAllUsesWith: new
 ]
 
-{ #category : #private }
+{ #category : #services }
 OptimizingCFGSimplifier >> simplify [
 	| changed |
 	changed := false.
-	firstBlock postOrderDo: [:block | 
-		changed := (self tryFoldingRedundantBranch: block) or: changed.
-		(self tryRemovingEmptyBlock: block) ifTrue: [changed := true] ifFalse: [
-			changed := (self tryCombining: block) or: changed.
-			changed := (self tryHoistingBranch: block) or: changed]].
+	method start postOrderDo: [:block | 
+		(self canSimplify: block) ifTrue: [
+			changed := (self tryFoldingRedundantBranch: block) or: changed.
+			changed := (self tryRemovingEmptyBlock: block) or: changed.
+			changed ifFalse: [
+				changed := self tryCombining: block.
+				changed
+					ifFalse: [changed := (self tryHoistingBranch: block) or: changed]]]].
 	^changed
 ]
 
@@ -68,6 +80,7 @@ OptimizingCFGSimplifier >> tryCombining: block [
 	last := block lastInstruction.
 	last isUnconditionalJump ifFalse: [^false].
 	following := last target.
+	following == returnBlock ifTrue: [^false].
 	following hasMultiplePredecessors ifTrue: [^false].
 	following phisDo: [:phi | phi removeIfPossible].
 	last dissolve.
@@ -108,10 +121,10 @@ OptimizingCFGSimplifier >> tryRemovingEmptyBlock: block [
 	| following |
 	block isEmptyJump ifTrue: [
 		following := block lastInstruction target.
-		following incorporatePhisFrom: block; removePredecessor: block.
 		block predecessors do: [:predecessor | 
 			predecessor lastInstruction retargetFrom: block to: following.
 			following addPredecessor: predecessor].
+		following incorporatePhisFrom: block; removePredecessor: block.
 		^true].
 	^false
 ]

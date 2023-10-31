@@ -5,7 +5,7 @@
 
 Class {
 	#name : #OConstant,
-	#superclass : #OValue,
+	#superclass : #ONode,
 	#category : #IR
 }
 

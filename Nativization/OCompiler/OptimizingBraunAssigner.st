@@ -129,7 +129,7 @@ OptimizingBraunAssigner >> computePreferences: block [
 	| argument |
 	argument := firstBlock firstInstruction next next.
 	argument do: [:instr | | reg index pref |
-		instr isLoadImplicit ifFalse: [^self].
+		instr isProjection ifFalse: [^self].
 		reg := instr source.
 		index := self indexOf: reg.
 		pref := preferences at: instr.
@@ -155,7 +155,7 @@ OptimizingBraunAssigner >> enforceConstraints: instruction [
 
 { #category : #private }
 OptimizingBraunAssigner >> from: allocator [
-	firstBlock := allocator firstBlock.
+	firstBlock := allocator start.
 	allocationEntry := allocator allocationEntry
 ]
 
@@ -252,7 +252,7 @@ OptimizingBraunAssigner >> insertParallelCopiesFrom: pred to: block [
 { #category : #private }
 OptimizingBraunAssigner >> insertPopOf: var at: pred [
 	| pop reg |
-	pop := OUnaryOperation receiver: nil name: #pop.
+	pop := OPopOperation new.
 	pred lastInstruction beforeInsert: pop.
 	reg := assignments at: var.
 	assignments at: pop put: reg
@@ -284,7 +284,7 @@ OptimizingBraunAssigner >> preallocateImplicitVariables [
 	| in |
 	in := OrderedCollection new.
 	firstBlock instructionsDo: [:inst | | register |
-		inst isLoadImplicit ifTrue: [
+		inst isProjection ifTrue: [
 			register := inst source.
 			register ifNotNil: [
 				in add: inst.

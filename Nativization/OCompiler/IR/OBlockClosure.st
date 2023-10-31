@@ -5,64 +5,155 @@
 
 Class {
 	#name : #OBlockClosure,
-	#superclass : #OInstruction,
+	#superclass : #OFunction,
 	#instVars : [
-		'firstBlock'
+		'parent',
+		'parentEnvironments'
 	],
 	#category : #IR
 }
 
-{ #category : #unclassified }
-OBlockClosure class >> containing: initialBlock [
-	^self new firstBlock: initialBlock
+{ #category : #enumerating }
+OBlockClosure >> atOperand: operandName [
+	(super atOperand: operandName) ifNotNil: [:op | ^op].
+	^operandName == #parent ifTrue: [parent]
 ]
 
-{ #category : #private }
+{ #category : #enumerating }
+OBlockClosure >> atOperand: operandName put: instruction [
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	^operandName == #parent ifTrue: [parent := instruction]
+]
+
+{ #category : #copying }
 OBlockClosure >> copyTo: copy with: map [
-	| first |
 	super copyTo: copy with: map.
-	first := firstBlock duplicateWith: map.
-	copy firstBlock: first
+	copy
+		parentEnvironments: (parentEnvironments
+			collect: [:temp | temp duplicateWith: map]);
+		parent: parent;
+		start: (start duplicateWith: map);
+		stop: (stop duplicateWith: map)
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OBlockClosure >> dissolveDeep [
-	firstBlock withSuccessorsDo: [:block | block dissolveAllInstructions].
+	start withSuccessorsDo: [:block | block dissolveAllInstructions].
 	super dissolveDeep
 ]
 
-{ #category : #unclassified }
-OBlockClosure >> firstBlock [
-	^firstBlock
+{ #category : #copying }
+OBlockClosure >> duplicate [
+	| map result |
+	map := IdentityDictionary new.
+	result := self class new.
+	map
+		at: self put: result;
+		at: start put: result start.
+	start
+		withSuccessorsDo: [:block | 
+			map at: block put: block class new.
+			block instructionsDo: [:inst | map at: inst put: inst class new]];
+		withSuccessorsDo: [:block | 
+			block
+				copyTo: (map at: block) with: map;
+				instructionsDo: [:inst | | mapped |
+					mapped := map at: inst.
+					inst copyTo: mapped with: map]].
+	self copyTo: result with: map.
+	^result validateOperandsAndUses
 ]
 
-{ #category : #unclassified }
-OBlockClosure >> firstBlock: basicBlock [
-	firstBlock := basicBlock
+{ #category : #services }
+OBlockClosure >> explicitReturn: value from: anOBasicBlock [
+	self nonLocalReturn: value from: anOBasicBlock
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
+OBlockClosure >> implicitReturn: last from: anOBasicBlock [
+	| value |
+	value := last ifNil: [| constant |
+		constant := nil asMoveConstant.
+		anOBasicBlock add: constant].
+	self localReturn: value from: anOBasicBlock
+]
+
+{ #category : #initialization }
+OBlockClosure >> initialize [
+	super initialize.
+	parentEnvironments := OrderedCollection new
+]
+
+{ #category : #testing }
 OBlockClosure >> isBlockClosure [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OBlockClosure >> isUseless [
-	^firstUse isNil
+	self usesDo: [:use | | user |
+		user := use user.
+		user isProjection
+			ifTrue: [user isUseless ifFalse: [^false]]
+			ifFalse: [^false]].
+	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OBlockClosure >> lastBlock [
-	^firstBlock lastBlock
+	^start lastBlock
 ]
 
-{ #category : #unclassified }
-OBlockClosure >> lastValue [
-	^firstBlock lastBlock lastValue
+{ #category : #moving }
+OBlockClosure >> lowerIn: aBasicBlock [
+	super lowerIn: aBasicBlock.
+	parentEnvironments do: [:env | env lowerLoad]
 ]
 
-{ #category : #private }
+{ #category : #accessing }
+OBlockClosure >> method [
+	^parent method
+]
+
+{ #category : #enumerating }
 OBlockClosure >> operandsDo: aBlock [
-	
+	super operandsDo: aBlock.
+	aBlock value: parent
+]
+
+{ #category : #accessing }
+OBlockClosure >> parent [
+	^parent
+]
+
+{ #category : #accessing }
+OBlockClosure >> parent: anOFunction [
+	parent := anOFunction.
+	anOFunction addUse: self at: #parent
+]
+
+{ #category : #accessing }
+OBlockClosure >> parentEnvironments [
+	^parentEnvironments
+]
+
+{ #category : #accessing }
+OBlockClosure >> parentEnvironments: aCollection [
+	parentEnvironments := aCollection
+]
+
+{ #category : #printing }
+OBlockClosure >> primitivePrintOn: aStream [
+	aStream nextPutAll: '{Block '.
+	start primitivePrintOn: aStream.
+	aStream nextPutAll: '}'
+]
+
+{ #category : #validation }
+OBlockClosure >> validateOperandsAndUses [
+	start
+		instructionsWithSuccessorsDo: [:inst | inst
+			validateUses;
+			validateOperands]
 ]
 

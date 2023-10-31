@@ -33,7 +33,7 @@ OptimizingBraunAllocator class >> new [
 ]
 
 { #category : #initialization }
-OptimizingBraunAllocator >> activationRecord [
+OptimizingBraunAllocator >> activation [
 	^firstBlock firstInstruction
 ]
 
@@ -94,7 +94,7 @@ OptimizingBraunAllocator >> computeTemporaryIndexes [
 	scheduledSpills do: [:value | 
 		temporaries at: value put: index.
 		index := index + 1].
-	self activationRecord temporaries: index - 1
+	self activation temporaries: index - 1
 ]
 
 { #category : #initialization }
@@ -289,7 +289,7 @@ OptimizingBraunAllocator >> initUsual: block [
 { #category : #initialization }
 OptimizingBraunAllocator >> insertReloadOf: value before: user [
 	| stack index reload |
-	stack := self activationRecord.
+	stack := self activation.
 	index := self temporaryIndexOf: value.
 	reload := OLoadOperation base: stack slotAtImm: index.
 	user
@@ -301,7 +301,7 @@ OptimizingBraunAllocator >> insertReloadOf: value before: user [
 { #category : #initialization }
 OptimizingBraunAllocator >> insertSpillOf: value [
 	| stack index store |
-	stack := self activationRecord.
+	stack := self activation.
 	index := self temporaryIndexOf: value.
 	store := OStoreOperation base: stack slotAtImm: index put: value.
 	value lastPhi afterInsert: store.
@@ -336,7 +336,7 @@ OptimizingBraunAllocator >> isLoopHead: block [
 OptimizingBraunAllocator >> limitAt: inst to: limit [
 	| stack |
 	self sortByUseDistance: currentlyAvailable in: inst.
-	stack := self activationRecord.
+	stack := self activation.
 	(currentlyAvailable includes: stack)
 		ifTrue: [currentlyAvailable remove: stack; addFirst: stack].
 	currentlyAvailable from: limit + 1 to: currentlyAvailable size do: [:value | 
@@ -394,7 +394,7 @@ OptimizingBraunAllocator >> sortByUseDistance: candidates in: inst [
 	candidates
 		sortBy: [:a :b | (self useDistanceFrom: inst to: a)
 			< (self useDistanceFrom: inst to: b)].
-	stack := self activationRecord.
+	stack := self activation.
 	(candidates includes: stack)
 		ifTrue: [candidates remove: stack; addFirst: stack]
 ]

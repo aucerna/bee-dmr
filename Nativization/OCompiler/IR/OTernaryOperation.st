@@ -14,7 +14,7 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #'instance creation' }
 OTernaryOperation class >> receiver: receiver
 left: left
 right: right
@@ -26,30 +26,32 @@ name: selector [
 		name: selector
 ]
 
-{ #category : #unclassified }
+{ #category : #inquiries }
 OTernaryOperation >> atOperand: named [
+	(super atOperand: named) ifNotNil: [:op | ^op].
 	^named == #receiver
 		ifTrue: [receiver]
 		ifFalse: [named == #left ifTrue: [left] ifFalse: [right]]
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OTernaryOperation >> atOperand: operandName put: instruction [
-	operandName = #receiver ifTrue: [receiver := instruction] ifFalse: [
-		operandName = #left
-			ifTrue: [left := instruction]
-			ifFalse: [right := instruction]]
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	operandName = #receiver ifTrue: [^receiver := instruction].
+	^operandName = #left
+		ifTrue: [left := instruction]
+		ifFalse: [right := instruction]
 ]
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OTernaryOperation >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitTernary: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OTernaryOperation >> basicPrintString [
 	^'['
-		, (receiver isInstruction
+		, (receiver isONode
 			ifTrue: [receiver primitivePrintString]
 			ifFalse: [receiver printString]) , ' ' , name , ' '
 		, left primitivePrintString
@@ -58,64 +60,63 @@ OTernaryOperation >> basicPrintString [
 		, ']'
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OTernaryOperation >> isTernaryOperation [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> left [
 	^left
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> left: value [
 	left := value.
-	left isInstruction ifTrue: [left addUse: self at: #left]
+	left isONode ifTrue: [left addUse: self at: #left]
 ]
 
-{ #category : #private }
+{ #category : #enumerating }
 OTernaryOperation >> operandsDo: aBlock [
+	super operandsDo: aBlock.
 	aBlock value: receiver.
-	left isInstruction ifTrue: [aBlock value: left].
+	left isONode ifTrue: [aBlock value: left].
 	aBlock value: right
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OTernaryOperation >> printStringUsing: names [
-	^(receiver isInstruction
+	^(receiver isONode
 		ifTrue: [names at: receiver]
 		ifFalse: [receiver printString]) , ' ' , name , ' '
-		, (left isInstruction ifTrue: [names at: left] ifFalse: [left printString])
+		, (left isONode ifTrue: [names at: left] ifFalse: [left printString])
 		, ', '
-		, (right isInstruction
-			ifTrue: [names at: right]
-			ifFalse: [right printString])
+		, (right isONode ifTrue: [names at: right] ifFalse: [right printString])
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> receiver [
 	^receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> receiver: value [
 	receiver := value.
 	receiver addUse: self at: #receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> right [
 	^right
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OTernaryOperation >> right: value [
 	right := value.
 	right addUse: self at: #right
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OTernaryOperation >> usesResultOf: anInstruction [
 	^receiver == anInstruction
 		or: [left == anInstruction or: [right == anInstruction]]

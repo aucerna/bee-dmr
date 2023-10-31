@@ -49,27 +49,19 @@ OptimizingTwoAddressEnforcer >> firstBlock: block [
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> invertMinus: minus with: left with: right [
 	| negate |
-	negate := OUnaryOperation receiver: minus right name: #negate.
+	negate := OSMINegate receiver: minus right.
 	minus beforeInsert: negate.
 	allocation at: negate put: right.
 	minus right removeUseBy: minus.
 	minus right: negate; name: #'+'; swapOperands
 ]
 
-{ #category : #unclassified }
-OptimizingTwoAddressEnforcer >> visitBinaryWithConstant: instruction [
-	| left dest |
+{ #category : #'visitor protocol' }
+OptimizingTwoAddressEnforcer >> visitBinary: instruction [
+	| left right instright dest |
 	left := allocation at: instruction left.
-	dest := allocation at: instruction.
-	left == dest ifTrue: [^self].
-	self convert: instruction copyingLeftInto: dest
-]
-
-{ #category : #unclassified }
-OptimizingTwoAddressEnforcer >> visitBinaryWithVariable: instruction [
-	| left right dest temp |
-	left := allocation at: instruction left.
-	right := allocation at: instruction right.
+	instright := instruction right.
+	right := instright isConstant ifFalse: [allocation at: instright].
 	dest := allocation at: instruction ifAbsent: [^self].
 	left == dest ifTrue: [^self].
 	right == dest ifTrue: [
@@ -77,11 +69,8 @@ OptimizingTwoAddressEnforcer >> visitBinaryWithVariable: instruction [
 		#_transferControlTo: = instruction name ifTrue: [^self].
 		instruction name == #'-'
 			ifTrue: [^self invertMinus: instruction with: left with: right].
-		(#(+ bitAnd: bitOr: &  ) includes: instruction name)
-			ifTrue: [
-				temp := instruction left.
-				instruction left: instruction right.
-				^instruction right: temp]
+		instruction isCommutative
+			ifTrue: [^instruction right: instruction left; left: instright]
 			ifFalse: [self halt]].
 	self convert: instruction copyingLeftInto: dest
 ]
@@ -107,17 +96,12 @@ OptimizingTwoAddressEnforcer >> visitLoad: load [
 ]
 
 { #category : #unclassified }
-OptimizingTwoAddressEnforcer >> visitLoadConstant: instruction [
-	
-]
-
-{ #category : #unclassified }
-OptimizingTwoAddressEnforcer >> visitLoadImplicit: instruction [
-	
-]
-
-{ #category : #unclassified }
 OptimizingTwoAddressEnforcer >> visitMessageSend: instruction [
+	
+]
+
+{ #category : #unclassified }
+OptimizingTwoAddressEnforcer >> visitMoveConstant: instruction [
 	
 ]
 
@@ -128,6 +112,11 @@ OptimizingTwoAddressEnforcer >> visitNullary: instruction [
 
 { #category : #unclassified }
 OptimizingTwoAddressEnforcer >> visitPhi: instruction [
+	
+]
+
+{ #category : #unclassified }
+OptimizingTwoAddressEnforcer >> visitProjection: instruction [
 	
 ]
 

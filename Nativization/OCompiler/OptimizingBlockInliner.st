@@ -7,42 +7,17 @@ Class {
 	#name : #OptimizingBlockInliner,
 	#superclass : #Object,
 	#instVars : [
-		'inlinerActivation'
+		'inlinerFunction'
 	],
 	#category : #OCompiler
 }
 
-{ #category : #accessing }
+{ #category : #testing }
 OptimizingBlockInliner >> canBeInlined [
 	^true
 ]
 
-{ #category : #private }
-OptimizingBlockInliner >> closureArgumentsIn: aBasicBlock count: anInteger [
-	| result remaining |
-	result := OrderedCollection new.
-	remaining := anInteger.
-	aBasicBlock instructionsDo: [:i | 
-		remaining = 0 ifTrue: [^result].
-		result add: i.
-		remaining := remaining - 1].
-	^result
-]
-
-{ #category : #accessing }
-OptimizingBlockInliner >> duplicateClosure: anOCompiledBlock [
-	| closure activation implicits |
-	closure := anOCompiledBlock firstBlock duplicate.
-	activation := closure activationRecord.
-	implicits := inlinerActivation implicitLoads.
-	activation implicitLoads do: [:load | | replacement |
-		replacement := implicits detect: [:candidate | candidate name = load name].
-		load replaceAllUsesWith: replacement; dissolve].
-	activation replaceAllUsesWith: inlinerActivation; dissolve.
-	^closure
-]
-
-{ #category : #unclassified }
+{ #category : #services }
 OptimizingBlockInliner >> inline: anOMessageSend in: block [
 	| selector inliner |
 	selector := anOMessageSend selector asString copy replace: $: with: $_.
@@ -51,8 +26,8 @@ OptimizingBlockInliner >> inline: anOMessageSend in: block [
 ]
 
 { #category : #accessing }
-OptimizingBlockInliner >> inlinerActivation: anOActivationRecord [
-	inlinerActivation := anOActivationRecord
+OptimizingBlockInliner >> inlinerFunction: anOFunction [
+	inlinerFunction := anOFunction
 ]
 
 { #category : #accessing }
@@ -60,58 +35,47 @@ OptimizingBlockInliner >> inliners [
 	^#(#value #value: #whileTrue:)
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 OptimizingBlockInliner >> inlineValue: message in: block [
-	| closure entry exit after result |
+	| closure |
 	closure := message receiver.
 	closure isBlockClosure ifFalse: [^block].
-	entry := self duplicateClosure: closure.
-	exit := entry lastBlock.
-	after := block splitAfter: message.
-	block endWithJumpTo: entry.
-	exit endWithJumpTo: after.
-	result := exit lastValue.
-	message replaceAllUsesWith: result; dissolve.
-	closure isUseless ifTrue: [closure firstBlock dissolveAllInstructions].
-	^result -> after
+	^message
+		replaceIn: block
+		inlining: closure duplicate metaprocess
+		into: inlinerFunction
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 OptimizingBlockInliner >> inlineValue_: message in: block [
-	| closure args arg1 entry exit after closureArgs result |
+	| closure duplicated |
 	closure := message receiver.
 	closure isBlockClosure ifFalse: [^block].
-	args := message arguments.
-	arg1 := args first.
-	entry := self duplicateClosure: closure.
-	exit := entry lastBlock.
-	closureArgs := self closureArgumentsIn: entry count: 1.
-	closureArgs first replaceAllUsesWith: arg1; dissolve.
-	after := block splitAfter: message.
-	block endWithJumpTo: entry.
-	exit endWithJumpTo: after.
-	result := exit lastValue.
-	message replaceAllUsesWith: result; dissolve.
-	closure isUseless ifTrue: [closure firstBlock dissolveAllInstructions].
-	^result -> after
+	duplicated := closure duplicate metaprocess.
+	duplicated argument first replaceAllUsesWith: message arguments first.
+	^message replaceIn: block inlining: duplicated into: inlinerFunction
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 OptimizingBlockInliner >> inlineWhileTrue_: message in: block [
-	| antecedent consequent firstAntecedent firstConsequent lastAntecedent lastConsequent join |
+	| antecedent consequent antecedentStart consequentStart antecedentLast consequentLast join antecedentReturn consequentReturn |
 	antecedent := message receiver.
 	consequent := message arguments first.
-	firstAntecedent := antecedent firstBlock.
-	firstConsequent := consequent firstBlock.
-	lastAntecedent := firstAntecedent lastBlock.
-	lastConsequent := firstConsequent lastBlock.
+	antecedentStart := antecedent start.
+	consequentStart := consequent start.
+	antecedentLast := antecedentStart lastBlock.
+	consequentLast := consequentStart lastBlock.
+	antecedentReturn := antecedent returnValue.
+	consequentReturn := consequent returnValue.
+	antecedentReturn isNonLocal ifFalse: [antecedentReturn dissolve].
+	consequentReturn isNonLocal ifFalse: [consequentReturn dissolve].
 	join := block splitAfter: message.
-	block endWithJumpTo: firstAntecedent.
-	lastAntecedent
+	block endWithJumpTo: antecedentStart.
+	antecedentLast
 		endWithJumpFalseTo: join
-		skipping: firstConsequent
-		if: lastAntecedent lastValue.
-	lastConsequent endWithJumpTo: firstAntecedent.
+		skipping: consequentStart
+		if: consequentLast lastValue.
+	consequentLast endWithJumpTo: antecedentStart.
 	message dissolve.
 	^antecedent -> join
 ]

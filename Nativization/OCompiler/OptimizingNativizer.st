@@ -81,13 +81,6 @@ OptimizingNativizer >> firstBlock [
 	^firstBlock
 ]
 
-{ #category : #unclassified }
-OptimizingNativizer >> fragmentInstructions [
-	| binder |
-	binder := OptimizingInstructionFragmenter new firstBlock: firstBlock.
-	binder doFragment
-]
-
 { #category : #private }
 OptimizingNativizer >> inlineMethods [
 	OptimizingMethodInliner new
@@ -114,7 +107,6 @@ OptimizingNativizer >> nativize [
 	| allocation |
 	allocation := self
 		decompose;
-		fragmentInstructions;
 		simplifyCFG;
 		removeRedundantCode;
 		simplifyCFG;
@@ -141,7 +133,7 @@ OptimizingNativizer >> selectInstructions [
 
 { #category : #unclassified }
 OptimizingNativizer >> simplifyCFG [
-	OptimizingCFGSimplifier new cleanFrom: firstBlock
+	OptimizingCFGSimplifier new clean: firstBlock
 ]
 
 { #category : #unclassified }
@@ -154,11 +146,6 @@ OptimizingNativizer >> transformToCSSA [
 	| transformer |
 	transformer := OptimizingCSSATransformer new firstBlock: firstBlock.
 	transformer applyTransformation
-]
-
-{ #category : #unclassified }
-OptimizingNativizer >> unifyReturns [
-	firstBlock unifyReturns
 ]
 
 { #category : #unclassified }

@@ -113,11 +113,10 @@ OptimizingVariableBinder >> insertPhiOf: name at: block [
 	| size variables phi |
 	(self definitionOf: name in: block) ifNotNil: [^self].
 	size := block predecessors size.
-	variables := (Array new: size)
-		atAllPut: name;
-		asOrderedCollection.
-	phi := OPhi new basicVariables: variables blocks: block predecessors.
+	variables := OrderedCollection new: size withAll: name.
+	phi := OPhi new.
 	block afterInsert: phi.
+	phi basicVariables: variables blocks: block predecessors.
 	pendingPhis add: phi -> block.
 	self define: phi as: name in: block
 ]
@@ -164,12 +163,7 @@ OptimizingVariableBinder >> rewritePhis [
 ]
 
 { #category : #'visitor protocol' }
-OptimizingVariableBinder >> visitBinaryWithConstant: instruction [
-	
-]
-
-{ #category : #'visitor protocol' }
-OptimizingVariableBinder >> visitBinaryWithVariable: instruction [
+OptimizingVariableBinder >> visitBinary: instruction [
 	
 ]
 
@@ -194,12 +188,12 @@ OptimizingVariableBinder >> visitLoad: instruction [
 ]
 
 { #category : #'visitor protocol' }
-OptimizingVariableBinder >> visitLoadConstant: aLoadImplicit [
+OptimizingVariableBinder >> visitMessageSend: aMessageSend [
 	
 ]
 
 { #category : #'visitor protocol' }
-OptimizingVariableBinder >> visitMessageSend: aMessageSend [
+OptimizingVariableBinder >> visitMoveConstant: aLoadConstant [
 	
 ]
 

@@ -29,72 +29,55 @@ OOperand class >> valued: anInstruction in: containingInstruction [
 	^self new value: anInstruction; instruction: containingInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OOperand >> addUse: anOperand [
 	self DENY: self == anOperand.
 	nextUse ifNil: [nextUse := anOperand] ifNotNil: [nextUse addUse: anOperand]
 ]
 
-{ #category : #unclassified }
-OOperand >> asOperand [
-	self halt
-]
-
-{ #category : #unclassified }
+{ #category : #inquiries }
 OOperand >> definition [
 	^instruction atOperand: name
 ]
 
-{ #category : #unclassified }
-OOperand >> duplicateWith: map [
-	| copy |
-	map at: self ifPresent: [:i | ^i].
-	copy := self class new.
-	map at: self put: copy.
-	instruction ifNotNil: [copy instruction: (instruction duplicateWith: map)].
-	copy name: name.
-	nextUse ifNotNil: [copy nextUse: (nextUse duplicateWith: map)].
-	^copy
-]
-
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> instruction [
 	^instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> instruction: anInstruction [
 	instruction := anInstruction
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> name [
 	^name
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> name: operandName [
 	name := operandName
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> nextUse [
 	^nextUse
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> nextUse: anOOperand [
 	nextUse := anOOperand
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OOperand >> printOn: aStream [
 	aStream
 		nextPutAll: '[op #' , name printString , '@' , instruction printString
 			, ']'
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OOperand >> removeUse: anOperand [
 	nextUse instruction == anOperand
 		ifTrue: [
@@ -103,21 +86,28 @@ OOperand >> removeUse: anOperand [
 		ifFalse: [nextUse removeUse: anOperand]
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OOperand >> removeUse: anInstruction at: aName [
 	(nextUse instruction == anInstruction and: [nextUse name = aName])
 		ifTrue: [nextUse := nextUse nextUse]
 		ifFalse: [nextUse removeUse: anInstruction at: aName]
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
 OOperand >> removeUseBy: anInstruction [
 	nextUse instruction == anInstruction
 		ifTrue: [nextUse := nextUse nextUse]
 		ifFalse: [nextUse removeUseBy: anInstruction]
 ]
 
-{ #category : #unclassified }
+{ #category : #'adding / removing' }
+OOperand >> removeUsesSuchThat: aBlock [
+	[nextUse notNil and: [aBlock value: nextUse]]
+		whileTrue: [nextUse := nextUse nextUse].
+	nextUse ifNotNil: [nextUse removeUsesSuchThat: aBlock]
+]
+
+{ #category : #services }
 OOperand >> replaceAllUsesWith: otherInstruction [
 	| following |
 	following := nextUse.
@@ -125,7 +115,7 @@ OOperand >> replaceAllUsesWith: otherInstruction [
 	following ifNotNil: [following replaceAllUsesWith: otherInstruction]
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OOperand >> replaceUsesBy: user with: otherInstruction [
 	| following |
 	following := nextUse.
@@ -133,7 +123,7 @@ OOperand >> replaceUsesBy: user with: otherInstruction [
 	following ifNotNil: [following replaceUsesBy: user with: otherInstruction]
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OOperand >> transferUseTo: otherInstruction [
 	self DENY: otherInstruction class == OOperand.
 	self definition removeUse: self.
@@ -141,18 +131,24 @@ OOperand >> transferUseTo: otherInstruction [
 	otherInstruction addUse: self
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OOperand >> user [
 	^instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
+OOperand >> usersDo: aBlock [
+	aBlock value: self user.
+	nextUse ifNotNil: [nextUse usersDo: aBlock]
+]
+
+{ #category : #enumerating }
 OOperand >> usesDo: aBlock [
 	aBlock value: self.
 	nextUse ifNotNil: [nextUse usesDo: aBlock]
 ]
 
-{ #category : #unclassified }
+{ #category : #validation }
 OOperand >> validate [
 	| set op |
 	set := IdentitySet new.

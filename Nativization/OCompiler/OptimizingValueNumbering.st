@@ -18,15 +18,10 @@ Class {
 
 { #category : #private }
 OptimizingValueNumbering >> coalesce: instruction as: hash [
-	hashes
-		at: hash
-		ifPresent: [:value | ^instruction replaceAllUsesWith: value; dissolveDeep].
+	hashes at: hash ifPresent: [:value | 
+		^instruction !== value
+			ifTrue: [instruction replaceAllUsesWith: value; dissolveDeep]].
 	hashes at: hash put: instruction
-]
-
-{ #category : #testing }
-OptimizingValueNumbering >> isCommutative: name [
-	^name = #'+' or: [name = #'*']
 ]
 
 { #category : #testing }
@@ -37,21 +32,6 @@ OptimizingValueNumbering >> isStillAlive: block [
 { #category : #accessing }
 OptimizingValueNumbering >> nameOf: instruction [
 	^names at: instruction ifAbsentPut: 'v' , names size printString
-]
-
-{ #category : #accessing }
-OptimizingValueNumbering >> resultOfBinaryWithConstants: aBinaryInstruction [
-	| operation left right |
-	operation := aBinaryInstruction name.
-	left := aBinaryInstruction left value.
-	right := aBinaryInstruction right value.
-	operation = #'+' ifTrue: [^left + right].
-	operation = #'-' ifTrue: [^left - right].
-	operation = #'*' ifTrue: [^left * right].
-	operation = #'//' ifTrue: [^left // right].
-	operation = #'=' ifTrue: [^left = right].
-	operation = #'==' ifTrue: [^left == right].
-	self halt
 ]
 
 { #category : #private }
@@ -111,50 +91,53 @@ OptimizingValueNumbering >> valueBranchTo: aBasicBlock [
 ]
 
 { #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitBinaryWithConstant: instruction [
-	| left right hash temp value replacement |
-	instruction isUseless ifTrue: [^instruction dissolveDeep].
-	left := self nameOf: instruction left.
-	right := self nameOf: instruction right.
-	(self isCommutative: instruction name) ifTrue: [
-		left > right ifTrue: [
-			temp := left.
-			left := right.
-			right := temp]].
-	hash := left , instruction name , right.
-	instruction left isConstant ifTrue: [
-		value := self resultOfBinaryWithConstants: instruction.
-		replacement := OLoadConstant valued: value.
-		instruction dissolveReplacingWith: replacement.
-		self visitLoadConstant: replacement].
-	(instruction name == #'=='
-		and: [instruction left isBoolean and: [instruction right value == true]])
-		ifTrue: [^instruction replaceAllUsesWith: instruction left; dissolveDeep].
-	("avoid coalescing a comparison when it would cause an unoptimized branch"
-	instruction isComparison and: [instruction isUsedJustOnce])
-		ifFalse: [self coalesce: instruction as: hash]
+OptimizingValueNumbering >> visitBehavior: instruction [
+	| object hash |
+	object := self nameOf: instruction object.
+	hash := object , ' behavior'.
+	self coalesce: instruction as: hash
 ]
 
 { #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitBinaryWithVariable: instruction [
-	| left right hash temp replacement |
+OptimizingValueNumbering >> visitBinary: instruction [
+	| optimized left right hash temp |
 	instruction isUseless ifTrue: [^instruction dissolveDeep].
-	instruction right isConstant ifTrue: [
-		replacement := OBinaryConstantOperation
-			left: instruction left
-			right: instruction right value
-			name: instruction name.
-		instruction dissolveReplacingWith: replacement.
-		^self visitBinaryWithConstant: replacement].
+	instruction right isConstant
+		ifTrue: [^self visitBinaryWithConstant: instruction].
+	optimized := instruction optimized.
+	optimized == instruction ifFalse: [
+		instruction replaceAllUsesWith: optimized; dissolve.
+		^optimized basicAcceptVisitor: self].
 	left := self nameOf: instruction left.
 	right := self nameOf: instruction right.
-	(self isCommutative: instruction name) ifTrue: [
+	instruction isCommutative ifTrue: [
 		left > right ifTrue: [
 			temp := left.
 			left := right.
 			right := temp]].
 	hash := left , instruction name , right.
 	self coalesce: instruction as: hash
+]
+
+{ #category : #'visitor protocol' }
+OptimizingValueNumbering >> visitBinaryWithConstant: instruction [
+	| left right hash temp optimized |
+	instruction isUseless ifTrue: [^instruction dissolveDeep].
+	optimized := instruction optimized.
+	optimized == instruction ifFalse: [
+		instruction replaceAllUsesWith: optimized; dissolve.
+		^optimized basicAcceptVisitor: self].
+	left := self nameOf: instruction left.
+	right := self nameOf: instruction right.
+	instruction isCommutative ifTrue: [
+		left > right ifTrue: [
+			temp := left.
+			left := right.
+			right := temp]].
+	hash := left , instruction name , right.
+	("avoid coalescing a comparison when it would cause an unoptimized branch"
+	instruction isComparison and: [instruction isUsedJustOnce])
+		ifFalse: [self coalesce: instruction as: hash]
 ]
 
 { #category : #'visitor protocol' }
@@ -189,7 +172,7 @@ OptimizingValueNumbering >> visitLoad: load [
 	| base index indexHash hash |
 	base := self nameOf: load base.
 	index := load index.
-	indexHash := index isInstruction
+	indexHash := index isONode
 		ifTrue: [self nameOf: index]
 		ifFalse: [index printString].
 	hash := base , load name , indexHash.
@@ -197,22 +180,16 @@ OptimizingValueNumbering >> visitLoad: load [
 ]
 
 { #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitLoadConstant: instruction [
+OptimizingValueNumbering >> visitMessageSend: instruction [
+	hashes removeAllSuchThat: [:value | value isONode and: [value isLoad]]
+]
+
+{ #category : #'visitor protocol' }
+OptimizingValueNumbering >> visitMoveConstant: instruction [
 	"
 	we don't coalesce constants, we prefer reloading them than risking spilling
 	"
 	instruction isUsed ifFalse: [^instruction dissolve]
-]
-
-{ #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitLoadImplicit: instruction [
-	
-]
-
-{ #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitMessageSend: instruction [
-	hashes
-		removeAllSuchThat: [:value | value isInstruction and: [value isLoad]]
 ]
 
 { #category : #'visitor protocol' }
@@ -221,8 +198,14 @@ OptimizingValueNumbering >> visitNullary: instruction [
 ]
 
 { #category : #'visitor protocol' }
-OptimizingValueNumbering >> visitPhi: instruction [
-	instruction dissolveIfUseless
+OptimizingValueNumbering >> visitPhi: anOPhi [
+	anOPhi isUseless ifTrue: [^anOPhi dissolveDeep].
+	anOPhi removeIfPossible
+]
+
+{ #category : #'visitor protocol' }
+OptimizingValueNumbering >> visitProjection: instruction [
+	
 ]
 
 { #category : #'visitor protocol' }
@@ -235,7 +218,7 @@ OptimizingValueNumbering >> visitStore: store [
 	| receiver index indexHash value valueHash hash load selector |
 	receiver := self nameOf: store base.
 	index := store index.
-	indexHash := index isInstruction
+	indexHash := index isONode
 		ifTrue: [self nameOf: index]
 		ifFalse: [index printString].
 	value := store value.

@@ -85,27 +85,26 @@ OStoreOperation class >> base: anInstruction uLongAtImm: indexInstruction put: a
 ]
 
 { #category : #accessing }
-OStoreOperation >> atOperand: operandName [
-	operandName = #value ifTrue: [^value].
-	^super atOperand: operandName
+OStoreOperation >> atOperand: named [
+	(super atOperand: named) ifNotNil: [:op | ^op].
+	^value
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 OStoreOperation >> atOperand: operandName put: instruction [
-	operandName = #value
-		ifTrue: [value := instruction]
-		ifFalse: [super atOperand: operandName put: instruction]
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	^value := instruction
 ]
 
-{ #category : #private }
+{ #category : #visitor }
 OStoreOperation >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitStore: self
 ]
 
-{ #category : #private }
+{ #category : #printing }
 OStoreOperation >> basicPrintString [
 	| b |
-	b := base isInstruction
+	b := base isONode
 		ifTrue: [base primitivePrintString]
 		ifFalse: [base printString].
 	^'[' , b , ' ' , name , ' ' , index primitivePrintString , ', '
@@ -113,13 +112,11 @@ OStoreOperation >> basicPrintString [
 		, ']'
 ]
 
-{ #category : #private }
+{ #category : #copying }
 OStoreOperation >> copyTo: copy with: map [
 	| v |
 	super copyTo: copy with: map.
-	v := value isInstruction
-		ifTrue: [value duplicateWith: map]
-		ifFalse: [value].
+	v := value isONode ifTrue: [value duplicateWith: map] ifFalse: [value].
 	copy value: v
 ]
 
@@ -128,21 +125,20 @@ OStoreOperation >> isStore [
 	^true
 ]
 
-{ #category : #private }
+{ #category : #enumerating }
 OStoreOperation >> operandsDo: aBlock [
-	aBlock value: base.
-	index isInstruction ifTrue: [aBlock value: index].
+	super operandsDo: aBlock.
 	aBlock value: value
 ]
 
-{ #category : #private }
+{ #category : #printing }
 OStoreOperation >> printStringUsing: names [
 	| b i v |
 	b := names at: base ifAbsent: '?'.
-	i := index isInstruction
+	i := index isONode
 		ifTrue: [names at: index ifAbsent: '?']
 		ifFalse: [index printString].
-	v := value isInstruction
+	v := value isONode
 		ifTrue: [names at: value ifAbsent: '?']
 		ifFalse: [value printString].
 	^'{#' , b , ' ' , name , ', ' , i , ',' , v , '}'
@@ -153,19 +149,33 @@ OStoreOperation >> usesResultOf: anInstruction [
 	^value == anInstruction or: [super usesResultOf: anInstruction]
 ]
 
-{ #category : #evaluating }
+{ #category : #accessing }
 OStoreOperation >> value [
 	^value
 ]
 
-{ #category : #evaluating }
+{ #category : #accessing }
 OStoreOperation >> value: anInstruction [
 	value := anInstruction.
 	anInstruction addUse: self at: #value
 ]
 
-{ #category : #evaluating }
+{ #category : #accessing }
 OStoreOperation >> valueImm: anObject [
 	value := anObject
+]
+
+{ #category : #testing }
+OStoreOperation >> writesAddressReadBy: anOLoad [
+	| loadIndex constant |
+	base == anOLoad base ifFalse: [^false].
+	name == anOLoad name ifFalse: [^false].
+	loadIndex := anOLoad index.
+	(index isONode not or: [index isConstant]) ifTrue: [
+		constant := index value.
+		^loadIndex isONode
+			ifTrue: [loadIndex isConstant and: [loadIndex value == constant]]
+			ifFalse: [loadIndex == constant]].
+	^index == anOLoad index
 ]
 

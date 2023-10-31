@@ -15,14 +15,16 @@ Class {
 
 { #category : #accessing }
 OMemoryOperation >> atOperand: operandName [
-	^operandName == #base ifTrue: [base] ifFalse: [index]
+	(super atOperand: operandName) ifNotNil: [:op | ^op].
+	operandName == #base ifTrue: [^base].
+	^operandName == #index ifTrue: [index]
 ]
 
-{ #category : #accessing }
+{ #category : #services }
 OMemoryOperation >> atOperand: operandName put: instruction [
-	operandName == #base
-		ifTrue: [base := instruction]
-		ifFalse: [index := instruction]
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	operandName == #base ifTrue: [^base := instruction].
+	^operandName == #index ifTrue: [index := instruction]
 ]
 
 { #category : #accessing }
@@ -32,16 +34,17 @@ OMemoryOperation >> base [
 
 { #category : #accessing }
 OMemoryOperation >> base: anInstruction [
+	base ifNotNil: [base removeUse: self at: #base].
 	base := anInstruction.
 	anInstruction addUse: self at: #base
 ]
 
-{ #category : #accessing }
+{ #category : #copying }
 OMemoryOperation >> copyTo: copy with: map [
 	| i |
 	super copyTo: copy with: map.
 	copy base: (base duplicateWith: map).
-	index isInstruction
+	index isONode
 		ifTrue: [
 			i := index duplicateWith: map.
 			copy index: i]
@@ -64,9 +67,16 @@ OMemoryOperation >> indexImm: anInteger [
 	index := anInteger
 ]
 
-{ #category : #accessing }
+{ #category : #testing }
 OMemoryOperation >> isMemoryOperation [
 	^true
+]
+
+{ #category : #enumerating }
+OMemoryOperation >> operandsDo: aBlock [
+	super operandsDo: aBlock.
+	aBlock value: base.
+	index isONode ifTrue: [aBlock value: index]
 ]
 
 { #category : #testing }

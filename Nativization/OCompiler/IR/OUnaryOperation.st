@@ -12,30 +12,37 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #'instance creation' }
+OUnaryOperation class >> receiver: receiver [
+	^self new receiver: receiver
+]
+
+{ #category : #'instance creation' }
 OUnaryOperation class >> receiver: receiver name: aString [
 	^self new name: aString; receiver: receiver
 ]
 
-{ #category : #unclassified }
-OUnaryOperation >> atOperand: operandName [
+{ #category : #inquiries }
+OUnaryOperation >> atOperand: named [
+	(super atOperand: named) ifNotNil: [:op | ^op].
 	^receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #services }
 OUnaryOperation >> atOperand: operandName put: instruction [
-	receiver := instruction
+	(super atOperand: operandName put: instruction) ifNotNil: [^self].
+	^receiver := instruction
 ]
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OUnaryOperation >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitUnary: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OUnaryOperation >> basicPrintString [
 	^'['
-		, (receiver isInstruction
+		, (receiver isONode
 			ifTrue: [receiver primitivePrintString]
 			ifFalse: [receiver printString]) , ' ' , name , ']'
 ]
@@ -45,7 +52,7 @@ OUnaryOperation >> canHaveSideEffects [
 	^name == #push or: [name == #pop]
 ]
 
-{ #category : #accessing }
+{ #category : #copying }
 OUnaryOperation >> copyTo: copy with: map [
 	super copyTo: copy with: map.
 	copy receiver: (receiver duplicateWith: map)
@@ -56,35 +63,36 @@ OUnaryOperation >> isBoolean [
 	^name == #_isSmallInteger or: [name == #copy and: [receiver isBoolean]]
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OUnaryOperation >> isUnaryOperation [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #enumerating }
 OUnaryOperation >> operandsDo: aBlock [
+	super operandsDo: aBlock.
 	aBlock value: receiver
 ]
 
-{ #category : #accessing }
+{ #category : #printing }
 OUnaryOperation >> printStringUsing: names [
-	^(receiver isInstruction
+	^(receiver isONode
 		ifTrue: [names at: receiver ifAbsent: '?']
 		ifFalse: [receiver printString]) , ' ' , name
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OUnaryOperation >> receiver [
 	^receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OUnaryOperation >> receiver: operation [
 	receiver := operation.
 	operation addUse: self at: #receiver
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OUnaryOperation >> usesResultOf: anInstruction [
 	^receiver == anInstruction
 ]

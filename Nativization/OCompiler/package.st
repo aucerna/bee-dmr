@@ -13,7 +13,6 @@ Package {
 	],
 	#classes : [
 		'BMMultilevelDictionary',
-		'BytecodeToOptimizingIRVisitor',
 		'ODispatchInliner',
 		'OptimizingBlockInliner',
 		'OptimizingBraunAllocator',
@@ -21,7 +20,6 @@ Package {
 		'OptimizingCFGSimplifier',
 		'OptimizingCodeEmitter',
 		'OptimizingCSSATransformer',
-		'OptimizingInstructionFragmenter',
 		'OptimizingInstructionSelector',
 		'OptimizingLivenessAnalysis',
 		'OptimizingMethodInliner',
@@ -30,7 +28,6 @@ Package {
 		'OptimizingRegisterAllocator',
 		'OptimizingSSAReconstructor',
 		'OptimizingTwoAddressEnforcer',
-		'OptimizingUsesVerifier',
 		'OptimizingValueNumbering',
 		'OptimizingVariableBinder',
 		'OptimizingVisitor'

@@ -5,16 +5,16 @@
 
 Class {
 	#name : #OJumpTrue,
-	#superclass : #OJumpConditional,
+	#superclass : #OConditionalJump,
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #visitor }
 OJumpTrue >> basicAcceptVisitor: aVisitor [
 	^aVisitor visitJumpTrue: self
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OJumpTrue >> basicPrintString [
 	^'[jump true ' , variable primitivePrintString , ' to ' , target name
 		, ' or fall to '
@@ -22,17 +22,17 @@ OJumpTrue >> basicPrintString [
 		, ']'
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OJumpTrue >> isJumpFalse [
 	^false
 ]
 
-{ #category : #unclassified }
+{ #category : #testing }
 OJumpTrue >> isJumpTrue [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OJumpTrue >> primitivePrintString [
 	^'{jump true}'
 ]

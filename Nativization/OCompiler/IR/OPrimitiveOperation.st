@@ -12,12 +12,12 @@ Class {
 	#category : #IR
 }
 
-{ #category : #unclassified }
+{ #category : #printing }
 OPrimitiveOperation >> basicPrintString [
 	^self primitivePrintString
 ]
 
-{ #category : #accessing }
+{ #category : #copying }
 OPrimitiveOperation >> copyTo: copy with: map [
 	super copyTo: copy with: map.
 	copy name: name
@@ -28,22 +28,22 @@ OPrimitiveOperation >> isPrimitiveOperation [
 	^true
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OPrimitiveOperation >> name [
 	^name
 ]
 
-{ #category : #unclassified }
+{ #category : #accessing }
 OPrimitiveOperation >> name: selector [
 	name := selector
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OPrimitiveOperation >> primitivePrintString [
 	^'{#' , name , '}'
 ]
 
-{ #category : #unclassified }
+{ #category : #printing }
 OPrimitiveOperation >> printStringUsing: names [
 	^self primitivePrintString
 ]

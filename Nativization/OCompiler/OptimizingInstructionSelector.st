@@ -98,7 +98,7 @@ OptimizingInstructionSelector >> numberArguments [
 	| count instruction i |
 	count := 0.
 	instruction := firstBlock firstInstruction next.
-	[instruction next isLoadImplicit] whileTrue: [
+	[instruction next isProjection] whileTrue: [
 		instruction := instruction next.
 		count := count + 1].
 	i := 0.
@@ -302,10 +302,7 @@ OptimizingInstructionSelector >> tile: instruction using: left to: right [
 	| lefttile righttile tile new |
 	lefttile := (self tileOf: left) beUsed.
 	righttile := (self tileOf: right) beUsed.
-	new := OBinaryVariableOperation
-		left: left
-		right: right
-		name: instruction selector.
+	new := OBinaryOperation left: left right: right name: instruction selector.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -314,14 +311,12 @@ OptimizingInstructionSelector >> tile: instruction using: left to: right [
 	^new
 ]
 
-{ #category : #unclassified }
+{ #category : #private }
 OptimizingInstructionSelector >> tile: instruction using: left toConstant: value [
 	| lefttile new tile |
-	lefttile := (self tileOf: left) beUsed.
-	new := OBinaryConstantOperation
-		left: left
-		right: value
-		name: instruction selector.
+	lefttile := self tileOf: left.
+	lefttile beUsed.
+	new := OBinaryOperation left: left right: value name: instruction selector.
 	instruction beforeInsert: new.
 	tile := self newTile: new.
 	self
@@ -361,14 +356,31 @@ OptimizingInstructionSelector >> visitJumpTrue: instruction [
 ]
 
 { #category : #unclassified }
-OptimizingInstructionSelector >> visitLoadConstant: instruction [
+OptimizingInstructionSelector >> visitMessageSend: instruction [
+	| selector |
+	selector := self selectorFor: instruction selector.
+	self perform: selector with: instruction
+]
+
+{ #category : #unclassified }
+OptimizingInstructionSelector >> visitMoveConstant: instruction [
 	| tile |
 	tile := self newTile: instruction.
 	self tile: instruction as: tile
 ]
 
 { #category : #unclassified }
-OptimizingInstructionSelector >> visitLoadImplicit: instruction [
+OptimizingInstructionSelector >> visitPhi: instruction [
+	| tile |
+	instruction variables
+		collect: [:source | self tileOf: source]
+		thenDo: #beUsed.
+	tile := self newTile: instruction.
+	self tile: instruction as: tile
+]
+
+{ #category : #unclassified }
+OptimizingInstructionSelector >> visitProjection: instruction [
 	| tile sourcetile new |
 	instruction name isSmallInteger
 		ifTrue: [
@@ -382,24 +394,7 @@ OptimizingInstructionSelector >> visitLoadImplicit: instruction [
 		ifFalse: [
 			tile := self newTile: instruction.
 			self tile: instruction as: tile.
-			instruction name == #activationRecord ifTrue: [tile beUsed]]
-]
-
-{ #category : #unclassified }
-OptimizingInstructionSelector >> visitMessageSend: instruction [
-	| selector |
-	selector := self selectorFor: instruction selector.
-	self perform: selector with: instruction
-]
-
-{ #category : #unclassified }
-OptimizingInstructionSelector >> visitPhi: instruction [
-	| tile |
-	instruction variables
-		collect: [:source | self tileOf: source]
-		thenDo: #beUsed.
-	tile := self newTile: instruction.
-	self tile: instruction as: tile
+			instruction name == #activation ifTrue: [tile beUsed]]
 ]
 
 { #category : #unclassified }
